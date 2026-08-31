@@ -28,6 +28,9 @@ export interface SupabasePlayerRow {
   secondary_citizenships?: string[] | string | null;
   heritage_country?: string | null;
   open_for_national_team?: boolean | null;
+  instagram_url?: string | null;
+  youtube_url?: string | null;
+  tiktok_url?: string | null;
 }
 
 export interface SupabaseClubAdRow {
@@ -445,6 +448,9 @@ export function transformSupabasePlayer(row: SupabasePlayerRow): PlayerProfile {
     secondaryCitizenships: secondaryCitizenships.length > 0 ? secondaryCitizenships : undefined,
     heritageCountry: row.heritage_country || undefined,
     openForNationalTeam: Boolean(row.open_for_national_team),
+    instagramUrl: row.instagram_url || undefined,
+    youtubeUrl: row.youtube_url || row.video_url || undefined,
+    tiktokUrl: row.tiktok_url || undefined,
   };
 }
 

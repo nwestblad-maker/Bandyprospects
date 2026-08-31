@@ -40,6 +40,9 @@ interface DbPlayer {
   open_for_national_team?: boolean;
   bio?: string;
   video_url?: string;
+  instagram_url?: string;
+  youtube_url?: string;
+  tiktok_url?: string;
   email: string;
   phone?: string;
   created_at?: string;
@@ -79,6 +82,9 @@ export default function MyProfilePage() {
     contractType: "semi_pro",
     bio: "",
     videoUrl: "",
+    instagram_url: "",
+    youtube_url: "",
+    tiktok_url: "",
     phone: "",
   });
 
@@ -206,7 +212,10 @@ export default function MyProfilePage() {
             spokenLanguages: parsedLangs.length > 0 ? parsedLangs : ["sv", "en"],
             contractType: p.package_preference || "semi_pro",
             bio: p.bio || "",
-            videoUrl: p.video_url || "",
+            videoUrl: p.youtube_url || p.video_url || "",
+            instagram_url: p.instagram_url || "",
+            youtube_url: p.youtube_url || p.video_url || "",
+            tiktok_url: p.tiktok_url || "",
             phone: p.phone || "",
           });
         }
@@ -278,6 +287,8 @@ export default function MyProfilePage() {
         clubFormatted = `${clubFormatted} (${resolvedLeague})`;
       }
 
+      const resolvedYoutube = formData.youtube_url.trim() || formData.videoUrl.trim() || null;
+
       const updatePayload = {
         first_name: formData.firstName.trim(),
         last_name: formData.lastName.trim(),
@@ -297,7 +308,10 @@ export default function MyProfilePage() {
         spoken_languages: formData.spokenLanguages,
         key_attributes: formData.keyAttributes,
         bio: formData.bio.trim() || null,
-        video_url: formData.videoUrl.trim() || null,
+        video_url: resolvedYoutube,
+        instagram_url: formData.instagram_url.trim() || null,
+        youtube_url: resolvedYoutube,
+        tiktok_url: formData.tiktok_url.trim() || null,
         phone: formData.phone.trim() || null,
       };
 
@@ -676,31 +690,65 @@ export default function MyProfilePage() {
               />
             </div>
 
-            {/* Video Highlights & Tape */}
+            {/* Video Highlights & Social Media */}
             <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs">
               <div className="pb-3 border-b border-zinc-100 mb-5">
                 <h2 className="text-base font-bold text-zinc-950 flex items-center gap-2">
                   <span>🎥</span>
-                  <span>{lang === "sv" ? "Videolänk & Spelsekvenser" : "Video Highlights & Clips"}</span>
+                  <span>{lang === "sv" ? "Videolänk, Highlights & Sociala medier" : "Highlights & Social Media"}</span>
                 </h2>
                 <p className="text-xs text-zinc-500">
                   {lang === "sv"
-                    ? "Klistra in en länk till YouTube, Vimeo eller Google Drive med matchklipp eller skills."
-                    : "Add a YouTube, Vimeo, or Drive link to game clips or skills tape."}
+                    ? "Länka till dina konton eller highlight-klipp så att scouter och klubbledare kan se dig spela."
+                    : "Link your profiles or highlight reels so scouts and clubs can watch you play."}
                 </p>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                  {lang === "sv" ? "Videolänk (URL)" : "Video URL"}
-                </label>
-                <input
-                  type="url"
-                  value={formData.videoUrl}
-                  onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs text-zinc-900 focus:outline-none focus:border-zinc-900"
-                />
+              {/* Sektion för Sociala Medier & Highlights */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* Instagram */}
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-700 mb-1 flex items-center gap-1">
+                      <span>📸</span> Instagram
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://instagram.com/dittnamn"
+                      className="w-full text-xs p-2.5 border rounded-lg border-zinc-300 focus:ring-1 focus:ring-zinc-900 outline-none bg-zinc-50"
+                      value={formData.instagram_url || ""}
+                      onChange={(e) => setFormData({ ...formData, instagram_url: e.target.value })}
+                    />
+                  </div>
+
+                  {/* YouTube */}
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-700 mb-1 flex items-center gap-1">
+                      <span>▶️</span> YouTube / Highlights
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://youtube.com/watch?v=..."
+                      className="w-full text-xs p-2.5 border rounded-lg border-zinc-300 focus:ring-1 focus:ring-zinc-900 outline-none bg-zinc-50"
+                      value={formData.youtube_url || formData.videoUrl || ""}
+                      onChange={(e) => setFormData({ ...formData, youtube_url: e.target.value, videoUrl: e.target.value })}
+                    />
+                  </div>
+
+                  {/* TikTok */}
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-700 mb-1 flex items-center gap-1">
+                      <span>🎵</span> TikTok
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://tiktok.com/@dittnamn"
+                      className="w-full text-xs p-2.5 border rounded-lg border-zinc-300 focus:ring-1 focus:ring-zinc-900 outline-none bg-zinc-50"
+                      value={formData.tiktok_url || ""}
+                      onChange={(e) => setFormData({ ...formData, tiktok_url: e.target.value })}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 

@@ -86,6 +86,9 @@ export interface PlayerProfile {
   secondaryCitizenships?: string[];
   heritageCountry?: string;
   openForNationalTeam?: boolean;
+  instagramUrl?: string;
+  youtubeUrl?: string;
+  tiktokUrl?: string;
 }
 
 export type PerkCategory = "housing" | "job" | "studies" | "salary" | "travel" | "equipment" | "gym";

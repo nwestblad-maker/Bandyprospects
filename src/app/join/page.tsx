@@ -46,6 +46,9 @@ export default function JoinPage() {
     contractType: "semi_pro",
     bioHistory: "",
     videoLink: "",
+    instagram_url: "",
+    youtube_url: "",
+    tiktok_url: "",
     email: "",
     phone: "",
     consent: false,
@@ -97,6 +100,8 @@ export default function JoinPage() {
         ? `${formData.currentClub.trim()} (${resolvedLeagueName})`
         : formData.currentClub.trim();
 
+      const resolvedYoutube = formData.youtube_url.trim() || formData.videoLink.trim() || null;
+
       const playerPayload = {
         first_name: formData.firstName.trim(),
         last_name: formData.lastName.trim(),
@@ -116,7 +121,10 @@ export default function JoinPage() {
         spoken_languages: formData.spokenLanguages,
         key_attributes: formData.keyAttributes,
         bio: formData.bioHistory.trim() || null,
-        video_url: formData.videoLink.trim() || null,
+        video_url: resolvedYoutube,
+        instagram_url: formData.instagram_url.trim() || null,
+        youtube_url: resolvedYoutube,
+        tiktok_url: formData.tiktok_url.trim() || null,
         email: formData.email.trim(),
         phone: formData.phone.trim() || null,
       };
@@ -687,10 +695,64 @@ export default function JoinPage() {
                     <input
                       type="url"
                       value={formData.videoLink}
-                      onChange={(e) => setFormData({ ...formData, videoLink: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, videoLink: e.target.value, youtube_url: e.target.value })}
                       placeholder={formT.videoPlaceholder}
                       className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900"
                     />
+                  </div>
+
+                  {/* Sektion för Sociala Medier & Highlights */}
+                  <div className="space-y-4 pt-4 border-t border-zinc-200">
+                    <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
+                      Sociala medier & Highlights (Valfritt)
+                    </h3>
+                    <p className="text-xs text-zinc-500">
+                      Länka till dina konton eller highlight-klipp så att scouter och klubbledare kan se dig spela.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {/* Instagram */}
+                      <div>
+                        <label className="block text-xs font-semibold text-zinc-700 mb-1 flex items-center gap-1">
+                          <span>📸</span> Instagram
+                        </label>
+                        <input
+                          type="url"
+                          placeholder="https://instagram.com/dittnamn"
+                          className="w-full text-xs p-2.5 border rounded-lg border-zinc-300 focus:ring-1 focus:ring-zinc-900 outline-none bg-zinc-50"
+                          value={formData.instagram_url || ""}
+                          onChange={(e) => setFormData({ ...formData, instagram_url: e.target.value })}
+                        />
+                      </div>
+
+                      {/* YouTube */}
+                      <div>
+                        <label className="block text-xs font-semibold text-zinc-700 mb-1 flex items-center gap-1">
+                          <span>▶️</span> YouTube / Highlights
+                        </label>
+                        <input
+                          type="url"
+                          placeholder="https://youtube.com/watch?v=..."
+                          className="w-full text-xs p-2.5 border rounded-lg border-zinc-300 focus:ring-1 focus:ring-zinc-900 outline-none bg-zinc-50"
+                          value={formData.youtube_url || formData.videoLink || ""}
+                          onChange={(e) => setFormData({ ...formData, youtube_url: e.target.value, videoLink: e.target.value })}
+                        />
+                      </div>
+
+                      {/* TikTok */}
+                      <div>
+                        <label className="block text-xs font-semibold text-zinc-700 mb-1 flex items-center gap-1">
+                          <span>🎵</span> TikTok
+                        </label>
+                        <input
+                          type="url"
+                          placeholder="https://tiktok.com/@dittnamn"
+                          className="w-full text-xs p-2.5 border rounded-lg border-zinc-300 focus:ring-1 focus:ring-zinc-900 outline-none bg-zinc-50"
+                          value={formData.tiktok_url || ""}
+                          onChange={(e) => setFormData({ ...formData, tiktok_url: e.target.value })}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

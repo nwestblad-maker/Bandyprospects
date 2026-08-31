@@ -396,20 +396,77 @@ export default function PlayerDetailPage() {
                 </p>
               </div>
 
-              {/* Section: Video Highlights */}
-              <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950 mb-3">
-                  {t.playerDetailPage.videoHighlightsTitle}
+              {/* Section: Video Highlights & Social Media */}
+              <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs space-y-4">
+                <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950">
+                  {lang === "sv" ? "Highlights & Sociala Medier" : "Highlights & Social Media"}
                 </h2>
-                <div className="p-4 rounded-lg bg-zinc-50 border border-zinc-200 text-xs text-zinc-600 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-zinc-200 flex items-center justify-center text-zinc-600 font-bold">
-                    ▶
+
+                {player.youtubeUrl ? (
+                  <a
+                    href={player.youtubeUrl.startsWith("http") ? player.youtubeUrl : `https://${player.youtubeUrl}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-4 rounded-xl bg-red-50 hover:bg-red-100/70 border border-red-200 text-xs text-red-950 flex items-center justify-between transition-colors group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-red-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                        ▶
+                      </div>
+                      <div>
+                        <span className="font-bold text-zinc-950 block text-xs">
+                          {lang === "sv" ? "Se matchklipp & Highlights" : "Watch Game Tape & Highlights"}
+                        </span>
+                        <span className="text-[11px] text-zinc-600 truncate max-w-xs block">
+                          {player.youtubeUrl}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-red-700 group-hover:translate-x-0.5 transition-transform">
+                      {lang === "sv" ? "Öppna" : "Watch"} ↗
+                    </span>
+                  </a>
+                ) : (
+                  <div className="p-4 rounded-lg bg-zinc-50 border border-zinc-200 text-xs text-zinc-600 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-zinc-200 flex items-center justify-center text-zinc-600 font-bold">
+                      ▶
+                    </div>
+                    <div>
+                      <span className="font-semibold text-zinc-900 block">Game Tape & Clips</span>
+                      <span>{t.playerDetailPage.videoPlaceholderText}</span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="font-semibold text-zinc-900 block">Game Tape & Clips</span>
-                    <span>{t.playerDetailPage.videoPlaceholderText}</span>
+                )}
+
+                {/* Social media links if present */}
+                {(player.instagramUrl || player.tiktokUrl) && (
+                  <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-zinc-100">
+                    {player.instagramUrl && (
+                      <a
+                        href={player.instagramUrl.startsWith("http") ? player.instagramUrl : `https://${player.instagramUrl}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pink-50 hover:bg-pink-100 text-pink-900 border border-pink-200 text-xs font-semibold transition-colors"
+                      >
+                        <span>📸</span>
+                        <span>Instagram</span>
+                        <span>↗</span>
+                      </a>
+                    )}
+                    {player.tiktokUrl && (
+                      <a
+                        href={player.tiktokUrl.startsWith("http") ? player.tiktokUrl : `https://${player.tiktokUrl}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border border-zinc-200 text-xs font-semibold transition-colors"
+                      >
+                        <span>🎵</span>
+                        <span>TikTok</span>
+                        <span>↗</span>
+                      </a>
+                    )}
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
