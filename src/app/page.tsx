@@ -10,6 +10,7 @@ import { getCountry, getLanguageName } from "@/data/countries";
 import { ClubAd, PlayerProfile, PositionCategory } from "@/types";
 import { supabase } from "@/lib/supabaseClient";
 import { transformSupabasePlayer, transformSupabaseClubAd, SupabasePlayerRow, SupabaseClubAdRow } from "@/lib/dataMappers";
+import SocialLinks from "@/components/SocialLinks";
 import { formatWish } from "@/lib/formatters";
 
 export default function HomePage() {
@@ -433,7 +434,7 @@ export default function HomePage() {
                       </p>
 
                       {/* Skills Badges */}
-                      <div className="flex flex-wrap gap-1 mb-4">
+                      <div className="flex flex-wrap gap-1 mb-2">
                         {player.skills[lang].slice(0, 3).map((skill, idx) => (
                           <span
                             key={idx}
@@ -443,6 +444,13 @@ export default function HomePage() {
                           </span>
                         ))}
                       </div>
+
+                      {/* Social Media Links */}
+                      <SocialLinks
+                        instagramUrl={player.instagramUrl}
+                        youtubeUrl={player.youtubeUrl}
+                        tiktokUrl={player.tiktokUrl}
+                      />
                     </div>
 
                     {/* Card Footer */}

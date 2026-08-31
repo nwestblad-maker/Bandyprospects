@@ -11,6 +11,7 @@ import { useShortlist } from "@/context/ShortlistContext";
 import { supabase } from "@/lib/supabaseClient";
 import { transformSupabasePlayer, SupabasePlayerRow } from "@/lib/dataMappers";
 import { PlayerProfile } from "@/types";
+import SocialLinks from "@/components/SocialLinks";
 import { formatWish } from "@/lib/formatters";
 
 export default function ShortlistPage() {
@@ -331,6 +332,13 @@ export default function ShortlistPage() {
                             ))}
                           </div>
                         )}
+
+                        {/* Social Links */}
+                        <SocialLinks
+                          instagramUrl={player.instagramUrl}
+                          youtubeUrl={player.youtubeUrl}
+                          tiktokUrl={player.tiktokUrl}
+                        />
                       </div>
 
                       {/* Right: Private Scout Notes & Actions (7 cols) */}

@@ -8,6 +8,7 @@ import { CountrySelect } from "@/components/CountrySelect";
 import { LeagueSelect } from "@/components/LeagueSelect";
 import { ContactModal } from "@/components/ContactModal";
 import { BookmarkButton } from "@/components/BookmarkButton";
+import SocialLinks from "@/components/SocialLinks";
 import { useLanguage } from "@/context/LanguageContext";
 import { supabase } from "@/lib/supabaseClient";
 import { OccupationPreference, PlayerGrip, PlayerProfile, PlayerStatus, PositionCategory } from "@/types";
@@ -679,9 +680,16 @@ export default function PlayersPage() {
                           )}
 
                           {/* Bio Snippet */}
-                          <p className="text-xs text-zinc-600 line-clamp-2 leading-relaxed mb-4">
+                          <p className="text-xs text-zinc-600 line-clamp-2 leading-relaxed mb-2">
                             {player.bio[lang]}
                           </p>
+
+                          {/* Social media links if available */}
+                          <SocialLinks
+                            instagramUrl={player.instagramUrl}
+                            youtubeUrl={player.youtubeUrl}
+                            tiktokUrl={player.tiktokUrl}
+                          />
                         </div>
 
                         {/* Card CTA Footer */}
