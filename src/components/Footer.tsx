@@ -96,9 +96,9 @@ export function Footer() {
             © {new Date().getFullYear()} Bandyprospects. {t.footer.copyright}
           </div>
           <div className="flex items-center gap-4">
-            <a href="#" className="hover:text-zinc-400">
+            <Link href="/integritet" className="hover:text-zinc-400">
               {t.footer.privacy}
-            </a>
+            </Link>
             <a href="#" className="hover:text-zinc-400">
               {t.footer.terms}
             </a>

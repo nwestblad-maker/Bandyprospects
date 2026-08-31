@@ -6,12 +6,14 @@ import { useParams } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ContactModal } from "@/components/ContactModal";
+import { GatedContactCard } from "@/components/GatedContactCard";
 import { BookmarkButton } from "@/components/BookmarkButton";
 import { useLanguage } from "@/context/LanguageContext";
 import { PlayerProfile } from "@/types";
 import { supabase } from "@/lib/supabaseClient";
 import { transformSupabasePlayer, SupabasePlayerRow } from "@/lib/dataMappers";
 import { getCountry, getLanguageName, getLanguageFlag } from "@/data/countries";
+import { formatWish } from "@/lib/formatters";
 
 export default function PlayerDetailPage() {
   const { id } = useParams() as { id: string };
@@ -24,6 +26,8 @@ export default function PlayerDetailPage() {
   const [contactModal, setContactModal] = useState<{
     isOpen: boolean;
     targetName: string;
+    targetEmail?: string;
+    targetId?: string;
     type: "club" | "player";
   }>({
     isOpen: false,
@@ -67,6 +71,8 @@ export default function PlayerDetailPage() {
     setContactModal({
       isOpen: true,
       targetName,
+      targetEmail: player?.email,
+      targetId: player?.id,
       type: "player",
     });
   };
@@ -138,8 +144,13 @@ export default function PlayerDetailPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               {/* Left: Avatar & Identity */}
               <div className="flex items-center gap-5">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-zinc-900 text-white font-extrabold text-2xl flex items-center justify-center shadow-xs">
-                  {player.avatarInitials}
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-zinc-900 text-white font-extrabold text-2xl flex items-center justify-center shadow-xs overflow-hidden shrink-0 border border-zinc-200 relative">
+                  {player.photoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={player.photoUrl} alt={player.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span>{player.avatarInitials}</span>
+                  )}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -173,10 +184,15 @@ export default function PlayerDetailPage() {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 mt-2">
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
                     <span className="px-2.5 py-0.5 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-800 text-xs font-semibold">
                       {player.statusLabel[lang]}
                     </span>
+                    {player.packagePreferenceLabel && (
+                      <span className="px-2.5 py-0.5 rounded-md bg-sky-50 border border-sky-200 text-sky-800 text-xs font-semibold">
+                        {player.packagePreferenceLabel[lang]}
+                      </span>
+                    )}
                     <span className="text-xs text-zinc-500">
                       {t.playerDetailPage.previousClub}: {player.previousClub}
                     </span>
@@ -427,8 +443,24 @@ export default function PlayerDetailPage() {
                     <dt className="text-zinc-500">{t.playerDetailPage.contractStatus}:</dt>
                     <dd className="font-semibold text-zinc-900">{player.statusLabel[lang]}</dd>
                   </div>
+                  {(player.packagePreference || player.packagePreferenceLabel) && (
+                    <div className="flex justify-between">
+                      <dt className="text-zinc-500">{lang === "sv" ? "Avtalsnivå:" : "Contract Level:"}</dt>
+                      <dd className="font-semibold text-zinc-900">
+                        {formatWish(player.packagePreference) || player.packagePreferenceLabel?.[lang]}
+                      </dd>
+                    </div>
+                  )}
                 </dl>
               </div>
+
+              {/* Gated Direct Contact Information Card */}
+              <GatedContactCard
+                contactName={player.name}
+                contactEmail={player.email}
+                contactPhone={player.phone}
+                contactRole={lang === "sv" ? "Spelare" : "Player"}
+              />
 
               {/* Inquiry CTA Card */}
               <div className="bg-zinc-900 text-white rounded-xl p-6 shadow-xs">
@@ -454,6 +486,8 @@ export default function PlayerDetailPage() {
         isOpen={contactModal.isOpen}
         onClose={() => setContactModal({ ...contactModal, isOpen: false })}
         targetName={contactModal.targetName}
+        targetEmail={contactModal.targetEmail}
+        targetId={contactModal.targetId}
         type={contactModal.type}
       />
     </div>

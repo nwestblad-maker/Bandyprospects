@@ -14,6 +14,7 @@ import { OccupationPreference, PlayerGrip, PlayerProfile, PlayerStatus, Position
 import { SupabasePlayerRow, transformSupabasePlayer } from "@/lib/dataMappers";
 import { getCountry, getLanguageName } from "@/data/countries";
 import { getLeagueDisplayName } from "@/lib/leagues";
+import { formatWish } from "@/lib/formatters";
 
 export default function PlayersPage() {
   const { lang, t } = useLanguage();
@@ -36,6 +37,8 @@ export default function PlayersPage() {
   const [contactModal, setContactModal] = useState<{
     isOpen: boolean;
     targetName: string;
+    targetEmail?: string;
+    targetId?: string;
     type: "club" | "player";
   }>({
     isOpen: false,
@@ -479,8 +482,17 @@ export default function PlayersPage() {
                           {/* Top row: Avatar, Name, Age, Country & Status */}
                           <div className="flex items-start justify-between gap-3 mb-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-11 h-11 rounded-lg bg-zinc-900 text-white font-bold text-sm flex items-center justify-center shadow-xs">
-                                {player.avatarInitials}
+                              <div className="w-12 h-12 rounded-xl bg-zinc-900 text-white font-bold text-sm flex items-center justify-center shadow-xs overflow-hidden shrink-0 border border-zinc-200 relative">
+                                {player.photoUrl ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    src={player.photoUrl}
+                                    alt={player.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <span>{player.avatarInitials}</span>
+                                )}
                               </div>
                               <div>
                                 <div className="flex items-center gap-1.5">
@@ -511,11 +523,18 @@ export default function PlayersPage() {
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-2">
-                              <span className="px-2 py-0.5 text-[10px] font-semibold rounded bg-zinc-100 text-zinc-800 border border-zinc-200">
-                                {player.statusLabel[lang]}
-                              </span>
-                              <BookmarkButton playerId={player.id} playerName={player.name} size="sm" />
+                            <div className="flex flex-col items-end gap-1.5">
+                              <div className="flex items-center gap-1.5">
+                                <span className="px-2 py-0.5 text-[10px] font-semibold rounded bg-zinc-100 text-zinc-800 border border-zinc-200">
+                                  {player.statusLabel[lang]}
+                                </span>
+                                <BookmarkButton playerId={player.id} playerName={player.name} size="sm" />
+                              </div>
+                              {(player.packagePreference || player.packagePreferenceLabel) && (
+                                <span className="px-2 py-0.5 text-[10px] font-semibold rounded bg-sky-50 text-sky-800 border border-sky-200">
+                                  {formatWish(player.packagePreference) || player.packagePreferenceLabel?.[lang]}
+                                </span>
+                              )}
                             </div>
                           </div>
 
@@ -680,6 +699,8 @@ export default function PlayersPage() {
                               setContactModal({
                                 isOpen: true,
                                 targetName: player.name,
+                                targetEmail: player.email,
+                                targetId: player.id,
                                 type: "player",
                               })
                             }
@@ -705,7 +726,7 @@ export default function PlayersPage() {
                             <th className="py-3 px-4 font-bold">Age</th>
                             <th className="py-3 px-4 font-bold">Nation</th>
                             <th className="py-3 px-4 font-bold">Club</th>
-                            <th className="py-3 px-4 font-bold">Status</th>
+                            <th className="py-3 px-4 font-bold">Status & Level</th>
                             <th className="py-3 px-4 font-bold">National Team</th>
                             <th className="py-3 px-4 font-bold text-right">Actions</th>
                           </tr>
@@ -714,7 +735,15 @@ export default function PlayersPage() {
                           {filteredPlayers.map((player) => (
                             <tr key={player.id} className="hover:bg-zinc-50/80 transition-colors">
                               <td className="py-3 px-4 font-bold text-zinc-950 whitespace-nowrap">
-                                <Link href={`/players/${player.id}`} className="hover:underline flex items-center gap-1.5">
+                                <Link href={`/players/${player.id}`} className="hover:underline flex items-center gap-2">
+                                  <div className="w-6 h-6 rounded-md bg-zinc-900 text-white font-bold text-[10px] flex items-center justify-center overflow-hidden shrink-0">
+                                    {player.photoUrl ? (
+                                      // eslint-disable-next-line @next/next/no-img-element
+                                      <img src={player.photoUrl} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                      <span>{player.avatarInitials}</span>
+                                    )}
+                                  </div>
                                   <span>{player.name}</span>
                                   {player.verified && (
                                     <span className="text-zinc-900 text-[10px]">✓</span>
@@ -735,9 +764,16 @@ export default function PlayersPage() {
                                 {player.previousClub}
                               </td>
                               <td className="py-3 px-4 whitespace-nowrap">
-                                <span className="px-2 py-0.5 text-[10px] font-semibold rounded bg-zinc-100 text-zinc-800 border border-zinc-200">
-                                  {player.statusLabel[lang]}
-                                </span>
+                                <div className="flex flex-col gap-1">
+                                  <span className="px-2 py-0.5 text-[10px] font-semibold rounded bg-zinc-100 text-zinc-800 border border-zinc-200">
+                                    {player.statusLabel[lang]}
+                                  </span>
+                                  {(player.packagePreference || player.packagePreferenceLabel) && (
+                                    <span className="px-2 py-0.5 text-[10px] font-semibold rounded bg-sky-50 text-sky-800 border border-sky-200">
+                                      {formatWish(player.packagePreference) || player.packagePreferenceLabel?.[lang]}
+                                    </span>
+                                  )}
+                                </div>
                               </td>
                               <td className="py-3 px-4 whitespace-nowrap">
                                 {player.openForNationalTeam ? (
@@ -806,6 +842,8 @@ export default function PlayersPage() {
         isOpen={contactModal.isOpen}
         onClose={() => setContactModal({ ...contactModal, isOpen: false })}
         targetName={contactModal.targetName}
+        targetEmail={contactModal.targetEmail}
+        targetId={contactModal.targetId}
         type={contactModal.type}
       />
 

@@ -67,10 +67,15 @@ export interface PlayerProfile {
   currentStatus: PlayerStatus;
   statusLabel: LocalizedString;
   avatarInitials: string;
+  photoUrl?: string;
   highlightStats: LocalizedString;
   bio: LocalizedString;
   skills: LocalizedArray;
   seekingPreferences: LocalizedString;
+  packagePreference?: string;
+  packagePreferenceLabel?: LocalizedString;
+  email?: string;
+  phone?: string;
   verified: boolean;
   appearancesCount: number;
   pointsCount: number;

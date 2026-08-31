@@ -11,6 +11,7 @@ import { useShortlist } from "@/context/ShortlistContext";
 import { supabase } from "@/lib/supabaseClient";
 import { transformSupabasePlayer, SupabasePlayerRow } from "@/lib/dataMappers";
 import { PlayerProfile } from "@/types";
+import { formatWish } from "@/lib/formatters";
 
 export default function ShortlistPage() {
   const router = useRouter();
@@ -25,6 +26,8 @@ export default function ShortlistPage() {
   const [contactModal, setContactModal] = useState<{
     isOpen: boolean;
     targetName: string;
+    targetEmail?: string;
+    targetId?: string;
     type: "club" | "player";
   }>({
     isOpen: false,
@@ -136,10 +139,12 @@ export default function ShortlistPage() {
     document.body.removeChild(link);
   };
 
-  const openContact = (targetName: string) => {
+  const openContact = (targetName: string, targetEmail?: string, targetId?: string) => {
     setContactModal({
       isOpen: true,
       targetName,
+      targetEmail,
+      targetId,
       type: "player",
     });
   };
@@ -242,8 +247,13 @@ export default function ShortlistPage() {
                       {/* Left: Player Basic Info (5 cols) */}
                       <div className="lg:col-span-5 space-y-4">
                         <div className="flex items-start gap-4">
-                          <div className="w-14 h-14 rounded-xl bg-zinc-900 text-white font-bold text-base flex items-center justify-center shadow-xs shrink-0">
-                            {player.avatarInitials}
+                          <div className="w-14 h-14 rounded-xl bg-zinc-900 text-white font-bold text-base flex items-center justify-center shadow-xs shrink-0 overflow-hidden border border-zinc-200 relative">
+                            {player.photoUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={player.photoUrl} alt={player.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <span>{player.avatarInitials}</span>
+                            )}
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
@@ -271,10 +281,15 @@ export default function ShortlistPage() {
                                 {player.countryName[lang]} • {player.age} år
                               </span>
                             </div>
-                            <div className="mt-2">
+                            <div className="mt-2 flex items-center gap-1.5 flex-wrap">
                               <span className="px-2.5 py-0.5 text-[11px] font-semibold rounded-md bg-zinc-100 text-zinc-800 border border-zinc-200">
                                 {player.statusLabel[lang]}
                               </span>
+                              {(player.packagePreference || player.packagePreferenceLabel) && (
+                                <span className="px-2 py-0.5 text-[10px] font-semibold rounded bg-sky-50 text-sky-800 border border-sky-200">
+                                  {formatWish(player.packagePreference) || player.packagePreferenceLabel?.[lang]}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -368,7 +383,7 @@ export default function ShortlistPage() {
                             </Link>
 
                             <button
-                              onClick={() => openContact(player.name)}
+                              onClick={() => openContact(player.name, player.email, player.id)}
                               className="px-3.5 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-semibold text-xs rounded-lg border border-zinc-200 transition-colors cursor-pointer"
                             >
                               {t.playersPage.contactBtn}
@@ -398,6 +413,8 @@ export default function ShortlistPage() {
         isOpen={contactModal.isOpen}
         onClose={() => setContactModal({ ...contactModal, isOpen: false })}
         targetName={contactModal.targetName}
+        targetEmail={contactModal.targetEmail}
+        targetId={contactModal.targetId}
         type={contactModal.type}
       />
 

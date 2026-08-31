@@ -8,6 +8,9 @@ import { CountrySelect } from "@/components/CountrySelect";
 import { LeagueSelect } from "@/components/LeagueSelect";
 import { KeyAttributesPicker } from "@/components/KeyAttributesPicker";
 import { TargetCountriesPicker } from "@/components/TargetCountriesPicker";
+import { CountryMultiSelect } from "@/components/CountryMultiSelect";
+import { AvatarUpload } from "@/components/AvatarUpload";
+import { GdprConsentCheckbox } from "@/components/GdprConsentCheckbox";
 import { SpokenLanguagesPicker } from "@/components/SpokenLanguagesPicker";
 import { useLanguage } from "@/context/LanguageContext";
 import { supabase } from "@/lib/supabaseClient";
@@ -24,6 +27,7 @@ export default function JoinPage() {
     lastName: "",
     birthYear: "",
     nationality: "se",
+    photoUrl: "",
     currentClub: "",
     league: "se_elitserien_herr",
     customLeague: "",
@@ -98,6 +102,7 @@ export default function JoinPage() {
         last_name: formData.lastName.trim(),
         birth_year: birthYearNum,
         nationality: formData.nationality.toUpperCase(),
+        photo_url: formData.photoUrl.trim() || null,
         secondary_citizenship: formData.secondaryCitizenships,
         heritage_country: formData.heritageCountry.trim() || null,
         open_for_national_team: Boolean(formData.openForNationalTeam),
@@ -202,14 +207,20 @@ export default function JoinPage() {
                 </div>
               )}
 
-              {/* Section 1: Basic Information with Global Country Select */}
-              <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs">
-                <div className="pb-3 border-b border-zinc-100 mb-5">
+              {/* Section 1: Basic Information & Photo Upload */}
+              <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs space-y-5">
+                <div className="pb-3 border-b border-zinc-100">
                   <h2 className="text-base font-bold text-zinc-950">{formT.step1Title}</h2>
                   <p className="text-xs text-zinc-500">{formT.step1Subtitle}</p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                {/* Avatar Upload Component */}
+                <AvatarUpload
+                  currentUrl={formData.photoUrl}
+                  onUploadSuccess={(url) => setFormData({ ...formData, photoUrl: url })}
+                />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-2 border-t border-zinc-100">
                   <div>
                     <label className="block font-semibold text-zinc-700 mb-1">{formT.firstName} *</label>
                     <input
@@ -388,7 +399,7 @@ export default function JoinPage() {
                 />
               </div>
 
-              {/* Section 3.5: National Team & FIB Eligibility (Heritage & Dual Citizenships) */}
+              {/* Section 3.5: National Team & FIB Eligibility (Heritage & Passports) */}
               <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs">
                 <div className="pb-3 border-b border-zinc-100 mb-5">
                   <div className="inline-flex items-center gap-2 px-2 py-0.5 rounded bg-zinc-100 border border-zinc-200 text-zinc-700 text-[11px] font-bold uppercase tracking-wider mb-2">
@@ -426,16 +437,12 @@ export default function JoinPage() {
                     </div>
                   </label>
 
-                  {/* Dual Citizenship & Heritage */}
+                  {/* Dual Citizenship & Heritage with CountryMultiSelect */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                     <div>
-                      <label className="block font-semibold text-zinc-700 mb-1">
-                        {lang === "sv" ? "Övriga medborgarskap / Dubbla pass" : "Secondary Citizenships / Passports"}
-                      </label>
-                      <TargetCountriesPicker
-                        selectedCodes={formData.secondaryCitizenships}
+                      <CountryMultiSelect
+                        selectedCountries={formData.secondaryCitizenships}
                         onChange={(codes) => setFormData({ ...formData, secondaryCitizenships: codes })}
-                        label={lang === "sv" ? "Välj länder där du har pass" : "Select countries where you hold a passport"}
                       />
                     </div>
 
@@ -464,17 +471,68 @@ export default function JoinPage() {
                 </div>
               </div>
 
-              {/* Section 4: Civil Situation, Studies/Work & Spoken Languages */}
+              {/* Section 4: Desired Agreement Level & Civil Setup */}
               <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs space-y-6">
                 <div className="pb-3 border-b border-zinc-100">
                   <h2 className="text-base font-bold text-zinc-950">{formT.civilProfileTitle}</h2>
                   <p className="text-xs text-zinc-500">{formT.civilProfileSubtitle}</p>
                 </div>
 
+                {/* Contract Type / Package Preference */}
+                <div>
+                  <label className="block font-bold text-zinc-800 text-xs mb-2">
+                    {lang === "sv" ? "Önskad avtalsnivå / Kontrakttyp:" : "Preferred Agreement Level:"}
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    {[
+                      {
+                        id: "semi_pro",
+                        title: lang === "sv" ? "Semiprofessionell" : "Semi-Professional",
+                        desc: lang === "sv" ? "Spelarersättning + jobb/studier" : "Club salary + civil career/studies",
+                        badge: "bg-sky-50 text-sky-800 border-sky-200",
+                      },
+                      {
+                        id: "full_time",
+                        title: lang === "sv" ? "Heltidsproffs" : "Full-Time Pro",
+                        desc: lang === "sv" ? "Heltidsavtal och elitfokus" : "Full-time professional salary",
+                        badge: "bg-emerald-50 text-emerald-800 border-emerald-200",
+                      },
+                      {
+                        id: "amateur",
+                        title: lang === "sv" ? "Amatör / Utveckling" : "Amateur / Development",
+                        desc: lang === "sv" ? "Hjälp med boende & jobbmatchning" : "Placement with housing & job help",
+                        badge: "bg-amber-50 text-amber-800 border-amber-200",
+                      },
+                    ].map((opt) => {
+                      const isSelected = formData.contractType === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, contractType: opt.id })}
+                          className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-zinc-900 text-white border-zinc-900 shadow-xs font-semibold"
+                              : "bg-zinc-50 hover:bg-zinc-100 text-zinc-800 border-zinc-200"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-bold text-xs">{opt.title}</span>
+                            {isSelected && <span className="text-xs">✓</span>}
+                          </div>
+                          <p className={`text-[11px] leading-tight ${isSelected ? "text-zinc-300" : "text-zinc-500"}`}>
+                            {opt.desc}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {/* 5 Checkboxes for Occupation Preferences */}
-                <div className="space-y-2.5">
+                <div className="space-y-2.5 pt-2 border-t border-zinc-100">
                   <span className="block font-bold text-zinc-800 text-xs">
-                    {lang === "sv" ? "Välj alla alternativ som matchar dina önskemål:" : "Select all options matching your preferences:"}
+                    {lang === "sv" ? "Kombinera med (civila önskemål):" : "Combine with (civil preferences):"}
                   </span>
 
                   {/* 1. Studies */}
@@ -670,19 +728,11 @@ export default function JoinPage() {
                   </div>
                 </div>
 
-                {/* Consent Checkbox */}
-                <div className="pt-2">
-                  <label className="flex items-start gap-2.5 text-xs text-zinc-600 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      required
-                      checked={formData.consent}
-                      onChange={(e) => setFormData({ ...formData, consent: e.target.checked })}
-                      className="mt-0.5 rounded border-zinc-300 text-zinc-900"
-                    />
-                    <span>{formT.consent}</span>
-                  </label>
-                </div>
+                {/* GDPR Consent Checkbox */}
+                <GdprConsentCheckbox
+                  checked={formData.consent}
+                  onChange={(checked) => setFormData({ ...formData, consent: checked })}
+                />
               </div>
 
               {/* Submit CTA */}

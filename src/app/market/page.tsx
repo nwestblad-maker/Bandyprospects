@@ -32,6 +32,8 @@ export default function MarketPage() {
   const [contactModal, setContactModal] = useState<{
     isOpen: boolean;
     targetName: string;
+    targetEmail?: string;
+    targetId?: string;
     type: "club" | "player";
   }>({
     isOpen: false,
@@ -603,6 +605,8 @@ export default function MarketPage() {
                                 setContactModal({
                                   isOpen: true,
                                   targetName: ad.club,
+                                  targetEmail: ad.contactEmail,
+                                  targetId: ad.id,
                                   type: "club",
                                 })
                               }
@@ -660,6 +664,8 @@ export default function MarketPage() {
         isOpen={contactModal.isOpen}
         onClose={() => setContactModal({ ...contactModal, isOpen: false })}
         targetName={contactModal.targetName}
+        targetEmail={contactModal.targetEmail}
+        targetId={contactModal.targetId}
         type={contactModal.type}
       />
 

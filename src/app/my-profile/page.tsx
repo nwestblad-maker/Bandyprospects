@@ -9,6 +9,9 @@ import { CountrySelect } from "@/components/CountrySelect";
 import { LeagueSelect } from "@/components/LeagueSelect";
 import { KeyAttributesPicker } from "@/components/KeyAttributesPicker";
 import { TargetCountriesPicker } from "@/components/TargetCountriesPicker";
+import { CountryMultiSelect } from "@/components/CountryMultiSelect";
+import { AvatarUpload } from "@/components/AvatarUpload";
+import { DeleteProfileButton } from "@/components/DeleteProfileButton";
 import { SpokenLanguagesPicker } from "@/components/SpokenLanguagesPicker";
 import { useLanguage } from "@/context/LanguageContext";
 import { supabase } from "@/lib/supabaseClient";
@@ -21,6 +24,7 @@ interface DbPlayer {
   last_name: string;
   birth_year: number;
   nationality: string;
+  photo_url?: string;
   current_club: string;
   position: string;
   stick_hand: string;
@@ -56,6 +60,7 @@ export default function MyProfilePage() {
     lastName: "",
     birthYear: "2002",
     nationality: "SE",
+    photoUrl: "",
     currentClub: "",
     league: "se_elitserien_herr",
     customLeague: "",
@@ -183,6 +188,7 @@ export default function MyProfilePage() {
             lastName: p.last_name || "",
             birthYear: p.birth_year ? String(p.birth_year) : "2002",
             nationality: (p.nationality || "SE").toUpperCase(),
+            photoUrl: p.photo_url || "",
             currentClub: p.current_club || "",
             league: "se_elitserien_herr",
             customLeague: "",
@@ -277,6 +283,7 @@ export default function MyProfilePage() {
         last_name: formData.lastName.trim(),
         birth_year: parseInt(formData.birthYear, 10) || 2000,
         nationality: formData.nationality.toUpperCase(),
+        photo_url: formData.photoUrl.trim() || null,
         secondary_citizenship: formData.secondaryCitizenships,
         heritage_country: formData.heritageCountry.trim() || null,
         open_for_national_team: Boolean(formData.openForNationalTeam),
@@ -394,15 +401,18 @@ export default function MyProfilePage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {profileId && (
-                <Link
-                  href={`/players/${profileId}`}
-                  target="_blank"
-                  className="px-3.5 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-900 text-xs font-semibold border border-zinc-200 transition-colors"
-                >
-                  👁️ {lang === "sv" ? "Visa offentlig profil" : "View Public Profile"} ↗
-                </Link>
+                <>
+                  <Link
+                    href={`/players/${profileId}`}
+                    target="_blank"
+                    className="px-3.5 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-900 text-xs font-semibold border border-zinc-200 transition-colors"
+                  >
+                    👁️ {lang === "sv" ? "Visa offentlig profil" : "View Public Profile"} ↗
+                  </Link>
+                  <DeleteProfileButton recordId={profileId} table="players" redirectPath="/join" />
+                </>
               )}
               <button
                 onClick={handleSignOut}
@@ -534,18 +544,24 @@ export default function MyProfilePage() {
 
           {/* 2. FULL EDIT FORM */}
           <form onSubmit={handleSaveProfile} className="space-y-8">
-            {/* Athletic & Personal Details */}
-            <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs">
-              <div className="pb-3 border-b border-zinc-100 mb-5">
+            {/* Athletic & Personal Details & Photo */}
+            <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs space-y-5">
+              <div className="pb-3 border-b border-zinc-100">
                 <h2 className="text-base font-bold text-zinc-950">
                   {lang === "sv" ? "Spelarprofil & Klubbdetaljer" : "Player & Club Details"}
                 </h2>
                 <p className="text-xs text-zinc-500">
-                  {lang === "sv" ? "Uppdatera dina grundläggande spelaruppgifter." : "Update your basic athletic information."}
+                  {lang === "sv" ? "Uppdatera dina grundläggande spelaruppgifter och profilbild." : "Update your basic athletic information and headshot."}
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              {/* Avatar Upload Component */}
+              <AvatarUpload
+                currentUrl={formData.photoUrl}
+                onUploadSuccess={(url) => setFormData({ ...formData, photoUrl: url })}
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-2 border-t border-zinc-100">
                 <div>
                   <label className="block font-semibold text-zinc-700 mb-1">Förnamn *</label>
                   <input
@@ -744,13 +760,9 @@ export default function MyProfilePage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   <div>
-                    <label className="block font-semibold text-zinc-700 mb-1">
-                      {lang === "sv" ? "Övriga medborgarskap / Dubbla pass" : "Secondary Citizenships / Passports"}
-                    </label>
-                    <TargetCountriesPicker
-                      selectedCodes={formData.secondaryCitizenships}
+                    <CountryMultiSelect
+                      selectedCountries={formData.secondaryCitizenships}
                       onChange={(codes) => setFormData({ ...formData, secondaryCitizenships: codes })}
-                      label={lang === "sv" ? "Välj länder där du har pass" : "Select countries where you hold a passport"}
                     />
                   </div>
 
@@ -779,20 +791,68 @@ export default function MyProfilePage() {
               </div>
             </div>
 
-            {/* Civil Profile & Setup */}
-            <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs">
-              <div className="pb-3 border-b border-zinc-100 mb-5">
+            {/* Civil Profile & Agreement Level */}
+            <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs space-y-6">
+              <div className="pb-3 border-b border-zinc-100">
                 <h2 className="text-base font-bold text-zinc-950">
                   {lang === "sv" ? "Civil profil & Önskat upplägg" : "Civil Profile & Dual-Career Preferences"}
                 </h2>
                 <p className="text-xs text-zinc-500">
                   {lang === "sv"
-                    ? "Specificera vad du önskar kombinera ditt bandyspelande med."
-                    : "Select what you wish to combine your bandy career with."}
+                    ? "Specificera din önskade kontraktsnivå och civila preferenser."
+                    : "Specify your preferred agreement level and dual-career preferences."}
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              {/* Contract Type / Package Preference */}
+              <div>
+                <label className="block font-bold text-zinc-800 text-xs mb-2">
+                  {lang === "sv" ? "Önskad avtalsnivå / Kontrakttyp:" : "Preferred Agreement Level:"}
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {[
+                    {
+                      id: "semi_pro",
+                      title: lang === "sv" ? "Semiprofessionell" : "Semi-Professional",
+                      desc: lang === "sv" ? "Spelarersättning + jobb/studier" : "Club salary + civil career/studies",
+                    },
+                    {
+                      id: "full_time",
+                      title: lang === "sv" ? "Heltidsproffs" : "Full-Time Pro",
+                      desc: lang === "sv" ? "Heltidsavtal och elitfokus" : "Full-time professional salary",
+                    },
+                    {
+                      id: "amateur",
+                      title: lang === "sv" ? "Amatör / Utveckling" : "Amateur / Development",
+                      desc: lang === "sv" ? "Hjälp med boende & jobbmatchning" : "Placement with housing & job help",
+                    },
+                  ].map((opt) => {
+                    const isSelected = formData.contractType === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, contractType: opt.id })}
+                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                          isSelected
+                            ? "bg-zinc-900 text-white border-zinc-900 shadow-xs font-semibold"
+                            : "bg-zinc-50 hover:bg-zinc-100 text-zinc-800 border-zinc-200"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold text-xs">{opt.title}</span>
+                          {isSelected && <span className="text-xs">✓</span>}
+                        </div>
+                        <p className={`text-[11px] leading-tight ${isSelected ? "text-zinc-300" : "text-zinc-500"}`}>
+                          {opt.desc}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-2 border-t border-zinc-100">
                 <label className="flex items-center gap-2.5 p-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 cursor-pointer transition-colors">
                   <input
                     type="checkbox"
@@ -905,16 +965,21 @@ export default function MyProfilePage() {
             </div>
 
             {/* Submit Action Bar */}
-            <div className="flex items-center justify-between pt-4">
-              {profileId && (
-                <Link
-                  href={`/players/${profileId}`}
-                  target="_blank"
-                  className="text-xs font-semibold text-zinc-600 hover:text-zinc-950 underline cursor-pointer"
-                >
-                  👁️ {lang === "sv" ? "Förhandsgranska profil" : "Preview Profile"}
-                </Link>
-              )}
+            <div className="flex items-center justify-between pt-4 gap-3 flex-wrap">
+              <div className="flex items-center gap-3">
+                {profileId && (
+                  <>
+                    <Link
+                      href={`/players/${profileId}`}
+                      target="_blank"
+                      className="text-xs font-semibold text-zinc-600 hover:text-zinc-950 underline cursor-pointer"
+                    >
+                      👁️ {lang === "sv" ? "Förhandsgranska profil" : "Preview Profile"}
+                    </Link>
+                    <DeleteProfileButton recordId={profileId} table="players" redirectPath="/join" />
+                  </>
+                )}
+              </div>
 
               <button
                 type="submit"

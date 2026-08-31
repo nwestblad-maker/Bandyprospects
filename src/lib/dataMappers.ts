@@ -15,6 +15,7 @@ export interface SupabasePlayerRow {
   stick_hand: string;
   status: string;
   package_preference?: string | null;
+  photo_url?: string | null;
   bio?: string | null;
   video_url?: string | null;
   email: string;
@@ -245,6 +246,98 @@ export function mapStatus(st: string): {
   };
 }
 
+export function mapContractPreference(pref: string | undefined | null): {
+  key: string;
+  labels: Record<Language, string>;
+} {
+  const p = (pref || "").toLowerCase().trim();
+  if (p === "full_time" || p === "fulltime" || p === "pro" || p === "heltid" || p.includes("full_time") || p.includes("fulltime")) {
+    return {
+      key: "full_time",
+      labels: {
+        en: "Full-Time Pro",
+        sv: "Heltidsproffs",
+        fi: "Ammattilainen",
+        no: "Heltidsproff",
+        nl: "Fulltime prof",
+        de: "Vollprofi",
+        fr: "Professionnel à plein temps",
+      },
+    };
+  }
+  if (p === "semi_pro" || p === "semipro" || p.includes("semi") || p.includes("delvis")) {
+    return {
+      key: "semi_pro",
+      labels: {
+        en: "Semi-Professional",
+        sv: "Semiprofessionell",
+        fi: "Puoliammattilainen",
+        no: "Semiprofesjonell",
+        nl: "Semi-professioneel",
+        de: "Halbprofi",
+        fr: "Semi-professionnel",
+      },
+    };
+  }
+  if (p === "amateur" || p === "amator" || p === "utveckling" || p.includes("amateur") || p.includes("amatör")) {
+    return {
+      key: "amateur",
+      labels: {
+        en: "Amateur / Development",
+        sv: "Amatör / Utveckling",
+        fi: "Amatööri / Kehitys",
+        no: "Amatør / Utvikling",
+        nl: "Amateur / Ontwikkeling",
+        de: "Amateur / Entwicklung",
+        fr: "Amateur / Développement",
+      },
+    };
+  }
+  if (p === "sports_only") {
+    return {
+      key: "sports_only",
+      labels: {
+        en: "Athletic Salary Only",
+        sv: "Endast idrott / Spelarersättning",
+        fi: "Vain urheilijapalkkio",
+        no: "Kun idrettslønn",
+        nl: "Alleen sportvergoeding",
+        de: "Nur Sportvergütung",
+        fr: "Indemnité sportive uniquement",
+      },
+    };
+  }
+
+  if (p) {
+    const capitalized = p.charAt(0).toUpperCase() + p.slice(1);
+    return {
+      key: p,
+      labels: {
+        en: capitalized,
+        sv: capitalized,
+        fi: capitalized,
+        no: capitalized,
+        nl: capitalized,
+        de: capitalized,
+        fr: capitalized,
+      },
+    };
+  }
+
+  return {
+    key: "semi_pro",
+    labels: {
+      en: "Semi-Professional",
+      sv: "Semiprofessionell",
+      fi: "Puoliammattilainen",
+      no: "Semiprofesjonell",
+      nl: "Semi-professioneel",
+      de: "Halbprofi",
+      fr: "Semi-professionnel",
+    },
+  };
+}
+
 function parseArrayField(val: unknown): string[] {
   if (!val) return [];
   if (Array.isArray(val)) return val.map((s) => String(s).trim()).filter(Boolean);
@@ -267,6 +360,7 @@ export function transformSupabasePlayer(row: SupabasePlayerRow): PlayerProfile {
   const countryInfo = mapCountryCode(row.nationality);
   const posInfo = mapPositionCategory(row.position);
   const statusInfo = mapStatus(row.status);
+  const contractInfo = mapContractPreference(row.package_preference);
 
   const grip: PlayerGrip = (row.stick_hand || "left").toLowerCase() === "right" ? "right" : "left";
   const gripName: Record<Language, string> = {
@@ -303,6 +397,7 @@ export function transformSupabasePlayer(row: SupabasePlayerRow): PlayerProfile {
     id: row.id,
     name: fullName,
     avatarInitials: initials,
+    photoUrl: row.photo_url || undefined,
     age,
     countryCode: countryInfo.code,
     countryFlag: countryInfo.flag,
@@ -317,6 +412,8 @@ export function transformSupabasePlayer(row: SupabasePlayerRow): PlayerProfile {
     weightKg: 80,
     currentStatus: statusInfo.status,
     statusLabel: statusInfo.labels,
+    packagePreference: contractInfo.key,
+    packagePreferenceLabel: contractInfo.labels,
     highlightStats: {
       en: "Verified Bandyprospects Member",
       sv: "Registrerad Bandyprospects-profil",
@@ -329,14 +426,16 @@ export function transformSupabasePlayer(row: SupabasePlayerRow): PlayerProfile {
     bio,
     skills: localizedAttributes,
     seekingPreferences: {
-      en: row.package_preference ? `Preference: ${row.package_preference}` : "Seeking club for 2026/27 season.",
-      sv: row.package_preference ? `Önskemål: ${row.package_preference}` : "Söker klubb inför säsongen 2026/27.",
-      fi: row.package_preference ? `Toive: ${row.package_preference}` : "Etsii seuraa kaudelle 2026/27.",
-      no: row.package_preference ? `Ønske: ${row.package_preference}` : "Søker klubb for 2026/27-sesongen.",
-      nl: row.package_preference ? `Wens: ${row.package_preference}` : "Zoekt club voor seizoen 2026/27.",
-      de: row.package_preference ? `Wunsch: ${row.package_preference}` : "Sucht Verein für die Saison 2026/27.",
-      fr: row.package_preference ? `Préférence : ${row.package_preference}` : "Recherche un club pour la saison 2026/27.",
+      en: `Preferred Agreement: ${contractInfo.labels.en}`,
+      sv: `Önskad avtalstyp: ${contractInfo.labels.sv}`,
+      fi: `Toivottu sopimustyyppi: ${contractInfo.labels.fi}`,
+      no: `Ønsket avtaletype: ${contractInfo.labels.no}`,
+      nl: `Gewenst contract: ${contractInfo.labels.nl}`,
+      de: `Gewünschter Vertrag: ${contractInfo.labels.de}`,
+      fr: `Type d'accord souhaité : ${contractInfo.labels.fr}`,
     },
+    email: row.email || undefined,
+    phone: row.phone || undefined,
     appearancesCount: 35,
     pointsCount: 18,
     verified: true,

@@ -10,6 +10,7 @@ import { getCountry, getLanguageName } from "@/data/countries";
 import { ClubAd, PlayerProfile, PositionCategory } from "@/types";
 import { supabase } from "@/lib/supabaseClient";
 import { transformSupabasePlayer, transformSupabaseClubAd, SupabasePlayerRow, SupabaseClubAdRow } from "@/lib/dataMappers";
+import { formatWish } from "@/lib/formatters";
 
 export default function HomePage() {
   const { lang, t } = useLanguage();
@@ -23,6 +24,8 @@ export default function HomePage() {
   const [contactModal, setContactModal] = useState<{
     isOpen: boolean;
     targetName: string;
+    targetEmail?: string;
+    targetId?: string;
     type: "club" | "player";
   }>({
     isOpen: false,
@@ -69,10 +72,17 @@ export default function HomePage() {
     loadHomeData();
   }, []);
 
-  const openContact = (targetName: string, type: "club" | "player" = "club") => {
+  const openContact = (
+    targetName: string,
+    type: "club" | "player" = "club",
+    targetEmail?: string,
+    targetId?: string
+  ) => {
     setContactModal({
       isOpen: true,
       targetName,
+      targetEmail,
+      targetId,
       type,
     });
   };
@@ -290,7 +300,7 @@ export default function HomePage() {
                       </div>
 
                       <button
-                        onClick={() => openContact(ad.club, "club")}
+                        onClick={() => openContact(ad.club, "club", ad.contactEmail, ad.id)}
                         className="w-full py-2 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs transition-colors text-center cursor-pointer"
                       >
                         {t.marketPage.applyBtn}
@@ -362,8 +372,13 @@ export default function HomePage() {
                       {/* Header: Initials, Name & Status */}
                       <div className="flex items-start justify-between gap-3 mb-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-zinc-900 text-white font-bold text-sm flex items-center justify-center">
-                            {player.avatarInitials}
+                          <div className="w-10 h-10 rounded-lg bg-zinc-900 text-white font-bold text-sm flex items-center justify-center overflow-hidden shrink-0 border border-zinc-200 relative">
+                            {player.photoUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={player.photoUrl} alt={player.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <span>{player.avatarInitials}</span>
+                            )}
                           </div>
                           <div>
                             <div className="flex items-center gap-1.5">
@@ -394,9 +409,16 @@ export default function HomePage() {
                           </div>
                         </div>
 
-                        <span className="px-2 py-0.5 text-[10px] font-semibold rounded bg-zinc-200 text-zinc-800">
-                          {player.statusLabel[lang]}
-                        </span>
+                        <div className="flex flex-col items-end gap-1">
+                          <span className="px-2 py-0.5 text-[10px] font-semibold rounded bg-zinc-200 text-zinc-800">
+                            {player.statusLabel[lang]}
+                          </span>
+                          {(player.packagePreference || player.packagePreferenceLabel) && (
+                            <span className="px-2 py-0.5 text-[10px] font-semibold rounded bg-sky-50 text-sky-800 border border-sky-200">
+                              {formatWish(player.packagePreference) || player.packagePreferenceLabel?.[lang]}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       {/* Position Strip */}
@@ -432,7 +454,7 @@ export default function HomePage() {
                         {t.playersPage.viewProfileBtn}
                       </Link>
                       <button
-                        onClick={() => openContact(player.name, "player")}
+                        onClick={() => openContact(player.name, "player", player.email, player.id)}
                         className="py-2 px-3 rounded-lg bg-white hover:bg-zinc-100 text-zinc-800 font-semibold text-xs transition-colors text-center border border-zinc-200 cursor-pointer"
                       >
                         {t.playersPage.contactBtn}
@@ -471,6 +493,8 @@ export default function HomePage() {
         isOpen={contactModal.isOpen}
         onClose={() => setContactModal({ ...contactModal, isOpen: false })}
         targetName={contactModal.targetName}
+        targetEmail={contactModal.targetEmail}
+        targetId={contactModal.targetId}
         type={contactModal.type}
       />
     </div>

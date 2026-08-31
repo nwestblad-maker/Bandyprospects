@@ -8,6 +8,7 @@ import { Footer } from "@/components/Footer";
 import { CountrySelect } from "@/components/CountrySelect";
 import { LeagueSelect } from "@/components/LeagueSelect";
 import { SpokenLanguagesPicker } from "@/components/SpokenLanguagesPicker";
+import { GdprConsentCheckbox } from "@/components/GdprConsentCheckbox";
 import { useLanguage } from "@/context/LanguageContext";
 import { supabase } from "@/lib/supabaseClient";
 import { PositionCategory, TeamCategory, OrgType } from "@/types";
@@ -102,13 +103,22 @@ export default function PostAdPage() {
 
       // Build benefits array
       const benefitsArray: string[] = [];
-      if (formData.perkHousing) benefitsArray.push("Housing arranged / Möblerat boende");
-      if (formData.perkJob) benefitsArray.push("Civil job support / Civilt arbete");
-      if (formData.perkStudies) benefitsArray.push("Study support / Studieanpassning");
-      if (formData.perkSalary) benefitsArray.push("Contract salary / Spelarersättning");
-      if (formData.perkTravel) benefitsArray.push("Travel coverage / Reseersättning");
-      if (formData.perkGym) benefitsArray.push("Gym & physio access");
-      if (formData.perkEquipment) benefitsArray.push("Equipment & stick package");
+      if (formData.orgType === "national_team") {
+        if (formData.perkTravel) benefitsArray.push("Travel support & flights / Resestöd & flygbiljetter");
+        if (formData.perkHousing) benefitsArray.push("Training camp accommodation / Boende under samlingar");
+        if (formData.perkSalary) benefitsArray.push("Tournament allowance / Tävlingstraktamente");
+        if (formData.perkJob) benefitsArray.push("Visa & citizenship support / Visum- & medborgarskapsstöd");
+        if (formData.perkEquipment) benefitsArray.push("National team kit & equipment / Match- & träningsställ");
+        if (formData.perkGym) benefitsArray.push("Medical team & physio / Medicinskt team & fysioterapi");
+      } else {
+        if (formData.perkHousing) benefitsArray.push("Housing arranged / Möblerat boende");
+        if (formData.perkJob) benefitsArray.push("Civil job support / Civilt arbete");
+        if (formData.perkStudies) benefitsArray.push("Study support / Studieanpassning");
+        if (formData.perkSalary) benefitsArray.push("Contract salary / Spelarersättning");
+        if (formData.perkTravel) benefitsArray.push("Travel coverage / Reseersättning");
+        if (formData.perkGym) benefitsArray.push("Gym & physio access");
+        if (formData.perkEquipment) benefitsArray.push("Equipment & stick package");
+      }
       if (formData.compensationDetails.trim()) {
         benefitsArray.push(formData.compensationDetails.trim());
       }
@@ -553,75 +563,165 @@ export default function PostAdPage() {
                   </div>
                 </div>
 
-                {/* Section 3: Club Offer & Compensation */}
+                {/* Section 3: Club Offer / Federation Support */}
                 <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs">
                   <div className="pb-3 border-b border-zinc-100 mb-5">
-                    <h2 className="text-base font-bold text-zinc-950">{formT.clubOfferTitle}</h2>
-                    <p className="text-xs text-zinc-500">{formT.clubOfferSubtitle}</p>
+                    <h2 className="text-base font-bold text-zinc-950">
+                      {formData.orgType === "national_team"
+                        ? lang === "sv"
+                          ? "3. Förbundets förutsättningar och stöd"
+                          : "3. Federation Conditions & Support"
+                        : formT.clubOfferTitle}
+                    </h2>
+                    <p className="text-xs text-zinc-500">
+                      {formData.orgType === "national_team"
+                        ? lang === "sv"
+                          ? "Markera vad förbundet tillhandahåller och bistår med inför samlingar och mästerskap."
+                          : "Select what the federation provides for training camps, championships, and travel."
+                        : formT.clubOfferSubtitle}
+                    </p>
                   </div>
 
                   <div className="space-y-4 text-xs">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <label className="flex items-center gap-2.5 p-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.perkHousing}
-                          onChange={(e) => setFormData({ ...formData, perkHousing: e.target.checked })}
-                          className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-0"
-                        />
-                        <span className="font-medium text-zinc-800">{formT.optHousing}</span>
-                      </label>
+                    {formData.orgType === "national_team" ? (
+                      /* Federation Support Checkboxes */
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label className="flex items-center gap-2.5 p-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.perkTravel}
+                            onChange={(e) => setFormData({ ...formData, perkTravel: e.target.checked })}
+                            className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-0"
+                          />
+                          <span className="font-medium text-zinc-800">
+                            ✈️ {lang === "sv" ? "Resestöd / Flygbiljetter (Travel support)" : "Travel Support & Flight Reimbursement"}
+                          </span>
+                        </label>
 
-                      <label className="flex items-center gap-2.5 p-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.perkSalary}
-                          onChange={(e) => setFormData({ ...formData, perkSalary: e.target.checked })}
-                          className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-0"
-                        />
-                        <span className="font-medium text-zinc-800">{formT.optSalary}</span>
-                      </label>
+                        <label className="flex items-center gap-2.5 p-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.perkHousing}
+                            onChange={(e) => setFormData({ ...formData, perkHousing: e.target.checked })}
+                            className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-0"
+                          />
+                          <span className="font-medium text-zinc-800">
+                            🏨 {lang === "sv" ? "Hotell & boende under samlingar (Camp accommodation)" : "Training Camp & Tournament Accommodation"}
+                          </span>
+                        </label>
 
-                      <label className="flex items-center gap-2.5 p-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.perkJob}
-                          onChange={(e) => setFormData({ ...formData, perkJob: e.target.checked })}
-                          className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-0"
-                        />
-                        <span className="font-medium text-zinc-800">{formT.optJob}</span>
-                      </label>
+                        <label className="flex items-center gap-2.5 p-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.perkSalary}
+                            onChange={(e) => setFormData({ ...formData, perkSalary: e.target.checked })}
+                            className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-0"
+                          />
+                          <span className="font-medium text-zinc-800">
+                            💰 {lang === "sv" ? "Tävlingstraktamente / Ersättning (Tournament allowance)" : "Tournament Allowance & Expense Coverage"}
+                          </span>
+                        </label>
 
-                      <label className="flex items-center gap-2.5 p-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.perkStudies}
-                          onChange={(e) => setFormData({ ...formData, perkStudies: e.target.checked })}
-                          className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-0"
-                        />
-                        <span className="font-medium text-zinc-800">{formT.optStudies}</span>
-                      </label>
+                        <label className="flex items-center gap-2.5 p-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.perkJob}
+                            onChange={(e) => setFormData({ ...formData, perkJob: e.target.checked })}
+                            className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-0"
+                          />
+                          <span className="font-medium text-zinc-800">
+                            🛂 {lang === "sv" ? "Stöd med visum, FIB-dispens & medborgarskap (Visa support)" : "Visa, Citizenship & FIB Eligibility Support"}
+                          </span>
+                        </label>
 
-                      <label className="flex items-center gap-2.5 p-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.perkTravel}
-                          onChange={(e) => setFormData({ ...formData, perkTravel: e.target.checked })}
-                          className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-0"
-                        />
-                        <span className="font-medium text-zinc-800">{formT.optTravel}</span>
-                      </label>
+                        <label className="flex items-center gap-2.5 p-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.perkEquipment}
+                            onChange={(e) => setFormData({ ...formData, perkEquipment: e.target.checked })}
+                            className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-0"
+                          />
+                          <span className="font-medium text-zinc-800">
+                            🏒 {lang === "sv" ? "Landslagsdräkt & utrustningspaket (Team gear)" : "Official National Team Kit & Gear Package"}
+                          </span>
+                        </label>
 
-                      <label className="flex items-center gap-2.5 p-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.perkEquipment}
-                          onChange={(e) => setFormData({ ...formData, perkEquipment: e.target.checked })}
-                          className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-0"
-                        />
-                        <span className="font-medium text-zinc-800">{formT.optEquipment}</span>
-                      </label>
-                    </div>
+                        <label className="flex items-center gap-2.5 p-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.perkGym}
+                            onChange={(e) => setFormData({ ...formData, perkGym: e.target.checked })}
+                            className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-0"
+                          />
+                          <span className="font-medium text-zinc-800">
+                            🩺 {lang === "sv" ? "Medicinskt team, fysioterapi & rehab (Medical staff)" : "Medical Team, Physio & Rehab Support"}
+                          </span>
+                        </label>
+                      </div>
+                    ) : (
+                      /* Club Offer Checkboxes */
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label className="flex items-center gap-2.5 p-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.perkHousing}
+                            onChange={(e) => setFormData({ ...formData, perkHousing: e.target.checked })}
+                            className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-0"
+                          />
+                          <span className="font-medium text-zinc-800">{formT.optHousing}</span>
+                        </label>
+
+                        <label className="flex items-center gap-2.5 p-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.perkSalary}
+                            onChange={(e) => setFormData({ ...formData, perkSalary: e.target.checked })}
+                            className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-0"
+                          />
+                          <span className="font-medium text-zinc-800">{formT.optSalary}</span>
+                        </label>
+
+                        <label className="flex items-center gap-2.5 p-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.perkJob}
+                            onChange={(e) => setFormData({ ...formData, perkJob: e.target.checked })}
+                            className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-0"
+                          />
+                          <span className="font-medium text-zinc-800">{formT.optJob}</span>
+                        </label>
+
+                        <label className="flex items-center gap-2.5 p-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.perkStudies}
+                            onChange={(e) => setFormData({ ...formData, perkStudies: e.target.checked })}
+                            className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-0"
+                          />
+                          <span className="font-medium text-zinc-800">{formT.optStudies}</span>
+                        </label>
+
+                        <label className="flex items-center gap-2.5 p-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.perkTravel}
+                            onChange={(e) => setFormData({ ...formData, perkTravel: e.target.checked })}
+                            className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-0"
+                          />
+                          <span className="font-medium text-zinc-800">{formT.optTravel}</span>
+                        </label>
+
+                        <label className="flex items-center gap-2.5 p-3 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.perkEquipment}
+                            onChange={(e) => setFormData({ ...formData, perkEquipment: e.target.checked })}
+                            className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-0"
+                          />
+                          <span className="font-medium text-zinc-800">{formT.optEquipment}</span>
+                        </label>
+                      </div>
+                    )}
 
                     {/* Team Spoken Languages */}
                     <div className="pt-3">
@@ -700,18 +800,10 @@ export default function PostAdPage() {
                   </div>
 
                   <div className="mt-6 pt-5 border-t border-zinc-100">
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        required
-                        checked={formData.consent}
-                        onChange={(e) => setFormData({ ...formData, consent: e.target.checked })}
-                        className="mt-0.5 w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-0"
-                      />
-                      <span className="text-xs text-zinc-600 leading-relaxed">
-                        {formT.consent}
-                      </span>
-                    </label>
+                    <GdprConsentCheckbox
+                      checked={formData.consent}
+                      onChange={(checked) => setFormData({ ...formData, consent: checked })}
+                    />
                   </div>
                 </div>
 
