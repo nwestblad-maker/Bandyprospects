@@ -8,6 +8,7 @@ import { Footer } from "@/components/Footer";
 import { ContactModal } from "@/components/ContactModal";
 import { GatedContactCard } from "@/components/GatedContactCard";
 import { BookmarkButton } from "@/components/BookmarkButton";
+import SocialLinks from "@/components/SocialLinks";
 import { useLanguage } from "@/context/LanguageContext";
 import { PlayerProfile } from "@/types";
 import { supabase } from "@/lib/supabaseClient";
@@ -439,34 +440,11 @@ export default function PlayerDetailPage() {
                 )}
 
                 {/* Social media links if present */}
-                {(player.instagramUrl || player.tiktokUrl) && (
-                  <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-zinc-100">
-                    {player.instagramUrl && (
-                      <a
-                        href={player.instagramUrl.startsWith("http") ? player.instagramUrl : `https://${player.instagramUrl}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pink-50 hover:bg-pink-100 text-pink-900 border border-pink-200 text-xs font-semibold transition-colors"
-                      >
-                        <span>📸</span>
-                        <span>Instagram</span>
-                        <span>↗</span>
-                      </a>
-                    )}
-                    {player.tiktokUrl && (
-                      <a
-                        href={player.tiktokUrl.startsWith("http") ? player.tiktokUrl : `https://${player.tiktokUrl}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border border-zinc-200 text-xs font-semibold transition-colors"
-                      >
-                        <span>🎵</span>
-                        <span>TikTok</span>
-                        <span>↗</span>
-                      </a>
-                    )}
-                  </div>
-                )}
+                <SocialLinks
+                  instagramUrl={player.instagramUrl}
+                  youtubeUrl={player.youtubeUrl}
+                  tiktokUrl={player.tiktokUrl}
+                />
               </div>
             </div>
 
