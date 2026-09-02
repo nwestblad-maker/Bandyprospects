@@ -64,8 +64,8 @@ export function PlayerFilters({
 
   return (
     <div
-      className={`bg-white border border-zinc-200 rounded-xl p-5 shadow-xs ${
-        isMobile ? "shadow-md" : "sticky top-24"
+      className={`bg-white border border-zinc-200 rounded-xl p-5 ${
+        isMobile ? "shadow-md" : "shadow-xs"
       }`}
     >
       {/* Header bar */}

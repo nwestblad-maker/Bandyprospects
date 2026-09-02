@@ -33,7 +33,7 @@ export default function PlayersPage() {
   const [selectedNationalTeamOnly, setSelectedNationalTeamOnly] = useState<boolean>(false);
   const [selectedHeritageCountry, setSelectedHeritageCountry] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   const [contactModal, setContactModal] = useState<{
     isOpen: boolean;
@@ -255,61 +255,48 @@ export default function PlayersPage() {
         {/* Content & Filter Section */}
         <section className="py-6 sm:py-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Mobile Filter Toggle & Sticky Trigger Bar */}
-            <div className="lg:hidden mb-5">
-              <div className="sticky top-16 z-30 py-2 bg-zinc-50/95 backdrop-blur-sm">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setMobileFiltersOpen((prev) => !prev)}
-                    className={`flex-1 flex items-center justify-between px-4 py-3 rounded-xl border text-xs font-bold transition-all shadow-xs cursor-pointer ${
-                      activeFilterCount > 0
-                        ? "bg-zinc-900 text-white border-zinc-900"
-                        : "bg-white text-zinc-900 border-zinc-200 hover:bg-zinc-50"
-                    }`}
-                    aria-expanded={mobileFiltersOpen}
-                    aria-controls="mobile-player-filters"
-                  >
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                      </svg>
-                      <span>{lang === "sv" ? "Filtrera spelare" : "Filter Players"}</span>
-                      {activeFilterCount > 0 && (
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-400 text-zinc-950 text-[11px] font-black">
-                          {activeFilterCount}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <span className={`text-[11px] font-normal ${activeFilterCount > 0 ? "text-zinc-300" : "text-zinc-500"}`}>
-                        {filteredPlayers.length} {lang === "sv" ? "träffar" : "matches"}
+            {/* Mobile Filter Toggle & Compact Button Bar (< lg) */}
+            <div className="lg:hidden mb-4">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowFilters((prev) => !prev)}
+                  className={`flex-1 flex items-center justify-between px-4 py-2.5 rounded-xl border text-xs font-bold transition-all shadow-xs cursor-pointer ${
+                    showFilters || activeFilterCount > 0
+                      ? "bg-zinc-900 text-white border-zinc-900"
+                      : "bg-white text-zinc-900 border-zinc-200 hover:bg-zinc-50"
+                  }`}
+                  aria-expanded={showFilters}
+                  aria-controls="mobile-player-filters"
+                >
+                  <div className="flex items-center gap-2">
+                    <span>{showFilters ? "Dölj filter ✕" : "Filtrera spelare ⚙️"}</span>
+                    {activeFilterCount > 0 && (
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-400 text-zinc-950 text-[11px] font-black">
+                        {activeFilterCount}
                       </span>
-                      <svg
-                        className={`w-4 h-4 transition-transform duration-200 ${mobileFiltersOpen ? "rotate-180" : ""}`}
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
-                  </button>
+                    )}
+                  </div>
 
-                  {activeFilterCount > 0 && (
-                    <button
-                      onClick={handleResetFilters}
-                      className="px-3 py-3 bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-700 hover:text-zinc-950 text-xs font-semibold rounded-xl shadow-xs cursor-pointer transition-colors whitespace-nowrap"
-                      title={t.playersPage.clearFilters}
-                    >
-                      ✕ {lang === "sv" ? "Rensa" : "Reset"}
-                    </button>
-                  )}
-                </div>
+                  <span className={`text-[11px] font-normal ${showFilters || activeFilterCount > 0 ? "text-zinc-300" : "text-zinc-500"}`}>
+                    {filteredPlayers.length} {lang === "sv" ? "träffar" : "matches"}
+                  </span>
+                </button>
+
+                {activeFilterCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className="px-3 py-2.5 bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-700 hover:text-zinc-950 text-xs font-semibold rounded-xl shadow-xs cursor-pointer transition-colors whitespace-nowrap"
+                    title={t.playersPage.clearFilters}
+                  >
+                    {lang === "sv" ? "Rensa ✕" : "Clear ✕"}
+                  </button>
+                )}
               </div>
 
               {/* Collapsible Mobile Filter Drawer / Accordion */}
-              {mobileFiltersOpen && (
+              {showFilters && (
                 <div id="mobile-player-filters" className="mt-3 animate-in fade-in slide-in-from-top-2 duration-200">
                   <PlayerFilters
                     searchQuery={searchQuery}
@@ -336,15 +323,15 @@ export default function PlayersPage() {
                     handleResetFilters={handleResetFilters}
                     totalMatches={filteredPlayers.length}
                     isMobile={true}
-                    onCloseMobile={() => setMobileFiltersOpen(false)}
+                    onCloseMobile={() => setShowFilters(false)}
                   />
                 </div>
               )}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div className="flex flex-col lg:flex-row gap-8 items-start">
               {/* Desktop Left Column: Filter Sidebar Panel (Always open & sticky beside player cards) */}
-              <aside className="hidden lg:block lg:col-span-3">
+              <aside className="hidden lg:block w-80 shrink-0 sticky top-24">
                 <PlayerFilters
                   searchQuery={searchQuery}
                   setSearchQuery={setSearchQuery}
@@ -374,7 +361,7 @@ export default function PlayersPage() {
               </aside>
 
               {/* Right Column: Player Results */}
-              <div className="lg:col-span-9">
+              <div className="flex-1 w-full min-w-0">
                 {/* Result header & View Toggle */}
                 <div className="flex items-center justify-between mb-5 text-xs text-zinc-500">
                   <span className="font-semibold text-zinc-800 flex items-center gap-2">
