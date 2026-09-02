@@ -103,17 +103,13 @@ export function ContactModal({
         </div>
 
         {/* Direct Gated Contact Card */}
-        {targetEmail && (
-          <div className="mb-4">
-            <GatedContactCard
-              contactName={targetName}
-              contactEmail={targetEmail}
-              contactRole={type === "club" ? (lang === "sv" ? "Klubbledare" : "Club Staff") : (lang === "sv" ? "Spelare" : "Player")}
-            />
-          </div>
-        )}
-
-        {successMessage ? (
+        {targetEmail ? (
+          <GatedContactCard
+            contactName={targetName}
+            contactEmail={targetEmail}
+            contactRole={type === "club" ? (lang === "sv" ? "Klubbledare" : "Club Staff") : (lang === "sv" ? "Spelare" : "Player")}
+          />
+        ) : successMessage ? (
           <div className="py-8 text-center space-y-3 animate-in fade-in duration-200">
             <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl font-bold border border-emerald-200">
               ✓

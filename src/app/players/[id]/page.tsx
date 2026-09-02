@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { ContactModal } from "@/components/ContactModal";
 import { GatedContactCard } from "@/components/GatedContactCard";
 import { BookmarkButton } from "@/components/BookmarkButton";
 import SocialLinks from "@/components/SocialLinks";
@@ -23,18 +22,6 @@ export default function PlayerDetailPage() {
   const [player, setPlayer] = useState<PlayerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-
-  const [contactModal, setContactModal] = useState<{
-    isOpen: boolean;
-    targetName: string;
-    targetEmail?: string;
-    targetId?: string;
-    type: "club" | "player";
-  }>({
-    isOpen: false,
-    targetName: "",
-    type: "player",
-  });
 
   useEffect(() => {
     async function fetchPlayer() {
@@ -67,16 +54,6 @@ export default function PlayerDetailPage() {
       fetchPlayer();
     }
   }, [id]);
-
-  const openContact = (targetName: string) => {
-    setContactModal({
-      isOpen: true,
-      targetName,
-      targetEmail: player?.email,
-      targetId: player?.id,
-      type: "player",
-    });
-  };
 
   if (loading) {
     return (
@@ -126,7 +103,7 @@ export default function PlayerDetailPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 flex flex-col font-sans selection:bg-zinc-900 selection:text-zinc-50">
-      <Header onOpenContact={openContact} />
+      <Header />
 
       <main className="flex-1 py-10 sm:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -210,7 +187,10 @@ export default function PlayerDetailPage() {
                   showLabel={true}
                 />
                 <button
-                  onClick={() => openContact(player.name)}
+                  onClick={() => {
+                    const el = document.getElementById("contact-card");
+                    el?.scrollIntoView({ behavior: "smooth" });
+                  }}
                   className="px-6 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs rounded-lg shadow-sm transition-colors text-center cursor-pointer"
                 >
                   {t.playerDetailPage.sendInquiryBtn}
@@ -490,25 +470,13 @@ export default function PlayerDetailPage() {
               </div>
 
               {/* Gated Direct Contact Information Card */}
-              <GatedContactCard
-                contactName={player.name}
-                contactEmail={player.email}
-                contactPhone={player.phone}
-                contactRole={lang === "sv" ? "Spelare" : "Player"}
-              />
-
-              {/* Inquiry CTA Card */}
-              <div className="bg-zinc-900 text-white rounded-xl p-6 shadow-xs">
-                <h3 className="text-sm font-bold mb-1">{t.playerDetailPage.contactScoutTitle}</h3>
-                <p className="text-xs text-zinc-400 mb-5 leading-relaxed">
-                  {t.playerDetailPage.contactScoutSubtitle}
-                </p>
-                <button
-                  onClick={() => openContact(player.name)}
-                  className="w-full py-2.5 px-4 rounded-lg bg-white text-zinc-950 hover:bg-zinc-100 font-bold text-xs transition-colors text-center cursor-pointer"
-                >
-                  {t.playerDetailPage.sendInquiryBtn}
-                </button>
+              <div id="contact-card" className="scroll-mt-24">
+                <GatedContactCard
+                  contactName={player.name}
+                  contactEmail={player.email}
+                  contactPhone={player.phone}
+                  contactRole={lang === "sv" ? "Spelare" : "Player"}
+                />
               </div>
             </div>
           </div>
@@ -516,15 +484,6 @@ export default function PlayerDetailPage() {
       </main>
 
       <Footer />
-
-      <ContactModal
-        isOpen={contactModal.isOpen}
-        onClose={() => setContactModal({ ...contactModal, isOpen: false })}
-        targetName={contactModal.targetName}
-        targetEmail={contactModal.targetEmail}
-        targetId={contactModal.targetId}
-        type={contactModal.type}
-      />
     </div>
   );
 }
