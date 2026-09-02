@@ -8,9 +8,12 @@ interface ContactRequestBody {
   senderEmail: string;
   senderPhone?: string;
   senderRole?: string;
+  senderClub?: string;
   message: string;
-  targetName: string;
+  targetName?: string;
+  recipientName?: string;
   targetEmail?: string;
+  toEmail?: string;
   targetId?: string;
   type?: "player" | "club";
 }
@@ -18,34 +21,33 @@ interface ContactRequestBody {
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as ContactRequestBody;
-    const {
-      senderName,
-      senderEmail,
-      senderPhone,
-      senderRole,
-      message,
-      targetName,
-      targetEmail,
-      targetId,
-      type = "player",
-    } = body;
+    const effectiveSenderName = (body.senderName || "").trim();
+    const effectiveSenderEmail = (body.senderEmail || "").trim();
+    const effectiveSenderPhone = (body.senderPhone || "").trim();
+    const effectiveSenderClub = (body.senderClub || "").trim();
+    const effectiveSenderRole = (body.senderRole || body.senderClub || "").trim();
+    const effectiveMessage = (body.message || "").trim();
+    const effectiveTargetName = (body.targetName || body.recipientName || "Spelare").trim();
+    const effectiveTargetEmail = (body.targetEmail || body.toEmail || "").trim();
+    const targetId = body.targetId;
+    const type = body.type || "player";
 
     // Validate required fields
-    if (!senderName?.trim() || !senderEmail?.trim() || !message?.trim() || !targetName?.trim()) {
+    if (!effectiveSenderName || !effectiveSenderEmail || !effectiveMessage) {
       return NextResponse.json(
-        { error: "Missing required fields (senderName, senderEmail, message, targetName)." },
+        { error: "Missing required fields (senderName, senderEmail, message)." },
         { status: 400 }
       );
     }
 
     // Basic email format check
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(senderEmail.trim())) {
+    if (!emailRegex.test(effectiveSenderEmail)) {
       return NextResponse.json({ error: "Invalid sender email address." }, { status: 400 });
     }
 
     // Resolve recipient email address
-    let recipientEmail = targetEmail?.trim();
+    let recipientEmail = effectiveTargetEmail;
 
     if (!recipientEmail && targetId) {
       try {
@@ -89,9 +91,11 @@ export async function POST(request: Request) {
       agent: "Agent / Förmedlare",
     };
 
-    const roleDisplay = senderRole ? roleLabelMap[senderRole] || senderRole : "Intressent";
+    const roleDisplay = effectiveSenderRole
+      ? (roleLabelMap[effectiveSenderRole] || effectiveSenderRole)
+      : (effectiveSenderClub || "Intressent");
 
-    const emailSubject = `[Bandyprospects] Ny förfrågan gällande ${targetName} från ${senderName}`;
+    const emailSubject = `[Bandyprospects] Ny förfrågan gällande ${effectiveTargetName} från ${effectiveSenderName}${effectiveSenderClub ? ` (${effectiveSenderClub})` : ""}`;
     const emailHtml = `
       <!DOCTYPE html>
       <html>
@@ -117,24 +121,25 @@ export async function POST(request: Request) {
           <div class="card">
             <div class="header">
               <span class="badge">Bandyprospects Kontakt</span>
-              <h1 class="title">Ny direktkontakt gällande ${targetName}</h1>
+              <h1 class="title">Ny direktkontakt gällande ${effectiveTargetName}</h1>
               <p class="subtitle">En intresseanmälan har skickats via kontaktformuläret på Bandyprospects.</p>
             </div>
 
             <div class="details-box">
-              <div class="details-row"><span class="label">Avsändare:</span> ${senderName}</div>
-              <div class="details-row"><span class="label">E-post:</span> <a href="mailto:${senderEmail}">${senderEmail}</a></div>
-              ${senderPhone ? `<div class="details-row"><span class="label">Telefon:</span> <a href="tel:${senderPhone}">${senderPhone}</a></div>` : ""}
+              <div class="details-row"><span class="label">Avsändare:</span> ${effectiveSenderName}</div>
+              <div class="details-row"><span class="label">E-post:</span> <a href="mailto:${effectiveSenderEmail}">${effectiveSenderEmail}</a></div>
+              ${effectiveSenderPhone ? `<div class="details-row"><span class="label">Telefon:</span> <a href="tel:${effectiveSenderPhone}">${effectiveSenderPhone}</a></div>` : ""}
+              ${effectiveSenderClub ? `<div class="details-row"><span class="label">Klubb / Organisation:</span> ${effectiveSenderClub}</div>` : ""}
               <div class="details-row"><span class="label">Roll:</span> ${roleDisplay}</div>
-              <div class="details-row"><span class="label">Gäller ${type === "club" ? "klubbannons" : "spelare"}:</span> ${targetName}</div>
+              <div class="details-row"><span class="label">Gäller ${type === "club" ? "klubbannons" : "spelare"}:</span> ${effectiveTargetName}</div>
             </div>
 
             <p style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #71717a; margin-bottom: 6px;">Meddelande:</p>
-            <div class="message-box">${message}</div>
+            <div class="message-box">${effectiveMessage}</div>
 
             <div style="text-align: center; margin-top: 24px;">
-              <a href="mailto:${senderEmail}?subject=Re: Förfrågan på Bandyprospects (${targetName})" class="cta-btn">
-                Svara direkt till ${senderName}
+              <a href="mailto:${effectiveSenderEmail}?subject=Re: Förfrågan på Bandyprospects (${effectiveTargetName})" class="cta-btn">
+                Svara direkt till ${effectiveSenderName}
               </a>
             </div>
 
@@ -163,7 +168,7 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         from: senderFromEmail,
         to: [finalRecipient],
-        reply_to: senderEmail,
+        reply_to: effectiveSenderEmail,
         subject: emailSubject,
         html: emailHtml,
       }),

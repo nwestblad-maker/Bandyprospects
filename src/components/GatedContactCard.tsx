@@ -21,6 +21,15 @@ export default function GatedContactCard({
   const [sentLink, setSentLink] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  // Direct message form state for logged in users
+  const [showDirectForm, setShowDirectForm] = useState(false);
+  const [directSenderName, setDirectSenderName] = useState('');
+  const [directSenderClub, setDirectSenderClub] = useState('');
+  const [directMessage, setDirectMessage] = useState('');
+  const [sendingDirect, setSendingDirect] = useState(false);
+  const [directSuccess, setDirectSuccess] = useState(false);
+  const [directError, setDirectError] = useState('');
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user || null));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -34,7 +43,10 @@ export default function GatedContactCard({
     if (!authEmail) return;
     setLoading(true);
     setErrorMsg('');
-    const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined;
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+    const redirectUrl = typeof window !== 'undefined'
+      ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(currentPath)}`
+      : undefined;
     const { error } = await supabase.auth.signInWithOtp({
       email: authEmail,
       options: { emailRedirectTo: redirectUrl },
@@ -47,34 +59,185 @@ export default function GatedContactCard({
     }
   };
 
+  const handleSendDirectMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!directSenderName.trim() || !directSenderClub.trim() || !directMessage.trim()) return;
+    setSendingDirect(true);
+    setDirectError('');
+    setDirectSuccess(false);
+
+    try {
+      const payload = {
+        toEmail: contactEmail || undefined,
+        recipientName: contactName || "Spelare",
+        senderEmail: user?.email || "",
+        senderName: directSenderName.trim(),
+        senderClub: directSenderClub.trim(),
+        message: directMessage.trim(),
+      };
+
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error || 'Kunde inte skicka meddelandet.');
+      }
+
+      setDirectSuccess(true);
+      setDirectMessage('');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Ett fel uppstod vid utskicket.';
+      setDirectError(msg);
+    } finally {
+      setSendingDirect(false);
+    }
+  };
+
   if (user) {
     return (
-      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 mt-4 text-left">
-        <span className="text-xs font-semibold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5 mb-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          Verifierad Åtkomst (Inloggad)
-        </span>
-        <div className="space-y-1.5 text-sm text-slate-800">
+      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 mt-4 text-left shadow-2xs">
+        <div className="flex items-center justify-between gap-2 mb-3 pb-2.5 border-b border-emerald-200/80">
+          <span className="text-xs font-bold uppercase tracking-wider text-emerald-900 flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
+            Verifierad Åtkomst (Inloggad)
+          </span>
+          {user.email && (
+            <span className="text-[11px] text-emerald-700 font-medium truncate max-w-[170px]" title={user.email}>
+              {user.email}
+            </span>
+          )}
+        </div>
+
+        <div className="space-y-2 text-sm text-slate-800">
           {contactName && (
-            <p>
-              <strong>Kontaktperson:</strong> {contactName} {contactRole ? `(${contactRole})` : ''}
-            </p>
+            <div>
+              <span className="text-[11px] font-semibold text-emerald-900/80 block uppercase tracking-wider">
+                Kontaktperson
+              </span>
+              <span className="font-semibold text-slate-900">
+                {contactName} {contactRole ? `(${contactRole})` : ''}
+              </span>
+            </div>
           )}
-          {contactEmail && (
-            <p>
-              <strong>E-post:</strong>{' '}
-              <a href={`mailto:${contactEmail}`} className="text-blue-600 font-semibold underline">
-                {contactEmail}
+
+          <div>
+            <span className="text-[11px] font-semibold text-emerald-900/80 block uppercase tracking-wider">
+              E-postadress
+            </span>
+            {contactEmail ? (
+              <a
+                href={`mailto:${contactEmail}`}
+                className="text-blue-600 hover:text-blue-800 font-semibold underline break-all inline-flex items-center gap-1.5"
+              >
+                <span>✉️</span>
+                <span>{contactEmail}</span>
               </a>
-            </p>
-          )}
-          {contactPhone && (
-            <p>
-              <strong>Telefon:</strong>{' '}
-              <a href={`tel:${contactPhone}`} className="text-blue-600 font-semibold underline">
-                {contactPhone}
+            ) : (
+              <span className="text-xs text-slate-500 italic">Ej angiven</span>
+            )}
+          </div>
+
+          <div>
+            <span className="text-[11px] font-semibold text-emerald-900/80 block uppercase tracking-wider">
+              Telefonnummer
+            </span>
+            {contactPhone ? (
+              <a
+                href={`tel:${contactPhone}`}
+                className="text-blue-600 hover:text-blue-800 font-semibold underline inline-flex items-center gap-1.5"
+              >
+                <span>📞</span>
+                <span>{contactPhone}</span>
               </a>
-            </p>
+            ) : (
+              <span className="text-xs text-slate-500 italic">Ej angivet</span>
+            )}
+          </div>
+        </div>
+
+        {/* Clean Direktmeddelande Form */}
+        <div className="mt-4 pt-3.5 border-t border-emerald-200/80">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+              <span>💬</span>
+              <span>Skicka direktmeddelande via sajten</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowDirectForm(!showDirectForm)}
+              className="text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline cursor-pointer"
+            >
+              {showDirectForm ? "Dölj formulär ✕" : "Öppna formulär ▾"}
+            </button>
+          </div>
+
+          {showDirectForm && (
+            <form onSubmit={handleSendDirectMessage} className="mt-3 space-y-2.5">
+              {directSuccess && (
+                <div className="p-2.5 bg-emerald-100 border border-emerald-300 text-emerald-950 rounded-lg text-xs font-medium">
+                  ✓ Ditt meddelande har skickats till {contactName || 'spelaren'}!
+                </div>
+              )}
+              {directError && (
+                <div className="p-2.5 bg-red-100 border border-red-300 text-red-800 rounded-lg text-xs font-medium">
+                  {directError}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Avsändarens namn *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={directSenderName}
+                  onChange={(e) => setDirectSenderName(e.target.value)}
+                  placeholder="Ditt för- och efternamn"
+                  className="w-full px-3 py-1.5 text-xs border border-emerald-300 rounded-lg bg-white focus:outline-none focus:border-emerald-600 text-slate-900"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Klubb / Roll *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={directSenderClub}
+                  onChange={(e) => setDirectSenderClub(e.target.value)}
+                  placeholder="T.ex. Bollnäs GIF / Sportchef"
+                  className="w-full px-3 py-1.5 text-xs border border-emerald-300 rounded-lg bg-white focus:outline-none focus:border-emerald-600 text-slate-900"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Meddelande *
+                </label>
+                <textarea
+                  required
+                  rows={3}
+                  value={directMessage}
+                  onChange={(e) => setDirectMessage(e.target.value)}
+                  placeholder={`Hej ${contactName || 'där'}, vi är intresserade av kontakt angående...`}
+                  className="w-full px-3 py-1.5 text-xs border border-emerald-300 rounded-lg bg-white focus:outline-none focus:border-emerald-600 text-slate-900"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={sendingDirect}
+                className="w-full py-2 px-3 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs rounded-lg shadow-sm transition-colors disabled:opacity-50 cursor-pointer text-center"
+              >
+                {sendingDirect ? "Skickar meddelande..." : "Skicka meddelande"}
+              </button>
+            </form>
           )}
         </div>
       </div>

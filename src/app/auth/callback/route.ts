@@ -11,7 +11,10 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get("code");
   const token_hash = requestUrl.searchParams.get("token_hash");
   const type = requestUrl.searchParams.get("type") as EmailOtpType | null;
-  const next = requestUrl.searchParams.get("next") || "/my-profile";
+  const rawNext = requestUrl.searchParams.get("next");
+  const next = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//")
+    ? rawNext
+    : (rawNext ? `/${rawNext}` : "/my-profile");
 
   // Ta hänsyn till eventuell reverse proxy / load balancer i produktion
   const forwardedHost = request.headers.get("x-forwarded-host");
