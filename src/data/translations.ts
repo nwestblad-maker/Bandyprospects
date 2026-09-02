@@ -331,7 +331,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     },
     signIn: "Sign in",
     postAd: "Post Ad / Join",
-    topBanner: "2026/27 Transfer Window Open • 480+ verified profiles & clubs worldwide",
+    topBanner: "2026/27 Transfer Window Open • International platform for players & clubs",
     search: {
       placeholder: "Search name, club, position, or league...",
       filterBtn: "Filter",
@@ -647,7 +647,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     },
     signIn: "Logga in",
     postAd: "Skapa annons",
-    topBanner: "Övergångsfönstret 2026/27 är öppet • 480+ verifierade profiler och klubbar",
+    topBanner: "Övergångsfönstret 2026/27 är öppet • Internationell plattform för spelare & klubbar",
     search: {
       placeholder: "Sök spelare, klubb, position eller liga...",
       filterBtn: "Filtrera",

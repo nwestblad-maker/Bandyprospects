@@ -12,6 +12,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { transformSupabasePlayer, transformSupabaseClubAd, SupabasePlayerRow, SupabaseClubAdRow } from "@/lib/dataMappers";
 import SocialLinks from "@/components/SocialLinks";
 import { formatWish } from "@/lib/formatters";
+import { LatestTransfersTicker } from "@/components/LatestTransfersTicker";
 
 export default function HomePage() {
   const { lang, t } = useLanguage();
@@ -146,13 +147,13 @@ export default function HomePage() {
               {/* Ingress / Subtitle */}
               <p className="mt-4 text-base sm:text-lg text-zinc-600 leading-relaxed max-w-2xl">
                 {lang === "en" &&
-                  "Connect verified bandy players, coaches, and clubs across Sweden, Finland, Norway, the Netherlands, and the USA. Discover open roster spots, contract offers, and housing/job packages with complete transparency."}
+                  "Connect verified bandy players, coaches, and clubs internationally. Discover open roster spots, contract offers, and dual-career solutions with housing and civil employment."}
                 {lang === "sv" &&
-                  "Koppla ihop verifierade bandyspelare, tränare och föreningar i Sverige, Finland, Norge, Nederländerna och USA. Hitta öppna trupplatser, kontraktsförslag och lösningar med boende och civilt jobb."}
+                  "Koppla ihop verifierade bandyspelare, tränare och klubbar internationellt. Hitta öppna trupplatser, kontraktsförslag och helhetslösningar med boende och civilt jobb."}
                 {lang === "fi" &&
-                  "Yhdistä vahvistetut jääpalloilijat, valmentajat ja seurat Suomessa, Ruotsissa, Norjassa, Alankomaissa ja USA:ssa. Löydä avoimet pelipaikat, sopimustarjoukset sekä asunto- ja työpaketit."}
+                  "Yhdistä vahvistetut jääpalloilijat, valmentajat ja seurat kansainvälisesti. Löydä avoimet pelipaikat, sopimustarjoukset sekä helppokäyttöiset asunto- ja työpaketit."}
                 {lang === "no" &&
-                  "Koble sammen verifiserte bandyspillere, trenere og klubber i Sverige, Finland, Norge, Nederland og USA. Finn åpne plasser, kontraktstilbud og pakker med bosted og sivilt arbeid."}
+                  "Koble sammen verifiserte bandyspillere, trenere og klubber internasjonalt. Finn åpne plasser, kontraktstilbud og helhetsløsninger med bosted og sivilt arbeid."}
               </p>
 
               {/* Action Buttons */}
@@ -195,6 +196,9 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* 1.5. OFFICIAL TRANSFERS LIVE TICKER */}
+        <LatestTransfersTicker />
 
         {/* 2. SECTION 1: LATEST ACTIVE CLUB OPPORTUNITIES */}
         <section id="market" className="py-14 sm:py-20 border-b border-zinc-200 bg-zinc-50">

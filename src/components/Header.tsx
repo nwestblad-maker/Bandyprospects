@@ -110,8 +110,11 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
             <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
             <span className="font-medium text-zinc-200">{t.topBanner}</span>
           </div>
-          <div className="hidden md:flex items-center gap-4 text-zinc-400 text-xs">
-            <span>Sweden • Finland • Norway • Netherlands • USA</span>
+          <div className="hidden md:flex items-center gap-2 text-xs font-medium text-zinc-300">
+            <span className="px-2.5 py-0.5 rounded-full bg-zinc-800 border border-zinc-700/70 text-[11px] text-zinc-300 flex items-center gap-1.5">
+              <span>🌍</span>
+              <span>FIB & Internationell bandy</span>
+            </span>
           </div>
         </div>
       </div>

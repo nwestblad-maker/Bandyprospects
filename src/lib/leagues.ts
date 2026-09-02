@@ -303,38 +303,6 @@ export const LEAGUES: LeagueItem[] = [
   },
 
   // ==========================================
-  // Ryssland (RU)
-  // ==========================================
-  {
-    id: "ru_superliga",
-    countryCode: "RU",
-    genderCategory: "men",
-    name: {
-      en: "Superliga / Суперлига (Russia)",
-      sv: "Superliga (Суперлига)",
-      fi: "Superliga (Venäjä)",
-      no: "Superliga (Суперлига)",
-      nl: "Superliga / Суперлига (Russia)",
-      de: "Superliga / Суперлига (Russia)",
-      fr: "Superliga / Суперлига (Russia)",
-    },
-  },
-  {
-    id: "ru_vysshaya_liga",
-    countryCode: "RU",
-    genderCategory: "men",
-    name: {
-      en: "Vysshaya Liga / Высшая лига (Russia)",
-      sv: "Vysshaya Liga (Высшая лига)",
-      fi: "Vysshaya Liga (Venäjä)",
-      no: "Vysshaya Liga (Высшая лига)",
-      nl: "Vysshaya Liga / Высшая лига (Russia)",
-      de: "Vysshaya Liga / Высшая лига (Russia)",
-      fr: "Vysshaya Liga / Высшая лига (Russia)",
-    },
-  },
-
-  // ==========================================
   // USA (US)
   // ==========================================
   {
