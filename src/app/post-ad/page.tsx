@@ -8,6 +8,7 @@ import { Footer } from "@/components/Footer";
 import { CountrySelect } from "@/components/CountrySelect";
 import { LeagueSelect } from "@/components/LeagueSelect";
 import { SpokenLanguagesPicker } from "@/components/SpokenLanguagesPicker";
+import { ContactPrivacySettings } from "@/components/ContactPrivacySettings";
 import { GdprConsentCheckbox } from "@/components/GdprConsentCheckbox";
 import { useLanguage } from "@/context/LanguageContext";
 import { supabase } from "@/lib/supabaseClient";
@@ -51,6 +52,9 @@ export default function PostAdPage() {
     contactRole: "Sportchef",
     contactEmail: "",
     contactPhone: "",
+    showPhone: true,
+    showEmail: true,
+    contactPreference: "all" as "all" | "form_only",
     deadline: "",
     consent: false,
   });
@@ -172,6 +176,9 @@ export default function PostAdPage() {
         job_study_help: Boolean(formData.perkJob || formData.perkStudies),
         salary_offered: Boolean(formData.perkSalary),
         benefits: benefitsArray,
+        show_phone: formData.showPhone,
+        show_email: formData.showEmail,
+        contact_preference: formData.contactPreference,
       };
 
       const { error } = await supabase
@@ -798,6 +805,17 @@ export default function PostAdPage() {
                       />
                     </div>
                   </div>
+
+                  {/* Integritet & Kontaktinställningar */}
+                  <ContactPrivacySettings
+                    showPhone={formData.showPhone}
+                    setShowPhone={(val) => setFormData((prev) => ({ ...prev, showPhone: val }))}
+                    showEmail={formData.showEmail}
+                    setShowEmail={(val) => setFormData((prev) => ({ ...prev, showEmail: val }))}
+                    contactPreference={formData.contactPreference}
+                    setContactPreference={(val) => setFormData((prev) => ({ ...prev, contactPreference: val }))}
+                    entityType="club"
+                  />
 
                   <div className="mt-6 pt-5 border-t border-zinc-100">
                     <GdprConsentCheckbox

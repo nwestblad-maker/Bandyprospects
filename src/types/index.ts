@@ -89,6 +89,9 @@ export interface PlayerProfile {
   instagramUrl?: string;
   youtubeUrl?: string;
   tiktokUrl?: string;
+  showPhone?: boolean;
+  showEmail?: boolean;
+  contactPreference?: "all" | "form_only";
 }
 
 export type PerkCategory = "housing" | "job" | "studies" | "salary" | "travel" | "equipment" | "gym";
@@ -126,4 +129,7 @@ export interface ClubAd {
   contactRole?: string;
   contactEmail?: string;
   contactPhone?: string;
+  showPhone?: boolean;
+  showEmail?: boolean;
+  contactPreference?: "all" | "form_only";
 }

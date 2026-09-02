@@ -11,6 +11,9 @@ interface ContactModalProps {
   targetEmail?: string;
   targetId?: string;
   type: "club" | "player";
+  showPhone?: boolean;
+  showEmail?: boolean;
+  contactPreference?: "all" | "form_only";
 }
 
 export function ContactModal({
@@ -20,6 +23,9 @@ export function ContactModal({
   targetEmail,
   targetId,
   type,
+  showPhone,
+  showEmail,
+  contactPreference,
 }: ContactModalProps) {
   const { lang, t } = useLanguage();
   const [formData, setFormData] = useState({
@@ -108,6 +114,9 @@ export function ContactModal({
             contactName={targetName}
             contactEmail={targetEmail}
             contactRole={type === "club" ? (lang === "sv" ? "Klubbledare" : "Club Staff") : (lang === "sv" ? "Spelare" : "Player")}
+            showPhone={showPhone}
+            showEmail={showEmail}
+            contactPreference={contactPreference}
           />
         ) : successMessage ? (
           <div className="py-8 text-center space-y-3 animate-in fade-in duration-200">

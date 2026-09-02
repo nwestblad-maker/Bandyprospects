@@ -476,6 +476,9 @@ export default function PlayerDetailPage() {
                   contactEmail={player.email}
                   contactPhone={player.phone}
                   contactRole={lang === "sv" ? "Spelare" : "Player"}
+                  showPhone={player.showPhone}
+                  showEmail={player.showEmail}
+                  contactPreference={player.contactPreference}
                 />
               </div>
             </div>

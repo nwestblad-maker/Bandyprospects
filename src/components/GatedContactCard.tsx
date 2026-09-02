@@ -9,11 +9,17 @@ export default function GatedContactCard({
   contactEmail,
   contactPhone,
   contactRole,
+  showPhone = true,
+  showEmail = true,
+  contactPreference = 'all',
 }: {
   contactName?: string | null;
   contactEmail?: string | null;
   contactPhone?: string | null;
   contactRole?: string | null;
+  showPhone?: boolean | null;
+  showEmail?: boolean | null;
+  contactPreference?: 'all' | 'form_only' | null;
 }) {
   const [user, setUser] = useState<User | null>(null);
   const [authEmail, setAuthEmail] = useState('');
@@ -21,8 +27,13 @@ export default function GatedContactCard({
   const [sentLink, setSentLink] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  // Privacy evaluation
+  const isFormOnly = contactPreference === 'form_only' || (showPhone === false && showEmail === false);
+  const canShowPhone = !isFormOnly && showPhone !== false && Boolean(contactPhone);
+  const canShowEmail = !isFormOnly && showEmail !== false && Boolean(contactEmail);
+
   // Direct message form state for logged in users
-  const [showDirectForm, setShowDirectForm] = useState(false);
+  const [showDirectForm, setShowDirectForm] = useState(isFormOnly);
   const [directSenderName, setDirectSenderName] = useState('');
   const [directSenderClub, setDirectSenderClub] = useState('');
   const [directMessage, setDirectMessage] = useState('');
@@ -37,6 +48,12 @@ export default function GatedContactCard({
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (isFormOnly) {
+      setShowDirectForm(true);
+    }
+  }, [isFormOnly]);
 
   const handleSendMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,6 +129,7 @@ export default function GatedContactCard({
           )}
         </div>
 
+        {/* Contact Info Details */}
         <div className="space-y-2 text-sm text-slate-800">
           {contactName && (
             <div>
@@ -124,58 +142,72 @@ export default function GatedContactCard({
             </div>
           )}
 
-          <div>
-            <span className="text-[11px] font-semibold text-emerald-900/80 block uppercase tracking-wider">
-              E-postadress
-            </span>
-            {contactEmail ? (
-              <a
-                href={`mailto:${contactEmail}`}
-                className="text-blue-600 hover:text-blue-800 font-semibold underline break-all inline-flex items-center gap-1.5"
-              >
-                <span>✉️</span>
-                <span>{contactEmail}</span>
-              </a>
-            ) : (
-              <span className="text-xs text-slate-500 italic">Ej angiven</span>
-            )}
-          </div>
+          {isFormOnly ? (
+            <div className="p-2.5 bg-emerald-100/70 border border-emerald-300/80 text-emerald-950 rounded-lg text-xs font-medium flex items-center gap-1.5">
+              <span>✉️</span>
+              <span>Kontakt sker via formuläret nedan</span>
+            </div>
+          ) : (
+            <>
+              {canShowEmail && (
+                <div>
+                  <span className="text-[11px] font-semibold text-emerald-900/80 block uppercase tracking-wider">
+                    E-postadress
+                  </span>
+                  <a
+                    href={`mailto:${contactEmail}`}
+                    className="text-blue-600 hover:text-blue-800 font-semibold underline break-all inline-flex items-center gap-1.5"
+                  >
+                    <span>✉️</span>
+                    <span>{contactEmail}</span>
+                  </a>
+                </div>
+              )}
 
-          <div>
-            <span className="text-[11px] font-semibold text-emerald-900/80 block uppercase tracking-wider">
-              Telefonnummer
-            </span>
-            {contactPhone ? (
-              <a
-                href={`tel:${contactPhone}`}
-                className="text-blue-600 hover:text-blue-800 font-semibold underline inline-flex items-center gap-1.5"
-              >
-                <span>📞</span>
-                <span>{contactPhone}</span>
-              </a>
-            ) : (
-              <span className="text-xs text-slate-500 italic">Ej angivet</span>
-            )}
-          </div>
+              {canShowPhone && (
+                <div>
+                  <span className="text-[11px] font-semibold text-emerald-900/80 block uppercase tracking-wider">
+                    Telefonnummer
+                  </span>
+                  <a
+                    href={`tel:${contactPhone}`}
+                    className="text-blue-600 hover:text-blue-800 font-semibold underline inline-flex items-center gap-1.5"
+                  >
+                    <span>📞</span>
+                    <span>{contactPhone}</span>
+                  </a>
+                </div>
+              )}
+            </>
+          )}
         </div>
 
-        {/* Clean Direktmeddelande Form */}
+        {/* Direct Message Form Section */}
         <div className="mt-4 pt-3.5 border-t border-emerald-200/80">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
-              <span>💬</span>
-              <span>Skicka direktmeddelande via sajten</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => setShowDirectForm(!showDirectForm)}
-              className="text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline cursor-pointer"
-            >
-              {showDirectForm ? "Dölj formulär ✕" : "Öppna formulär ▾"}
-            </button>
-          </div>
+          {!isFormOnly ? (
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                <span>💬</span>
+                <span>Skicka direktmeddelande via sajten</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowDirectForm(!showDirectForm)}
+                className="text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline cursor-pointer"
+              >
+                {showDirectForm ? "Dölj formulär ✕" : "Öppna formulär ▾"}
+              </button>
+            </div>
+          ) : (
+            <div className="mb-2">
+              <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                <span>💬</span>
+                <span>Skicka meddelande till {contactName || 'mottagaren'}</span>
+              </span>
+            </div>
+          )}
 
-          {showDirectForm && (
+          {(isFormOnly || showDirectForm) && (
             <form onSubmit={handleSendDirectMessage} className="mt-3 space-y-2.5">
               {directSuccess && (
                 <div className="p-2.5 bg-emerald-100 border border-emerald-300 text-emerald-950 rounded-lg text-xs font-medium">

@@ -13,6 +13,7 @@ import { CountryMultiSelect } from "@/components/CountryMultiSelect";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { DeleteProfileButton } from "@/components/DeleteProfileButton";
 import { SpokenLanguagesPicker } from "@/components/SpokenLanguagesPicker";
+import { ContactPrivacySettings } from "@/components/ContactPrivacySettings";
 import { useLanguage } from "@/context/LanguageContext";
 import { supabase } from "@/lib/supabaseClient";
 import { OccupationPreference, PlayerGrip, PlayerStatus, PositionCategory } from "@/types";
@@ -45,6 +46,9 @@ interface DbPlayer {
   tiktok_url?: string;
   email: string;
   phone?: string;
+  show_phone?: boolean | null;
+  show_email?: boolean | null;
+  contact_preference?: string | null;
   created_at?: string;
 }
 
@@ -86,6 +90,9 @@ export default function MyProfilePage() {
     youtube_url: "",
     tiktok_url: "",
     phone: "",
+    showPhone: true,
+    showEmail: true,
+    contactPreference: "all" as "all" | "form_only",
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -217,6 +224,9 @@ export default function MyProfilePage() {
             youtube_url: p.youtube_url || p.video_url || "",
             tiktok_url: p.tiktok_url || "",
             phone: p.phone || "",
+            showPhone: p.show_phone !== false,
+            showEmail: p.show_email !== false,
+            contactPreference: (p.contact_preference as "all" | "form_only") || "all",
           });
         }
       } catch (err) {
@@ -313,6 +323,9 @@ export default function MyProfilePage() {
         youtube_url: resolvedYoutube,
         tiktok_url: formData.tiktok_url.trim() || null,
         phone: formData.phone.trim() || null,
+        show_phone: formData.showPhone,
+        show_email: formData.showEmail,
+        contact_preference: formData.contactPreference,
       };
 
       const { error } = await supabase
@@ -1009,6 +1022,17 @@ export default function MyProfilePage() {
                     className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
                   />
                 </div>
+
+                {/* Integritet & Kontaktinställningar */}
+                <ContactPrivacySettings
+                  showPhone={formData.showPhone}
+                  setShowPhone={(val) => setFormData((prev) => ({ ...prev, showPhone: val }))}
+                  showEmail={formData.showEmail}
+                  setShowEmail={(val) => setFormData((prev) => ({ ...prev, showEmail: val }))}
+                  contactPreference={formData.contactPreference}
+                  setContactPreference={(val) => setFormData((prev) => ({ ...prev, contactPreference: val }))}
+                  entityType="player"
+                />
               </div>
             </div>
 

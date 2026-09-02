@@ -12,6 +12,7 @@ import { CountryMultiSelect } from "@/components/CountryMultiSelect";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { GdprConsentCheckbox } from "@/components/GdprConsentCheckbox";
 import { SpokenLanguagesPicker } from "@/components/SpokenLanguagesPicker";
+import { ContactPrivacySettings } from "@/components/ContactPrivacySettings";
 import { useLanguage } from "@/context/LanguageContext";
 import { supabase } from "@/lib/supabaseClient";
 import { OccupationPreference } from "@/types";
@@ -51,6 +52,9 @@ export default function JoinPage() {
     tiktok_url: "",
     email: "",
     phone: "",
+    showPhone: true,
+    showEmail: true,
+    contactPreference: "all" as "all" | "form_only",
     consent: false,
   });
 
@@ -127,6 +131,9 @@ export default function JoinPage() {
         tiktok_url: formData.tiktok_url.trim() || null,
         email: formData.email.trim(),
         phone: formData.phone.trim() || null,
+        show_phone: formData.showPhone,
+        show_email: formData.showEmail,
+        contact_preference: formData.contactPreference,
       };
 
       const { data, error } = await supabase
@@ -790,7 +797,18 @@ export default function JoinPage() {
                   </div>
                 </div>
 
-                {/* GDPR Consent Checkbox */}
+                  {/* Integritet & Kontaktinställningar */}
+                  <ContactPrivacySettings
+                    showPhone={formData.showPhone}
+                    setShowPhone={(val) => setFormData((prev) => ({ ...prev, showPhone: val }))}
+                    showEmail={formData.showEmail}
+                    setShowEmail={(val) => setFormData((prev) => ({ ...prev, showEmail: val }))}
+                    contactPreference={formData.contactPreference}
+                    setContactPreference={(val) => setFormData((prev) => ({ ...prev, contactPreference: val }))}
+                    entityType="player"
+                  />
+
+                  {/* GDPR Consent Checkbox */}
                 <GdprConsentCheckbox
                   checked={formData.consent}
                   onChange={(checked) => setFormData({ ...formData, consent: checked })}

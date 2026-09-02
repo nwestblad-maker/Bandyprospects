@@ -104,18 +104,10 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
   return (
     <>
       {/* Top Banner */}
-      <div className="bg-zinc-900 text-zinc-300 text-xs px-4 py-2 border-b border-zinc-800">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
-            <span className="font-medium text-zinc-200">{t.topBanner}</span>
-          </div>
-          <div className="hidden md:flex items-center gap-2 text-xs font-medium text-zinc-300">
-            <span className="px-2.5 py-0.5 rounded-full bg-zinc-800 border border-zinc-700/70 text-[11px] text-zinc-300 flex items-center gap-1.5">
-              <span>🌍</span>
-              <span>FIB & Internationell bandy</span>
-            </span>
-          </div>
+      <div className="bg-zinc-900 text-zinc-300 text-xs px-4 py-2 border-b border-zinc-800 text-center">
+        <div className="max-w-7xl mx-auto flex items-center justify-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
+          <span className="font-medium text-zinc-200">{t.topBanner}</span>
         </div>
       </div>
 

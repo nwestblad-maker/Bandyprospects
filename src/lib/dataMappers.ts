@@ -31,6 +31,9 @@ export interface SupabasePlayerRow {
   instagram_url?: string | null;
   youtube_url?: string | null;
   tiktok_url?: string | null;
+  show_phone?: boolean | null;
+  show_email?: boolean | null;
+  contact_preference?: string | null;
 }
 
 export interface SupabaseClubAdRow {
@@ -60,6 +63,9 @@ export interface SupabaseClubAdRow {
   contact_role?: string | null;
   contact_email?: string | null;
   contact_phone?: string | null;
+  show_phone?: boolean | null;
+  show_email?: boolean | null;
+  contact_preference?: string | null;
 }
 
 export function mapCountryCode(nat: string): { code: string; flag: string; names: Record<Language, string> } {
@@ -451,6 +457,9 @@ export function transformSupabasePlayer(row: SupabasePlayerRow): PlayerProfile {
     instagramUrl: row.instagram_url || undefined,
     youtubeUrl: row.youtube_url || row.video_url || undefined,
     tiktokUrl: row.tiktok_url || undefined,
+    showPhone: row.show_phone !== false,
+    showEmail: row.show_email !== false,
+    contactPreference: (row.contact_preference as "all" | "form_only") || "all",
   };
 }
 
@@ -656,5 +665,8 @@ export function transformSupabaseClubAd(row: SupabaseClubAdRow): ClubAd {
       fr: desc,
     },
     urgent: false,
+    showPhone: row.show_phone !== false,
+    showEmail: row.show_email !== false,
+    contactPreference: (row.contact_preference as "all" | "form_only") || "all",
   };
 }
