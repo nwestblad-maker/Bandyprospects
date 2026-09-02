@@ -24,6 +24,14 @@ export default function LoginPage() {
         router.push("/my-profile");
       }
     });
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const urlError = params.get("error") || params.get("auth_error") || params.get("error_description");
+      if (urlError) {
+        setErrorMessage(decodeURIComponent(urlError));
+      }
+    }
   }, [router]);
 
   const handleSendMagicLink = async (e: React.FormEvent) => {
@@ -45,8 +53,8 @@ export default function LoginPage() {
 
       const redirectUrl =
         typeof window !== "undefined"
-          ? `${window.location.origin}/auth/callback`
-          : "http://localhost:3000/auth/callback";
+          ? `${window.location.origin}/auth/callback?next=/my-profile`
+          : "http://localhost:3000/auth/callback?next=/my-profile";
 
       const { error } = await supabase.auth.signInWithOtp({
         email: cleanEmail,

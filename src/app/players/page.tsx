@@ -4,8 +4,6 @@ import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { CountrySelect } from "@/components/CountrySelect";
-import { LeagueSelect } from "@/components/LeagueSelect";
 import { ContactModal } from "@/components/ContactModal";
 import { BookmarkButton } from "@/components/BookmarkButton";
 import SocialLinks from "@/components/SocialLinks";
@@ -16,6 +14,7 @@ import { SupabasePlayerRow, transformSupabasePlayer } from "@/lib/dataMappers";
 import { getCountry, getLanguageName } from "@/data/countries";
 import { getLeagueDisplayName } from "@/lib/leagues";
 import { formatWish } from "@/lib/formatters";
+import { PlayerFilters } from "@/components/PlayerFilters";
 
 export default function PlayersPage() {
   const { lang, t } = useLanguage();
@@ -34,6 +33,7 @@ export default function PlayersPage() {
   const [selectedNationalTeamOnly, setSelectedNationalTeamOnly] = useState<boolean>(false);
   const [selectedHeritageCountry, setSelectedHeritageCountry] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const [contactModal, setContactModal] = useState<{
     isOpen: boolean;
@@ -181,6 +181,32 @@ export default function PlayersPage() {
     lang,
   ]);
 
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (searchQuery.trim() !== "") count++;
+    if (selectedPosition !== "all") count++;
+    if (selectedNationality !== "all") count++;
+    if (selectedLeague !== "all") count++;
+    if (selectedTargetCountry !== "all") count++;
+    if (selectedCivilSetup !== "all") count++;
+    if (selectedGrip !== "all") count++;
+    if (selectedStatus !== "all") count++;
+    if (selectedNationalTeamOnly) count++;
+    if (selectedHeritageCountry !== "all") count++;
+    return count;
+  }, [
+    searchQuery,
+    selectedPosition,
+    selectedNationality,
+    selectedLeague,
+    selectedTargetCountry,
+    selectedCivilSetup,
+    selectedGrip,
+    selectedStatus,
+    selectedNationalTeamOnly,
+    selectedHeritageCountry,
+  ]);
+
   const handleResetFilters = () => {
     setSearchQuery("");
     setSelectedPosition("all");
@@ -227,204 +253,124 @@ export default function PlayersPage() {
         </section>
 
         {/* Content & Filter Section */}
-        <section className="py-8 sm:py-12">
+        <section className="py-6 sm:py-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Left Column: Filter Sidebar Panel */}
-              <aside className="lg:col-span-3 bg-white border border-zinc-200 rounded-xl p-5 shadow-xs sticky top-24">
-                <div className="flex items-center justify-between pb-3 border-b border-zinc-100 mb-4">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
-                    {t.playersPage.filtersTitle}
-                  </h2>
-                  {(searchQuery ||
-                    selectedPosition !== "all" ||
-                    selectedNationality !== "all" ||
-                    selectedLeague !== "all" ||
-                    selectedTargetCountry !== "all" ||
-                    selectedCivilSetup !== "all" ||
-                    selectedGrip !== "all" ||
-                    selectedStatus !== "all" ||
-                    selectedNationalTeamOnly ||
-                    selectedHeritageCountry !== "all") && (
+            {/* Mobile Filter Toggle & Sticky Trigger Bar */}
+            <div className="lg:hidden mb-5">
+              <div className="sticky top-16 z-30 py-2 bg-zinc-50/95 backdrop-blur-sm">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setMobileFiltersOpen((prev) => !prev)}
+                    className={`flex-1 flex items-center justify-between px-4 py-3 rounded-xl border text-xs font-bold transition-all shadow-xs cursor-pointer ${
+                      activeFilterCount > 0
+                        ? "bg-zinc-900 text-white border-zinc-900"
+                        : "bg-white text-zinc-900 border-zinc-200 hover:bg-zinc-50"
+                    }`}
+                    aria-expanded={mobileFiltersOpen}
+                    aria-controls="mobile-player-filters"
+                  >
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                      </svg>
+                      <span>{lang === "sv" ? "Filtrera spelare" : "Filter Players"}</span>
+                      {activeFilterCount > 0 && (
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-400 text-zinc-950 text-[11px] font-black">
+                          {activeFilterCount}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[11px] font-normal ${activeFilterCount > 0 ? "text-zinc-300" : "text-zinc-500"}`}>
+                        {filteredPlayers.length} {lang === "sv" ? "träffar" : "matches"}
+                      </span>
+                      <svg
+                        className={`w-4 h-4 transition-transform duration-200 ${mobileFiltersOpen ? "rotate-180" : ""}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </button>
+
+                  {activeFilterCount > 0 && (
                     <button
                       onClick={handleResetFilters}
-                      className="text-[11px] font-semibold text-zinc-500 hover:text-zinc-950 underline cursor-pointer"
+                      className="px-3 py-3 bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-700 hover:text-zinc-950 text-xs font-semibold rounded-xl shadow-xs cursor-pointer transition-colors whitespace-nowrap"
+                      title={t.playersPage.clearFilters}
                     >
-                      {t.playersPage.clearFilters}
+                      ✕ {lang === "sv" ? "Rensa" : "Reset"}
                     </button>
                   )}
                 </div>
+              </div>
 
-                <div className="space-y-4 text-xs">
-                  {/* Search Query */}
-                  <div>
-                    <label className="block font-semibold text-zinc-700 mb-1.5">Search</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-zinc-400">
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                      </div>
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder={t.playersPage.searchPlaceholder}
-                        className="w-full pl-8 pr-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900"
-                      />
-                    </div>
-                  </div>
-
-                  {/* National Team & FIB Scouting Section (Dedicated Highlight) */}
-                  <div className="p-3 rounded-lg bg-zinc-50 border border-zinc-200 space-y-2.5">
-                    <div className="flex items-center gap-1.5 text-zinc-900 font-bold text-[11px] uppercase tracking-wider">
-                      <span>🌍</span>
-                      <span>{lang === "sv" ? "Landslag & FIB Scouting" : "National Team Hub"}</span>
-                    </div>
-
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={selectedNationalTeamOnly}
-                        onChange={(e) => setSelectedNationalTeamOnly(e.target.checked)}
-                        className="w-3.5 h-3.5 text-zinc-900 rounded border-zinc-300 focus:ring-0"
-                      />
-                      <span className="font-semibold text-zinc-800 text-xs">
-                        {lang === "sv" ? "Öppen för landslagsspel" : "Open for National Team"}
-                      </span>
-                    </label>
-
-                    <div>
-                      <CountrySelect
-                        label={lang === "sv" ? "Pass / Anknytning (Heritage)" : "Passport / Heritage Country"}
-                        value={selectedHeritageCountry === "all" ? "" : selectedHeritageCountry}
-                        onChange={(code) => setSelectedHeritageCountry(code || "all")}
-                        includeAllOption={true}
-                        allOptionLabel={lang === "sv" ? "Alla pass & rötter" : "All Passports & Heritage"}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Position Filter */}
-                  <div>
-                    <label className="block font-semibold text-zinc-700 mb-1.5">
-                      {t.playersPage.positionFilter}
-                    </label>
-                    <select
-                      value={selectedPosition}
-                      onChange={(e) => setSelectedPosition(e.target.value)}
-                      className="w-full px-2.5 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-800 focus:outline-none focus:border-zinc-900 cursor-pointer"
-                    >
-                      <option value="all">{t.positions.all}</option>
-                      <option value="goalkeeper">{t.positions.goalkeeper}</option>
-                      <option value="defender">{t.positions.defender}</option>
-                      <option value="halv">{t.positions.halv}</option>
-                      <option value="midfielder">{t.positions.midfielder}</option>
-                      <option value="forward">{t.positions.forward}</option>
-                    </select>
-                  </div>
-
-                  {/* Primary Nationality Filter */}
-                  <div>
-                    <CountrySelect
-                      label={t.playersPage.nationalityFilter}
-                      value={selectedNationality === "all" ? "" : selectedNationality}
-                      onChange={(code) => {
-                        setSelectedNationality(code || "all");
-                        setSelectedLeague("all");
-                      }}
-                      includeAllOption={true}
-                      allOptionLabel={lang === "sv" ? "Alla nationaliteter" : "All Nationalities"}
-                    />
-                  </div>
-
-                  {/* League / Division Filter */}
-                  <div>
-                    <LeagueSelect
-                      countryCode={selectedNationality === "all" ? "SE" : selectedNationality}
-                      value={selectedLeague === "all" ? "" : selectedLeague}
-                      onChange={(leagueId) => setSelectedLeague(leagueId || "all")}
-                      label={lang === "sv" ? "Nuvarande liga / serie" : "Current League"}
-                      includeAllOption={true}
-                      allOptionLabel={lang === "sv" ? "Alla ligor & serier" : "All Leagues & Series"}
-                    />
-                  </div>
-
-                  {/* Target Destination Country Filter */}
-                  <div>
-                    <CountrySelect
-                      label={t.playersPage.targetCountryFilter}
-                      value={selectedTargetCountry === "all" ? "" : selectedTargetCountry}
-                      onChange={(code) => setSelectedTargetCountry(code || "all")}
-                      includeAllOption={true}
-                      allOptionLabel={lang === "sv" ? "Alla önskade länder" : "All Target Countries"}
-                    />
-                  </div>
-
-                  {/* Civil Profile / Dual-Career Setup Filter */}
-                  <div>
-                    <label className="block font-semibold text-zinc-700 mb-1.5">
-                      {t.playersPage.civilProfileFilter}
-                    </label>
-                    <select
-                      value={selectedCivilSetup}
-                      onChange={(e) => setSelectedCivilSetup(e.target.value)}
-                      className="w-full px-2.5 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-800 focus:outline-none focus:border-zinc-900 cursor-pointer"
-                    >
-                      <option value="all">{t.occupationPreferences.all}</option>
-                      <option value="studies">{t.occupationPreferences.studies}</option>
-                      <option value="fulltime_job">{t.occupationPreferences.fulltime_job}</option>
-                      <option value="parttime_job">{t.occupationPreferences.parttime_job}</option>
-                      <option value="housing">{t.occupationPreferences.housing}</option>
-                      <option value="sports_only">{t.occupationPreferences.sports_only}</option>
-                    </select>
-                  </div>
-
-                  {/* Grip Filter */}
-                  <div>
-                    <label className="block font-semibold text-zinc-700 mb-1.5">
-                      {t.playersPage.gripFilter}
-                    </label>
-                    <select
-                      value={selectedGrip}
-                      onChange={(e) => setSelectedGrip(e.target.value)}
-                      className="w-full px-2.5 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-800 focus:outline-none focus:border-zinc-900 cursor-pointer"
-                    >
-                      <option value="all">{t.grips.all}</option>
-                      <option value="left">{t.grips.left}</option>
-                      <option value="right">{t.grips.right}</option>
-                    </select>
-                  </div>
-
-                  {/* Status Filter */}
-                  <div>
-                    <label className="block font-semibold text-zinc-700 mb-1.5">
-                      {t.playersPage.statusFilter}
-                    </label>
-                    <select
-                      value={selectedStatus}
-                      onChange={(e) => setSelectedStatus(e.target.value)}
-                      className="w-full px-2.5 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-800 focus:outline-none focus:border-zinc-900 cursor-pointer"
-                    >
-                      <option value="all">{t.statuses.all}</option>
-                      <option value="available_free_agent">{t.statuses.available_free_agent}</option>
-                      <option value="open_for_trials">{t.statuses.open_for_trials}</option>
-                      <option value="seeking_26_27">{t.statuses.seeking_26_27}</option>
-                      <option value="open_abroad">{t.statuses.open_abroad}</option>
-                      <option value="contracted_transferable">{t.statuses.contracted_transferable}</option>
-                    </select>
-                  </div>
-
-                  {/* Reset Filters CTA */}
-                  <div className="pt-2">
-                    <button
-                      onClick={handleResetFilters}
-                      className="w-full py-2 px-3 text-center text-xs font-semibold text-zinc-700 bg-zinc-100 hover:bg-zinc-200/80 rounded-lg border border-zinc-200 transition-colors cursor-pointer"
-                    >
-                      {t.search.resetBtn}
-                    </button>
-                  </div>
+              {/* Collapsible Mobile Filter Drawer / Accordion */}
+              {mobileFiltersOpen && (
+                <div id="mobile-player-filters" className="mt-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <PlayerFilters
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    selectedPosition={selectedPosition}
+                    setSelectedPosition={setSelectedPosition}
+                    selectedNationality={selectedNationality}
+                    setSelectedNationality={setSelectedNationality}
+                    selectedLeague={selectedLeague}
+                    setSelectedLeague={setSelectedLeague}
+                    selectedTargetCountry={selectedTargetCountry}
+                    setSelectedTargetCountry={setSelectedTargetCountry}
+                    selectedCivilSetup={selectedCivilSetup}
+                    setSelectedCivilSetup={setSelectedCivilSetup}
+                    selectedGrip={selectedGrip}
+                    setSelectedGrip={setSelectedGrip}
+                    selectedStatus={selectedStatus}
+                    setSelectedStatus={setSelectedStatus}
+                    selectedNationalTeamOnly={selectedNationalTeamOnly}
+                    setSelectedNationalTeamOnly={setSelectedNationalTeamOnly}
+                    selectedHeritageCountry={selectedHeritageCountry}
+                    setSelectedHeritageCountry={setSelectedHeritageCountry}
+                    activeFilterCount={activeFilterCount}
+                    handleResetFilters={handleResetFilters}
+                    totalMatches={filteredPlayers.length}
+                    isMobile={true}
+                    onCloseMobile={() => setMobileFiltersOpen(false)}
+                  />
                 </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Desktop Left Column: Filter Sidebar Panel (Always open & sticky beside player cards) */}
+              <aside className="hidden lg:block lg:col-span-3">
+                <PlayerFilters
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                  selectedPosition={selectedPosition}
+                  setSelectedPosition={setSelectedPosition}
+                  selectedNationality={selectedNationality}
+                  setSelectedNationality={setSelectedNationality}
+                  selectedLeague={selectedLeague}
+                  setSelectedLeague={setSelectedLeague}
+                  selectedTargetCountry={selectedTargetCountry}
+                  setSelectedTargetCountry={setSelectedTargetCountry}
+                  selectedCivilSetup={selectedCivilSetup}
+                  setSelectedCivilSetup={setSelectedCivilSetup}
+                  selectedGrip={selectedGrip}
+                  setSelectedGrip={setSelectedGrip}
+                  selectedStatus={selectedStatus}
+                  setSelectedStatus={setSelectedStatus}
+                  selectedNationalTeamOnly={selectedNationalTeamOnly}
+                  setSelectedNationalTeamOnly={setSelectedNationalTeamOnly}
+                  selectedHeritageCountry={selectedHeritageCountry}
+                  setSelectedHeritageCountry={setSelectedHeritageCountry}
+                  activeFilterCount={activeFilterCount}
+                  handleResetFilters={handleResetFilters}
+                  totalMatches={filteredPlayers.length}
+                  isMobile={false}
+                />
               </aside>
 
               {/* Right Column: Player Results */}

@@ -15,6 +15,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<{ email?: string; id?: string } | null>(null);
+  const [hasProfile, setHasProfile] = useState<boolean | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -29,9 +30,63 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function checkUserProfile(currentUser: { email?: string; id?: string } | null) {
+      if (!currentUser?.email && !currentUser?.id) {
+        if (!isCancelled) setHasProfile(null);
+        return;
+      }
+
+      const email = currentUser.email?.toLowerCase().trim();
+
+      try {
+        // 1. Check players table
+        let playerQuery = supabase.from("players").select("id").limit(1);
+        if (email) {
+          playerQuery = playerQuery.ilike("email", email);
+        }
+        const { data: playerData } = await playerQuery.maybeSingle();
+
+        if (playerData) {
+          if (!isCancelled) setHasProfile(true);
+          return;
+        }
+
+        // 2. Check club_ads table (by contact_email)
+        if (email) {
+          const { data: clubData } = await supabase
+            .from("club_ads")
+            .select("id")
+            .ilike("contact_email", email)
+            .limit(1)
+            .maybeSingle();
+
+          if (clubData) {
+            if (!isCancelled) setHasProfile(true);
+            return;
+          }
+        }
+
+        if (!isCancelled) setHasProfile(false);
+      } catch (err) {
+        console.error("Error checking user profile in Header:", err);
+        if (!isCancelled) setHasProfile(false);
+      }
+    }
+
+    checkUserProfile(user);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [user]);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    setHasProfile(null);
     router.push("/");
     router.refresh();
   };
@@ -173,17 +228,37 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                     )}
                   </Link>
 
-                  <Link
-                    href="/my-profile"
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border transition-colors ${
-                      pathname === "/my-profile"
-                        ? "bg-zinc-900 text-white border-zinc-900"
-                        : "bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border-zinc-200"
-                    }`}
-                  >
-                    <span>👤</span>
-                    <span>{lang === "sv" ? "Min profil" : "My Profile"}</span>
-                  </Link>
+                  {hasProfile === true && (
+                    <Link
+                      href="/my-profile"
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border transition-colors ${
+                        pathname === "/my-profile"
+                          ? "bg-zinc-900 text-white border-zinc-900"
+                          : "bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border-zinc-200"
+                      }`}
+                    >
+                      <span>👤</span>
+                      <span>{lang === "sv" ? "Min profil" : "My Profile"}</span>
+                    </Link>
+                  )}
+
+                  {hasProfile === false && (
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-zinc-600 bg-zinc-100 rounded-md border border-zinc-200 max-w-[150px]"
+                        title={user.email}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                        <span className="truncate font-medium">{user.email}</span>
+                      </div>
+                      <Link
+                        href="/join"
+                        className="inline-flex items-center justify-center px-2.5 py-1.5 text-xs font-semibold text-zinc-900 bg-emerald-50 hover:bg-emerald-100 rounded-md border border-emerald-300 transition-colors"
+                      >
+                        + {lang === "sv" ? "Skapa profil" : "Create Profile"}
+                      </Link>
+                    </div>
+                  )}
 
                   <button
                     onClick={handleSignOut}
@@ -209,12 +284,14 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                 </Link>
               )}
 
-              <Link
-                href="/join"
-                className="hidden md:inline-flex items-center justify-center px-3 py-1.5 text-xs font-semibold text-zinc-800 bg-zinc-100 hover:bg-zinc-200 rounded-md border border-zinc-200 transition-colors"
-              >
-                {lang === "sv" ? "Skapa profil" : lang === "fi" ? "Luo profiili" : lang === "no" ? "Opprett profil" : "Join as Player"}
-              </Link>
+              {!user && (
+                <Link
+                  href="/join"
+                  className="hidden md:inline-flex items-center justify-center px-3 py-1.5 text-xs font-semibold text-zinc-800 bg-zinc-100 hover:bg-zinc-200 rounded-md border border-zinc-200 transition-colors"
+                >
+                  {lang === "sv" ? "Skapa profil" : lang === "fi" ? "Luo profiili" : lang === "no" ? "Opprett profil" : "Join as Player"}
+                </Link>
+              )}
 
               <Link
                 href="/post-ad"
@@ -288,13 +365,29 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                       </span>
                     )}
                   </Link>
-                  <Link
-                    href="/my-profile"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block px-3 py-2 text-sm font-bold text-zinc-900 bg-zinc-100 rounded-md"
-                  >
-                    👤 {lang === "sv" ? "Min profil" : "My Profile"}
-                  </Link>
+                  {hasProfile === true ? (
+                    <Link
+                      href="/my-profile"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block px-3 py-2 text-sm font-bold text-zinc-900 bg-zinc-100 rounded-md"
+                    >
+                      👤 {lang === "sv" ? "Min profil" : "My Profile"}
+                    </Link>
+                  ) : (
+                    <div className="space-y-1.5 py-1">
+                      <div className="px-3 py-2 text-xs text-zinc-600 bg-zinc-50 rounded-md border border-zinc-200 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                        <span className="truncate font-medium">{user.email}</span>
+                      </div>
+                      <Link
+                        href="/join"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block px-3 py-2 text-sm font-semibold text-emerald-950 bg-emerald-50 hover:bg-emerald-100 rounded-md border border-emerald-200"
+                      >
+                        + {lang === "sv" ? "Skapa profil" : "Create Profile"}
+                      </Link>
+                    </div>
+                  )}
                   <button
                     onClick={() => {
                       setMobileMenuOpen(false);

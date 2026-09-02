@@ -80,7 +80,7 @@ export async function POST(request: Request) {
 
     // Resend Email Integration
     const resendApiKey = process.env.RESEND_API_KEY;
-    const senderFromEmail = process.env.RESEND_FROM_EMAIL || "Bandyprospects <onboarding@resend.dev>";
+    const senderFromEmail = process.env.RESEND_FROM_EMAIL || "Bandyprospects <kontakt@bandyprospects.com>";
 
     const roleLabelMap: Record<string, string> = {
       player: "Spelare / Prospect",
@@ -146,37 +146,38 @@ export async function POST(request: Request) {
       </html>
     `;
 
-    if (resendApiKey) {
-      const resendRes = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${resendApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: senderFromEmail,
-          to: [finalRecipient],
-          reply_to: senderEmail,
-          subject: emailSubject,
-          html: emailHtml,
-        }),
-      });
+    if (!resendApiKey) {
+      console.error("RESEND_API_KEY is not configured.");
+      return NextResponse.json(
+        { error: "E-posttjänsten är för närvarande inte konfigurerad." },
+        { status: 500 }
+      );
+    }
 
-      if (!resendRes.ok) {
-        const resendError = await resendRes.text();
-        console.error("Resend API Error:", resendError);
-        // Fallback: still log and return success or handled status
-      }
-    } else {
-      // In dev or without API key, log the message payload cleanly
-      console.log("--------------------------------------------------");
-      console.log(`[Bandyprospects Contact Notification]`);
-      console.log(`To: ${finalRecipient} (Reply-To: ${senderEmail})`);
-      console.log(`Subject: ${emailSubject}`);
-      console.log(`Sender: ${senderName} (${roleDisplay})`);
-      console.log(`Target: ${targetName} (${type})`);
-      console.log(`Message: ${message}`);
-      console.log("--------------------------------------------------");
+    const resendRes = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: senderFromEmail,
+        to: [finalRecipient],
+        reply_to: senderEmail,
+        subject: emailSubject,
+        html: emailHtml,
+      }),
+    });
+
+    if (!resendRes.ok) {
+      const resendError = await resendRes.text();
+      console.error("Resend API Error:", resendError);
+      let errorMsg = "Misslyckades med att skicka e-postmeddelandet.";
+      try {
+        const parsed = JSON.parse(resendError);
+        if (parsed?.message) errorMsg = parsed.message;
+      } catch {}
+      return NextResponse.json({ error: errorMsg }, { status: 502 });
     }
 
     return NextResponse.json({
