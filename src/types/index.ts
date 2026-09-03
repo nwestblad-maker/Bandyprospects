@@ -70,8 +70,8 @@ export interface PlayerProfile {
   grip: PlayerGrip;
   gripName: LocalizedString;
   heightWeight: string;
-  heightCm: number;
-  weightKg: number;
+  heightCm?: number;
+  weightKg?: number;
   previousClub: string;
   currentStatus: PlayerStatus;
   statusLabel: LocalizedString;

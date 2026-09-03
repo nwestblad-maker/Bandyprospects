@@ -468,7 +468,7 @@ export function transformSupabasePlayer(row: SupabasePlayerRow): PlayerProfile {
     fr: grip === "left" ? "Gauche (L)" : "Droite (R)",
   };
 
-  const bioText = row.bio || "Registered bandy player on Bandyprospects. Verified profile ready for trials and contracts.";
+  const bioText = row.bio?.trim() || "";
   const bio: Record<Language, string> = {
     en: bioText,
     sv: bioText,
@@ -488,20 +488,28 @@ export function transformSupabasePlayer(row: SupabasePlayerRow): PlayerProfile {
 
   const secondaryCitizenships = parseArrayField(row.secondary_citizenship || row.secondary_citizenships);
 
-  // Bandy-tailored fields
-  const heightCm = row.height ? Number(row.height) : 182;
-  const weightKg = row.weight ? Number(row.weight) : 80;
-  const heightWeight = `${heightCm} cm / ${weightKg} kg`;
+  // Bandy-tailored fields (Strictly from database record)
+  const heightCm = row.height ? Number(row.height) : undefined;
+  const weightKg = row.weight ? Number(row.weight) : undefined;
+  let heightWeight = "—";
+  if (heightCm && weightKg) {
+    heightWeight = `${heightCm} cm / ${weightKg} kg`;
+  } else if (heightCm) {
+    heightWeight = `${heightCm} cm`;
+  } else if (weightKg) {
+    heightWeight = `${weightKg} kg`;
+  }
 
   const secondaryPosInfo = row.secondary_position ? mapPositionCategory(row.secondary_position) : undefined;
   const contractStatusInfo = mapContractStatus(row.contract_status || row.status);
 
   const youthClub = row.youth_club?.trim() || undefined;
-  const academyType = (row.academy_type?.trim() as "RIG" | "NIU" | "none") || undefined;
+  const rawAcademy = row.academy_type?.trim() as "RIG" | "NIU" | "none" | undefined;
+  const academyType = rawAcademy && rawAcademy !== "none" ? rawAcademy : undefined;
   const academySchool = row.academy_school?.trim() || undefined;
 
   const rawTraits = parseArrayField(row.player_traits);
-  const playerTraits = rawTraits.length > 0 ? rawTraits : (rawKeyAttributes.length > 0 ? rawKeyAttributes : ["Skridskostark", "Spelförståelse"]);
+  const playerTraits = rawTraits.length > 0 ? rawTraits : rawKeyAttributes;
 
   const careerHistory = parseCareerHistory(row.career_history);
   const resolvedVideo = row.video_url || row.youtube_url || undefined;
@@ -519,7 +527,7 @@ export function transformSupabasePlayer(row: SupabasePlayerRow): PlayerProfile {
     positionName: posInfo.names,
     secondaryPosition: secondaryPosInfo ? secondaryPosInfo.cat : undefined,
     secondaryPositionName: secondaryPosInfo ? secondaryPosInfo.names : undefined,
-    previousClub: row.current_club || "Independent Prospect",
+    previousClub: row.current_club?.trim() || "—",
     grip,
     gripName,
     heightWeight,
@@ -558,13 +566,13 @@ export function transformSupabasePlayer(row: SupabasePlayerRow): PlayerProfile {
     },
     email: row.email || undefined,
     phone: row.phone || undefined,
-    appearancesCount: 35,
-    pointsCount: 18,
+    appearancesCount: 0,
+    pointsCount: 0,
     verified: true,
     videoUrl: resolvedVideo,
-    targetCountries: targetCountries.length > 0 ? targetCountries : ["SE", "FI", "NO"],
-    occupationPreferences: occupationPreferences.length > 0 ? occupationPreferences : ["housing", "fulltime_job"],
-    spokenLanguages: spokenLanguages.length > 0 ? spokenLanguages : ["sv", "en"],
+    targetCountries: targetCountries,
+    occupationPreferences: occupationPreferences,
+    spokenLanguages: spokenLanguages,
     secondaryCitizenships: secondaryCitizenships.length > 0 ? secondaryCitizenships : undefined,
     heritageCountry: row.heritage_country || undefined,
     openForNationalTeam: Boolean(row.open_for_national_team),

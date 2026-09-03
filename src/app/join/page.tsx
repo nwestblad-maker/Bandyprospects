@@ -62,7 +62,7 @@ export default function JoinPage() {
     // Section B: Position & Spetsegenskaper
     position: "halv" as PositionCategory,
     secondaryPosition: "" as string,
-    playerTraits: ["Skridskostark", "Spelförståelse"] as string[],
+    playerTraits: [] as string[],
 
     // Section C: Kontrakt & Civil profil
     contractStatus: "free_agent" as "free_agent" | "expiring_26_27" | "under_contract_loan",
@@ -145,8 +145,8 @@ export default function JoinPage() {
         nationality: formData.nationality.toUpperCase(),
         photo_url: formData.photoUrl.trim() || null,
         youth_club: formData.youthClub.trim() || null,
-        academy_type: formData.academyType,
-        academy_school: formData.academyType !== "none" ? formData.academySchool.trim() : null,
+        academy_type: formData.academyType !== "none" ? formData.academyType : null,
+        academy_school: formData.academyType !== "none" ? (formData.academySchool.trim() || null) : null,
         height: formData.heightCm ? Number(formData.heightCm) : null,
         weight: formData.weightKg ? Number(formData.weightKg) : null,
         stick_hand: formData.stickGrip,
@@ -167,7 +167,7 @@ export default function JoinPage() {
         heritage_country: formData.heritageCountry.trim() || null,
         open_for_national_team: Boolean(formData.openForNationalTeam),
         bio: formData.bioHistory.trim() || null,
-        career_history: formData.careerHistory,
+        career_history: formData.careerHistory.length > 0 ? formData.careerHistory : null,
         instagram_url: formData.instagram_url.trim() || null,
         tiktok_url: formData.tiktok_url.trim() || null,
         email: formData.email.trim(),
@@ -346,11 +346,10 @@ export default function JoinPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-3 border-t border-zinc-100">
                   <div className="sm:col-span-2">
                     <label className="block font-semibold text-zinc-800 mb-1">
-                      {lang === "sv" ? "Moderklubb (där du startade spela bandy) *" : "Youth Club (where you started playing bandy) *"}
+                      {lang === "sv" ? "Moderklubb (där du startade spela bandy)" : "Youth Club (where you started playing bandy)"}
                     </label>
                     <input
                       type="text"
-                      required
                       value={formData.youthClub}
                       onChange={(e) => setFormData({ ...formData, youthClub: e.target.value })}
                       placeholder="t.ex. Vetlanda BK, Brobergs IF, Edsbyns IF, Bollnäs GIF"
