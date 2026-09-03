@@ -140,12 +140,11 @@ export default function PlayerDetailPage() {
   // Youth club & Academy text
   const youthAndAcademyText = (() => {
     const parts: string[] = [];
-    if (player.youthClub) {
-      parts.push(`Moderklubb: ${player.youthClub}`);
+    if (player.youthClub && player.youthClub.trim()) {
+      parts.push(`Moderklubb: ${player.youthClub.trim()}`);
     }
-    if (player.academyType && player.academyType !== "none") {
-      const schoolPart = player.academySchool ? ` (${player.academySchool})` : "";
-      parts.push(`${player.academyType}${schoolPart}`);
+    if (player.academyType && player.academyType !== "none" && player.academyType !== "Inget av dessa") {
+      parts.push(player.academyType);
     }
     return parts.join(" • ");
   })();
@@ -314,13 +313,13 @@ export default function PlayerDetailPage() {
 
             <div className="bg-white border border-zinc-200 rounded-xl p-3.5 shadow-2xs">
               <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider mb-1">
-                Utbildning
+                Gymnasium
               </span>
-              <span className="text-sm font-extrabold text-zinc-950 block truncate" title={player.academyType && player.academyType !== "none" ? `${player.academyType}${player.academySchool ? ` (${player.academySchool})` : ""}` : "-"}>
-                {player.academyType && player.academyType !== "none" ? player.academyType : "-"}
+              <span className="text-sm font-extrabold text-zinc-950 block truncate" title={player.academyType && player.academyType !== "none" && player.academyType !== "Inget av dessa" ? player.academyType : "-"}>
+                {player.academyType && player.academyType !== "none" && player.academyType !== "Inget av dessa" ? player.academyType : "-"}
               </span>
               <span className="text-[11px] text-zinc-500 truncate block">
-                {player.academyType && player.academyType !== "none" && player.academySchool ? player.academySchool : "-"}
+                {player.academyType && player.academyType !== "none" && player.academyType !== "Inget av dessa" ? "Idrottsutbildning" : "—"}
               </span>
             </div>
 
@@ -404,7 +403,7 @@ export default function PlayerDetailPage() {
                     <table className="w-full text-left text-xs">
                       <thead>
                         <tr className="border-b border-zinc-200 text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
-                          <th className="py-2.5 px-3">Säsong</th>
+                          <th className="py-2.5 px-3">Säsong / Period</th>
                           <th className="py-2.5 px-3">Klubb</th>
                           <th className="py-2.5 px-3">Serie / Nivå</th>
                           <th className="py-2.5 px-3">Roll / Notering</th>
@@ -584,8 +583,8 @@ export default function PlayerDetailPage() {
                   <div className="flex justify-between">
                     <dt className="text-zinc-500">Gymnasium:</dt>
                     <dd className="font-semibold text-zinc-900">
-                      {player.academyType && player.academyType !== "none"
-                        ? `${player.academyType}${player.academySchool ? ` (${player.academySchool})` : ""}`
+                      {player.academyType && player.academyType !== "none" && player.academyType !== "Inget av dessa"
+                        ? player.academyType
                         : "-"}
                     </dd>
                   </div>

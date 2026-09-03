@@ -19,24 +19,6 @@ import { supabase } from "@/lib/supabaseClient";
 import { CareerSeason, OccupationPreference, PlayerGrip, PositionCategory } from "@/types";
 import { CUSTOM_OTHER_LEAGUE_VALUE, getLeaguesForCountry, getLeagueDisplayName } from "@/lib/leagues";
 
-const SWEDISH_BANDY_ACADEMIES = [
-  "Sandviken (Bessemerskolan - RIG)",
-  "Nässjö (Brinellgymnasiet - RIG)",
-  "Vetlanda (Njudungsgymnasiet - NIU)",
-  "Edsbyn (Voxnadalens gymnasium - NIU)",
-  "Bollnäs (Torsbergsgymnasiet - NIU)",
-  "Västerås (Widénska gymnasiet - NIU)",
-  "Ljusdal (Slottegymnasiet - NIU)",
-  "Lidköping (De la Gardiegymnasiet - NIU)",
-  "Vänersborg (Birger Sjöberggymnasiet - NIU)",
-  "Falun (Lugnetgymnasiet - NIU)",
-  "Söderhamn (Staffangymnasiet - NIU)",
-  "Motala (Platengymnasiet - NIU)",
-  "Uppsala (Celsiusskolan - NIU)",
-  "Katrineholm (Duveholmsgymnasiet - NIU)",
-  "Stockholm (Midsommarkransens gymnasium - NIU)",
-];
-
 export default function JoinPage() {
   const { lang, t } = useLanguage();
   const formT = t.joinPage;
@@ -50,8 +32,7 @@ export default function JoinPage() {
     nationality: "se",
     photoUrl: "",
     youthClub: "",
-    academyType: "none" as "RIG" | "NIU" | "none",
-    academySchool: "",
+    academyType: "none" as "RIG" | "NIU" | "local" | "none",
     heightCm: "",
     weightKg: "",
     stickGrip: "left" as PlayerGrip,
@@ -146,7 +127,7 @@ export default function JoinPage() {
         photo_url: formData.photoUrl.trim() || null,
         youth_club: formData.youthClub.trim() || null,
         academy_type: formData.academyType !== "none" ? formData.academyType : null,
-        academy_school: formData.academyType !== "none" ? (formData.academySchool.trim() || null) : null,
+        academy_school: null,
         height: formData.heightCm ? Number(formData.heightCm) : null,
         weight: formData.weightKg ? Number(formData.weightKg) : null,
         stick_hand: formData.stickGrip,
@@ -362,44 +343,19 @@ export default function JoinPage() {
 
                   <div>
                     <label className="block font-semibold text-zinc-800 mb-1">
-                      {lang === "sv" ? "Bandygymnasium *" : "Bandy Academy *"}
+                      {lang === "sv" ? "Bandygymnasium / Utbildning" : "Bandy Academy / High School"}
                     </label>
                     <select
                       value={formData.academyType}
-                      onChange={(e) => setFormData({ ...formData, academyType: e.target.value as "RIG" | "NIU" | "none" })}
+                      onChange={(e) => setFormData({ ...formData, academyType: e.target.value as "RIG" | "NIU" | "local" | "none" })}
                       className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900 cursor-pointer font-medium"
                     >
-                      <option value="none">Inget / Lokalt gymnasium</option>
-                      <option value="NIU">NIU (Nationellt godkänd idrottsutbildning)</option>
-                      <option value="RIG">RIG (Riksidrottsgymnasium)</option>
+                      <option value="none">Inget av dessa</option>
+                      <option value="RIG">RIG</option>
+                      <option value="NIU">NIU</option>
+                      <option value="local">Lokalt gymnasium</option>
                     </select>
                   </div>
-
-                  {formData.academyType !== "none" ? (
-                    <div>
-                      <label className="block font-semibold text-zinc-800 mb-1">
-                        {lang === "sv" ? "Ort / Skola *" : "Location / School *"}
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        list="academy-suggestions"
-                        value={formData.academySchool}
-                        onChange={(e) => setFormData({ ...formData, academySchool: e.target.value })}
-                        placeholder="t.ex. Sandviken (Bessemerskolan) eller Vetlanda"
-                        className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
-                      />
-                      <datalist id="academy-suggestions">
-                        {SWEDISH_BANDY_ACADEMIES.map((school) => (
-                          <option key={school} value={school} />
-                        ))}
-                      </datalist>
-                    </div>
-                  ) : (
-                    <div className="flex items-center text-xs text-zinc-400 italic pt-6">
-                      Vanligt gymnasium eller studier utanför RIG/NIU.
-                    </div>
-                  )}
                 </div>
 
                 {/* Fysik & Fattning */}

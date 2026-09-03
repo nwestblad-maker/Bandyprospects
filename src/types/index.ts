@@ -78,7 +78,7 @@ export interface PlayerProfile {
   contractStatus?: string;
   contractStatusLabel?: LocalizedString;
   youthClub?: string;
-  academyType?: "RIG" | "NIU" | "none" | string;
+  academyType?: "RIG" | "NIU" | "local" | "none" | string;
   academySchool?: string;
   playerTraits?: string[];
   careerHistory?: CareerSeason[];

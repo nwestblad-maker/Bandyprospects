@@ -504,8 +504,19 @@ export function transformSupabasePlayer(row: SupabasePlayerRow): PlayerProfile {
   const contractStatusInfo = mapContractStatus(row.contract_status || row.status);
 
   const youthClub = row.youth_club?.trim() || undefined;
-  const rawAcademy = row.academy_type?.trim() as "RIG" | "NIU" | "none" | undefined;
-  const academyType = rawAcademy && rawAcademy !== "none" ? rawAcademy : undefined;
+  const rawAcademy = (row.academy_type || "").trim();
+  let academyType: string | undefined = undefined;
+  if (rawAcademy.toUpperCase() === "RIG") {
+    academyType = "RIG";
+  } else if (rawAcademy.toUpperCase() === "NIU") {
+    academyType = "NIU";
+  } else if (rawAcademy.toLowerCase() === "local" || rawAcademy.toLowerCase().includes("lokalt")) {
+    academyType = "Lokalt gymnasium";
+  } else if (rawAcademy.toLowerCase() === "none" || rawAcademy.toLowerCase().includes("inget")) {
+    academyType = undefined;
+  } else if (rawAcademy) {
+    academyType = rawAcademy;
+  }
   const academySchool = row.academy_school?.trim() || undefined;
 
   const rawTraits = parseArrayField(row.player_traits);

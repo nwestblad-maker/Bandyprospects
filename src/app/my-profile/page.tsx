@@ -63,24 +63,6 @@ interface DbPlayer {
   created_at?: string;
 }
 
-const SWEDISH_BANDY_ACADEMIES = [
-  "Sandviken (Bessemerskolan - RIG)",
-  "Nässjö (Brinellgymnasiet - RIG)",
-  "Vetlanda (Njudungsgymnasiet - NIU)",
-  "Edsbyn (Voxnadalens gymnasium - NIU)",
-  "Bollnäs (Torsbergsgymnasiet - NIU)",
-  "Västerås (Widénska gymnasiet - NIU)",
-  "Ljusdal (Slottegymnasiet - NIU)",
-  "Lidköping (De la Gardiegymnasiet - NIU)",
-  "Vänersborg (Birger Sjöberggymnasiet - NIU)",
-  "Falun (Lugnetgymnasiet - NIU)",
-  "Söderhamn (Staffangymnasiet - NIU)",
-  "Motala (Platengymnasiet - NIU)",
-  "Uppsala (Celsiusskolan - NIU)",
-  "Katrineholm (Duveholmsgymnasiet - NIU)",
-  "Stockholm (Midsommarkransens gymnasium - NIU)",
-];
-
 export default function MyProfilePage() {
   const router = useRouter();
   const { lang, t } = useLanguage();
@@ -99,8 +81,7 @@ export default function MyProfilePage() {
     nationality: "SE",
     photoUrl: "",
     youthClub: "",
-    academyType: "none" as "RIG" | "NIU" | "none",
-    academySchool: "",
+    academyType: "none" as "RIG" | "NIU" | "local" | "none",
     heightCm: "",
     weightKg: "",
     stickGrip: "left" as PlayerGrip,
@@ -253,6 +234,12 @@ export default function MyProfilePage() {
             cStatus = "under_contract_loan";
           }
 
+          let acad: "RIG" | "NIU" | "local" | "none" = "none";
+          const rawAcad = (p.academy_type || "").trim();
+          if (rawAcad.toUpperCase() === "RIG") acad = "RIG";
+          else if (rawAcad.toUpperCase() === "NIU") acad = "NIU";
+          else if (rawAcad.toLowerCase() === "local" || rawAcad.toLowerCase().includes("lokalt")) acad = "local";
+
           setFormData({
             firstName: p.first_name || "",
             lastName: p.last_name || "",
@@ -260,8 +247,7 @@ export default function MyProfilePage() {
             nationality: (p.nationality || "SE").toUpperCase(),
             photoUrl: p.photo_url || "",
             youthClub: p.youth_club || "",
-            academyType: (p.academy_type as "RIG" | "NIU" | "none") || "none",
-            academySchool: p.academy_school || "",
+            academyType: acad,
             heightCm: p.height ? String(p.height) : "",
             weightKg: p.weight ? String(p.weight) : "",
             stickGrip: (p.stick_hand as PlayerGrip) || "left",
@@ -372,7 +358,7 @@ export default function MyProfilePage() {
         photo_url: formData.photoUrl.trim() || null,
         youth_club: formData.youthClub.trim() || null,
         academy_type: formData.academyType !== "none" ? formData.academyType : null,
-        academy_school: formData.academyType !== "none" ? (formData.academySchool.trim() || null) : null,
+        academy_school: null,
         height: formData.heightCm ? Number(formData.heightCm) : null,
         weight: formData.weightKg ? Number(formData.weightKg) : null,
         stick_hand: formData.stickGrip,
@@ -644,40 +630,20 @@ export default function MyProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-800 mb-1">Bandygymnasium</label>
+                  <label className="block font-semibold text-zinc-800 mb-1">
+                    Gymnasium / Idrottsutbildning
+                  </label>
                   <select
                     value={formData.academyType}
-                    onChange={(e) => setFormData({ ...formData, academyType: e.target.value as "RIG" | "NIU" | "none" })}
+                    onChange={(e) => setFormData({ ...formData, academyType: e.target.value as "RIG" | "NIU" | "local" | "none" })}
                     className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900 cursor-pointer font-medium"
                   >
-                    <option value="none">Inget / Lokalt gymnasium</option>
-                    <option value="NIU">NIU (Nationellt godkänd idrottsutbildning)</option>
-                    <option value="RIG">RIG (Riksidrottsgymnasium)</option>
+                    <option value="none">Inget av dessa</option>
+                    <option value="RIG">RIG</option>
+                    <option value="NIU">NIU</option>
+                    <option value="local">Lokalt gymnasium</option>
                   </select>
                 </div>
-
-                {formData.academyType !== "none" ? (
-                  <div>
-                    <label className="block font-semibold text-zinc-800 mb-1">Ort / Skola</label>
-                    <input
-                      type="text"
-                      list="edit-academy-suggestions"
-                      value={formData.academySchool}
-                      onChange={(e) => setFormData({ ...formData, academySchool: e.target.value })}
-                      placeholder="t.ex. Sandviken (Bessemerskolan) eller Vetlanda"
-                      className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
-                    />
-                    <datalist id="edit-academy-suggestions">
-                      {SWEDISH_BANDY_ACADEMIES.map((school) => (
-                        <option key={school} value={school} />
-                      ))}
-                    </datalist>
-                  </div>
-                ) : (
-                  <div className="flex items-center text-xs text-zinc-400 italic pt-6">
-                    Vanligt gymnasium eller studier utanför RIG/NIU.
-                  </div>
-                )}
               </div>
 
               {/* Fysik & Fattning */}

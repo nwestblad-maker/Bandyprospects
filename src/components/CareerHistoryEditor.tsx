@@ -89,16 +89,16 @@ export function CareerHistoryEditor({ careerHistory, onChange, lang = 'sv' }: Ca
               key={index}
               className="p-3 rounded-xl border border-zinc-200 bg-white shadow-2xs flex flex-col md:flex-row items-stretch md:items-center gap-2.5"
             >
-              {/* Season */}
-              <div className="w-full md:w-28 shrink-0">
+              {/* Season or Interval */}
+              <div className="w-full md:w-44 shrink-0">
                 <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1 md:hidden">
-                  {lang === 'sv' ? 'Säsong' : 'Season'}
+                  {lang === 'sv' ? 'Säsong / Period' : 'Season / Period'}
                 </label>
                 <input
                   type="text"
                   value={row.season}
                   onChange={(e) => handleUpdateRow(index, 'season', e.target.value)}
-                  placeholder="2025/26"
+                  placeholder="2024/25 - 2026/27"
                   className="w-full px-2.5 py-1.5 text-xs font-semibold border border-zinc-200 rounded-lg bg-zinc-50 focus:bg-white focus:outline-none focus:border-zinc-900"
                 />
               </div>
