@@ -1,4 +1,4 @@
-import { ClubAd, Language, OccupationPreference, PerkCategory, PlayerGrip, PlayerProfile, PlayerStatus, PositionCategory, OrgType } from "@/types";
+import { ClubAd, CareerSeason, Language, OccupationPreference, PerkCategory, PlayerGrip, PlayerProfile, PlayerStatus, PositionCategory, OrgType } from "@/types";
 import { getCountry, getCountryName } from "@/data/countries";
 import { mapRawAttributesToLocalized } from "@/data/attributes";
 import { getLeagueDisplayName } from "@/lib/leagues";
@@ -34,6 +34,15 @@ export interface SupabasePlayerRow {
   show_phone?: boolean | null;
   show_email?: boolean | null;
   contact_preference?: string | null;
+  height?: number | string | null;
+  weight?: number | string | null;
+  secondary_position?: string | null;
+  youth_club?: string | null;
+  academy_type?: string | null;
+  academy_school?: string | null;
+  contract_status?: string | null;
+  player_traits?: string[] | string | null;
+  career_history?: CareerSeason[] | string | null;
 }
 
 export interface SupabaseClubAdRow {
@@ -255,6 +264,83 @@ export function mapStatus(st: string): {
   };
 }
 
+export function mapContractStatus(st: string | undefined | null): {
+  key: string;
+  labels: Record<Language, string>;
+} {
+  const s = (st || "").toLowerCase().trim();
+  if (s === "expiring_26_27" || s.includes("utgående") || s.includes("expiring")) {
+    return {
+      key: "expiring_26_27",
+      labels: {
+        en: "Expiring Contract 2026/27",
+        sv: "Utgående kontrakt 2026/27",
+        fi: "Päättyvä sopimus 2026/27",
+        no: "Utgående kontrakt 2026/27",
+        nl: "Aflopend contract 2026/27",
+        de: "Auslaufender Vertrag 2026/27",
+        fr: "Contrat expirant 2026/27",
+      },
+    };
+  }
+  if (s === "under_contract_loan" || s.includes("lån") || s.includes("samarbete") || s.includes("loan")) {
+    return {
+      key: "under_contract_loan",
+      labels: {
+        en: "Under Contract (Seeking Loan / Dual-Registration)",
+        sv: "Under kontrakt (Söker lån/samarbetsavtal)",
+        fi: "Sopimuksen alainen (Etsii lainasopimusta)",
+        no: "Under kontrakt (Søker lån/samarbeidsavtale)",
+        nl: "Onder contract (Zoekt uitleenbeurt)",
+        de: "Unter Vertrag (Leihgeschäft gesucht)",
+        fr: "Sous contrat (Recherche un prêt)",
+      },
+    };
+  }
+  // Default: Kontraktslös / Söker klubb
+  return {
+    key: "free_agent",
+    labels: {
+      en: "Free Agent / Seeking Club",
+      sv: "Kontraktslös / Söker klubb",
+      fi: "Vapaa pelaaja / Etsii seuraa",
+      no: "Kontraktsløs / Søker klubb",
+      nl: "Contractvrij / Zoekt club",
+      de: "Vereinslos / Sucht Verein",
+      fr: "Sans contrat / Cherche club",
+    },
+  };
+}
+
+export function parseCareerHistory(val: unknown): CareerSeason[] {
+  if (!val) return [];
+  if (Array.isArray(val)) {
+    const list: CareerSeason[] = [];
+    for (const item of val) {
+      if (item && typeof item === "object") {
+        const s = item as Record<string, unknown>;
+        const season = String(s.season || "").trim();
+        const club = String(s.club || "").trim();
+        const league = String(s.league || "").trim();
+        const role = s.role ? String(s.role).trim() : undefined;
+        if (season || club) {
+          list.push({ season, club, league, role });
+        }
+      }
+    }
+    return list;
+  }
+  if (typeof val === "string") {
+    try {
+      const parsed = JSON.parse(val);
+      return parseCareerHistory(parsed);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
 export function mapContractPreference(pref: string | undefined | null): {
   key: string;
   labels: Record<Language, string>;
@@ -402,6 +488,24 @@ export function transformSupabasePlayer(row: SupabasePlayerRow): PlayerProfile {
 
   const secondaryCitizenships = parseArrayField(row.secondary_citizenship || row.secondary_citizenships);
 
+  // Bandy-tailored fields
+  const heightCm = row.height ? Number(row.height) : 182;
+  const weightKg = row.weight ? Number(row.weight) : 80;
+  const heightWeight = `${heightCm} cm / ${weightKg} kg`;
+
+  const secondaryPosInfo = row.secondary_position ? mapPositionCategory(row.secondary_position) : undefined;
+  const contractStatusInfo = mapContractStatus(row.contract_status || row.status);
+
+  const youthClub = row.youth_club?.trim() || undefined;
+  const academyType = (row.academy_type?.trim() as "RIG" | "NIU" | "none") || undefined;
+  const academySchool = row.academy_school?.trim() || undefined;
+
+  const rawTraits = parseArrayField(row.player_traits);
+  const playerTraits = rawTraits.length > 0 ? rawTraits : (rawKeyAttributes.length > 0 ? rawKeyAttributes : ["Skridskostark", "Spelförståelse"]);
+
+  const careerHistory = parseCareerHistory(row.career_history);
+  const resolvedVideo = row.video_url || row.youtube_url || undefined;
+
   return {
     id: row.id,
     name: fullName,
@@ -413,14 +517,23 @@ export function transformSupabasePlayer(row: SupabasePlayerRow): PlayerProfile {
     countryName: countryInfo.names,
     positionCategory: posInfo.cat,
     positionName: posInfo.names,
+    secondaryPosition: secondaryPosInfo ? secondaryPosInfo.cat : undefined,
+    secondaryPositionName: secondaryPosInfo ? secondaryPosInfo.names : undefined,
     previousClub: row.current_club || "Independent Prospect",
     grip,
     gripName,
-    heightWeight: "182 cm / 80 kg",
-    heightCm: 182,
-    weightKg: 80,
+    heightWeight,
+    heightCm,
+    weightKg,
     currentStatus: statusInfo.status,
     statusLabel: statusInfo.labels,
+    contractStatus: contractStatusInfo.key,
+    contractStatusLabel: contractStatusInfo.labels,
+    youthClub,
+    academyType,
+    academySchool,
+    playerTraits,
+    careerHistory,
     packagePreference: contractInfo.key,
     packagePreferenceLabel: contractInfo.labels,
     highlightStats: {
@@ -448,6 +561,7 @@ export function transformSupabasePlayer(row: SupabasePlayerRow): PlayerProfile {
     appearancesCount: 35,
     pointsCount: 18,
     verified: true,
+    videoUrl: resolvedVideo,
     targetCountries: targetCountries.length > 0 ? targetCountries : ["SE", "FI", "NO"],
     occupationPreferences: occupationPreferences.length > 0 ? occupationPreferences : ["housing", "fulltime_job"],
     spokenLanguages: spokenLanguages.length > 0 ? spokenLanguages : ["sv", "en"],
@@ -455,7 +569,7 @@ export function transformSupabasePlayer(row: SupabasePlayerRow): PlayerProfile {
     heritageCountry: row.heritage_country || undefined,
     openForNationalTeam: Boolean(row.open_for_national_team),
     instagramUrl: row.instagram_url || undefined,
-    youtubeUrl: row.youtube_url || row.video_url || undefined,
+    youtubeUrl: resolvedVideo,
     tiktokUrl: row.tiktok_url || undefined,
     showPhone: row.show_phone !== false,
     showEmail: row.show_email !== false,

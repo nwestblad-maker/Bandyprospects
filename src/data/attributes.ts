@@ -171,3 +171,36 @@ export function mapRawAttributesToLocalized(rawKeys: string[] | string | null | 
     fr: keysArray.map((k) => getKeyAttributeName(k, "fr")),
   };
 }
+
+export interface BandyTrait {
+  name: string;
+  icon: string;
+  category?: "offense" | "defense" | "physical" | "mental" | "goalkeeper";
+}
+
+export const BANDY_TRAITS: BandyTrait[] = [
+  { name: "Hörnskytt", icon: "🎯", category: "offense" },
+  { name: "Skridskostark", icon: "⚡", category: "physical" },
+  { name: "Spelförståelse", icon: "🧠", category: "mental" },
+  { name: "Duellstark", icon: "💪", category: "physical" },
+  { name: "Bollskicklig", icon: "🏒", category: "offense" },
+  { name: "Playmaker", icon: "👑", category: "offense" },
+  { name: "Defensivt ankare", icon: "⚓", category: "defense" },
+  { name: "Genombrottsstark", icon: "🚀", category: "offense" },
+  { name: "Målfarlig", icon: "🔥", category: "offense" },
+  { name: "Passningsskicklig", icon: "🎯", category: "offense" },
+  { name: "Brytningssäker", icon: "🛡️", category: "defense" },
+  { name: "Snabba reflexer", icon: "🧤", category: "goalkeeper" },
+  { name: "Vinkelsäker", icon: "📐", category: "goalkeeper" },
+  { name: "Utkastsäker", icon: "🎯", category: "goalkeeper" },
+  { name: "Ledare / Pådrivare", icon: "🗣️", category: "mental" },
+  { name: "Löpstark / Uthållig", icon: "🏃", category: "physical" },
+  { name: "Snabb acceleration", icon: "⚡", category: "physical" },
+];
+
+export function getTraitIcon(traitName: string): string {
+  const clean = traitName.replace(/^[^\wåäöÅÄÖ]+\s*/, "").trim().toLowerCase();
+  const found = BANDY_TRAITS.find((t) => t.name.toLowerCase() === clean);
+  return found?.icon || "✨";
+}
+

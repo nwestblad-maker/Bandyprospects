@@ -7,12 +7,14 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { GatedContactCard } from "@/components/GatedContactCard";
 import { BookmarkButton } from "@/components/BookmarkButton";
+import { VideoEmbed } from "@/components/VideoEmbed";
 import SocialLinks from "@/components/SocialLinks";
 import { useLanguage } from "@/context/LanguageContext";
 import { PlayerProfile } from "@/types";
 import { supabase } from "@/lib/supabaseClient";
 import { transformSupabasePlayer, SupabasePlayerRow } from "@/lib/dataMappers";
 import { getCountry, getLanguageName, getLanguageFlag } from "@/data/countries";
+import { getTraitIcon } from "@/data/attributes";
 import { formatWish } from "@/lib/formatters";
 
 export default function PlayerDetailPage() {
@@ -101,6 +103,57 @@ export default function PlayerDetailPage() {
   const isWorldwide = player.targetCountries?.includes("ALL");
   const targetCountriesList = player.targetCountries?.filter((c) => c !== "ALL") || [];
 
+  // Contract Status styling badge
+  const getContractBadge = () => {
+    const status = player.contractStatus;
+    if (status === "free_agent") {
+      return (
+        <span className="px-3 py-1 rounded-md bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold inline-flex items-center gap-1.5 shadow-2xs">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>{lang === "sv" ? "Kontraktslös / Söker klubb" : "Free Agent / Seeking Club"}</span>
+        </span>
+      );
+    }
+    if (status === "expiring_26_27") {
+      return (
+        <span className="px-3 py-1 rounded-md bg-sky-50 border border-sky-300 text-sky-800 text-xs font-bold inline-flex items-center gap-1.5 shadow-2xs">
+          <span>⏳</span>
+          <span>{lang === "sv" ? "Utgående kontrakt 2026/27" : "Expiring Contract 2026/27"}</span>
+        </span>
+      );
+    }
+    if (status === "under_contract_loan") {
+      return (
+        <span className="px-3 py-1 rounded-md bg-amber-50 border border-amber-300 text-amber-900 text-xs font-bold inline-flex items-center gap-1.5 shadow-2xs">
+          <span>🤝</span>
+          <span>{lang === "sv" ? "Under kontrakt (Söker lån/samarbete)" : "Under Contract (Seeking Loan)"}</span>
+        </span>
+      );
+    }
+    return (
+      <span className="px-3 py-1 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-800 text-xs font-semibold shadow-2xs">
+        {player.statusLabel[lang]}
+      </span>
+    );
+  };
+
+  // Youth club & Academy text
+  const youthAndAcademyText = (() => {
+    const parts: string[] = [];
+    if (player.youthClub) {
+      parts.push(`Moderklubb: ${player.youthClub}`);
+    }
+    if (player.academyType && player.academyType !== "none") {
+      const schoolPart = player.academySchool ? ` (${player.academySchool})` : "";
+      parts.push(`${player.academyType}${schoolPart}`);
+    }
+    return parts.join(" • ");
+  })();
+
+  const traits = player.playerTraits && player.playerTraits.length > 0
+    ? player.playerTraits
+    : (player.skills[lang] || []);
+
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 flex flex-col font-sans selection:bg-zinc-900 selection:text-zinc-50">
       <Header />
@@ -113,16 +166,16 @@ export default function PlayerDetailPage() {
               href="/players"
               className="text-xs font-semibold text-zinc-600 hover:text-zinc-950 flex items-center gap-1 transition-colors cursor-pointer"
             >
-              {t.playerDetailPage.backToPlayers}
+              ← {t.playerDetailPage.backToPlayers}
             </Link>
           </div>
 
-          {/* Profile Main Header Card */}
-          <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-8 mb-8 shadow-xs">
+          {/* 1. SPORTS-DRIVEN HEADER / HERO CARD */}
+          <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-8 mb-8 shadow-xs">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               {/* Left: Avatar & Identity */}
-              <div className="flex items-center gap-5">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-zinc-900 text-white font-extrabold text-2xl flex items-center justify-center shadow-xs overflow-hidden shrink-0 border border-zinc-200 relative">
+              <div className="flex items-start sm:items-center gap-5">
+                <div className="w-18 h-18 sm:w-22 sm:h-22 rounded-2xl bg-zinc-900 text-white font-black text-2xl sm:text-3xl flex items-center justify-center shadow-xs overflow-hidden shrink-0 border border-zinc-200 relative">
                   {player.photoUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={player.photoUrl} alt={player.name} className="w-full h-full object-cover" />
@@ -130,8 +183,9 @@ export default function PlayerDetailPage() {
                     <span>{player.avatarInitials}</span>
                   )}
                 </div>
+
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2.5 flex-wrap">
                     <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 tracking-tight">
                       {player.name}
                     </h1>
@@ -151,35 +205,47 @@ export default function PlayerDetailPage() {
                     )}
                   </div>
 
-                  <div className="text-xs sm:text-sm text-zinc-600 flex items-center gap-2 mt-1">
-                    <span>{player.countryFlag}</span>
-                    <span>
-                      {player.countryName[lang]} • {player.age} {t.playersPage.ageLabel}
+                  {/* Position & Grip */}
+                  <div className="text-xs sm:text-sm text-zinc-600 flex items-center gap-2 mt-1.5 flex-wrap">
+                    <span className="font-bold text-zinc-950 text-sm">
+                      {player.positionName[lang]}
+                    </span>
+                    {player.secondaryPositionName && (
+                      <span className="text-xs text-zinc-500 font-medium">
+                        (Sekundär: {player.secondaryPositionName[lang]})
+                      </span>
+                    )}
+                    <span>•</span>
+                    <span className="text-xs font-semibold text-zinc-700">
+                      {player.gripName[lang]}
                     </span>
                     <span>•</span>
-                    <span className="font-semibold text-zinc-900">
-                      {player.positionName[lang]} ({player.gripName[lang]})
+                    <span className="text-xs text-zinc-500 flex items-center gap-1">
+                      <span>{player.countryFlag}</span>
+                      <span>{player.countryName[lang]}</span>
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 mt-2 flex-wrap">
-                    <span className="px-2.5 py-0.5 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-800 text-xs font-semibold">
-                      {player.statusLabel[lang]}
-                    </span>
-                    {player.packagePreferenceLabel && (
-                      <span className="px-2.5 py-0.5 rounded-md bg-sky-50 border border-sky-200 text-sky-800 text-xs font-semibold">
-                        {player.packagePreferenceLabel[lang]}
+                  {/* Badges Bar: Contract Status & Youth Club / Academy */}
+                  <div className="flex items-center gap-2 mt-3 flex-wrap">
+                    {getContractBadge()}
+
+                    {youthAndAcademyText && (
+                      <span className="px-3 py-1 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-900 text-xs font-semibold inline-flex items-center gap-1.5 shadow-2xs">
+                        <span>🌱</span>
+                        <span>{youthAndAcademyText}</span>
                       </span>
                     )}
-                    <span className="text-xs text-zinc-500">
-                      {t.playerDetailPage.previousClub}: {player.previousClub}
+
+                    <span className="px-2.5 py-1 rounded-md bg-zinc-50 border border-zinc-200 text-zinc-600 text-xs font-medium">
+                      Nuvarande: <strong className="text-zinc-900">{player.previousClub}</strong>
                     </span>
                   </div>
                 </div>
               </div>
 
               {/* Right: Direct CTA & Bookmark */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
                 <BookmarkButton
                   playerId={player.id}
                   playerName={player.name}
@@ -191,137 +257,207 @@ export default function PlayerDetailPage() {
                     const el = document.getElementById("contact-card");
                     el?.scrollIntoView({ behavior: "smooth" });
                   }}
-                  className="px-6 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs rounded-lg shadow-sm transition-colors text-center cursor-pointer"
+                  className="px-6 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors text-center cursor-pointer flex items-center justify-center gap-2"
                 >
-                  {t.playerDetailPage.sendInquiryBtn}
+                  <span>✉️</span>
+                  <span>{t.playerDetailPage.sendInquiryBtn}</span>
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Two Columns Layout */}
+          {/* 2. FAST FACTS GRID (QUICK BIO) */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+            <div className="bg-white border border-zinc-200 rounded-xl p-3.5 shadow-2xs">
+              <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider mb-1">
+                Födelseår / Ålder
+              </span>
+              <span className="text-sm font-extrabold text-zinc-950 block">
+                {player.age} {t.playersPage.ageLabel}
+              </span>
+              <span className="text-[11px] text-zinc-500">
+                f. {new Date().getFullYear() - player.age}
+              </span>
+            </div>
+
+            <div className="bg-white border border-zinc-200 rounded-xl p-3.5 shadow-2xs">
+              <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider mb-1">
+                Längd & Vikt
+              </span>
+              <span className="text-sm font-extrabold text-zinc-950 block">
+                {player.heightWeight}
+              </span>
+              <span className="text-[11px] text-zinc-500">Fysik</span>
+            </div>
+
+            <div className="bg-white border border-zinc-200 rounded-xl p-3.5 shadow-2xs">
+              <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider mb-1">
+                Fattning
+              </span>
+              <span className="text-sm font-extrabold text-zinc-950 block">
+                {player.gripName[lang]}
+              </span>
+              <span className="text-[11px] text-zinc-500">Klubbhand</span>
+            </div>
+
+            <div className="bg-white border border-zinc-200 rounded-xl p-3.5 shadow-2xs">
+              <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider mb-1">
+                Moderklubb
+              </span>
+              <span className="text-sm font-extrabold text-zinc-950 truncate block" title={player.youthClub || "Ej angiven"}>
+                {player.youthClub || "Ej angiven"}
+              </span>
+              <span className="text-[11px] text-zinc-500">Bandybakgrund</span>
+            </div>
+
+            <div className="bg-white border border-zinc-200 rounded-xl p-3.5 shadow-2xs">
+              <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider mb-1">
+                Utbildning
+              </span>
+              <span className="text-sm font-extrabold text-zinc-950 block truncate" title={player.academyType !== "none" && player.academyType ? `${player.academyType} ${player.academySchool || ""}` : "Lokalt gymnasium"}>
+                {player.academyType && player.academyType !== "none" ? player.academyType : "Inget / Lokalt"}
+              </span>
+              <span className="text-[11px] text-zinc-500 truncate block">
+                {player.academySchool || "Bandygymnasium"}
+              </span>
+            </div>
+
+            <div className="bg-white border border-zinc-200 rounded-xl p-3.5 shadow-2xs">
+              <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider mb-1">
+                Nationalitet
+              </span>
+              <span className="text-sm font-extrabold text-zinc-950 flex items-center gap-1.5 block">
+                <span>{player.countryFlag}</span>
+                <span>{player.countryName[lang]}</span>
+              </span>
+              <span className="text-[11px] text-zinc-500">
+                {player.countryCode}
+              </span>
+            </div>
+          </div>
+
+          {/* TWO COLUMNS CONTENT LAYOUT */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column (2/3): Scouting Report, Attributes, Preferences & History */}
+            {/* Left Column (2/3): Spelstil, Presentation, Karriärtabell, Video & Civilt */}
             <div className="lg:col-span-2 space-y-8">
-              {/* Section: Scouting Report & Bio */}
-              <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950 mb-3">
-                  {t.playerDetailPage.bioTitle}
-                </h2>
-                <p className="text-xs sm:text-sm text-zinc-700 leading-relaxed whitespace-pre-line">
+              {/* SECTION: SPELSTIL & SPETSEGENSKAPER */}
+              {traits.length > 0 && (
+                <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-base">⚡</span>
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950">
+                      Spelstil & Spetsegenskaper
+                    </h2>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {traits.map((trait, idx) => {
+                      const icon = getTraitIcon(trait);
+                      return (
+                        <div
+                          key={idx}
+                          className="px-3.5 py-2 rounded-xl bg-zinc-50 hover:bg-zinc-100/70 border border-zinc-200 text-zinc-900 text-xs font-semibold flex items-center gap-2 shadow-2xs transition-colors"
+                        >
+                          <span>{icon}</span>
+                          <span>{trait}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* SECTION: SPELARENS PRESENTATION */}
+              <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-base">📝</span>
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950">
+                    Spelarens presentation & Ambition
+                  </h2>
+                </div>
+                <p className="text-xs sm:text-sm text-zinc-800 leading-relaxed whitespace-pre-line font-normal">
                   {player.bio[lang]}
                 </p>
               </div>
 
-              {/* Section: Key Attributes & Strengths (Shown only if player selected attributes) */}
-              {player.skills[lang] && player.skills[lang].length > 0 && (
-                <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs">
-                  <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950 mb-4">
-                    {t.playerDetailPage.keySkillsTitle}
-                  </h2>
-                  <div className="flex flex-wrap gap-2">
-                    {player.skills[lang].map((skill, idx) => (
-                      <div
-                        key={idx}
-                        className="px-3.5 py-2 rounded-lg bg-zinc-50 border border-zinc-200 text-zinc-900 text-xs font-semibold flex items-center gap-2 shadow-2xs"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-zinc-900" />
-                        <span>{skill}</span>
-                      </div>
-                    ))}
+              {/* SECTION: KARRIÄRTABELL (SÄSONGER & KLUBBAR) */}
+              <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🏒</span>
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950">
+                      Karriärhistorik & Tidigare klubbar
+                    </h2>
                   </div>
-                </div>
-              )}
-
-              {/* Section: Geographic Mobility & Target Destination Countries */}
-              <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950 mb-3">
-                  {t.playerDetailPage.targetCountriesTitle}
-                </h2>
-
-                {isWorldwide ? (
-                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-900 font-semibold mb-3">
-                    {t.playerDetailPage.openWorldwideBadge}
-                  </div>
-                ) : null}
-
-                <div className="flex flex-wrap gap-2 pt-1">
-                  {targetCountriesList.length > 0 ? (
-                    targetCountriesList.map((code) => {
-                      const c = getCountry(code);
-                      return (
-                        <div
-                          key={code}
-                          className="px-3 py-1.5 rounded-lg bg-zinc-50 border border-zinc-200 text-zinc-900 text-xs font-semibold flex items-center gap-2"
-                        >
-                          <span className="text-base">{c?.flag || "🏳️"}</span>
-                          <span>{c ? c.names[lang] : code}</span>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <div className="text-xs text-zinc-500">
-                      {player.countryFlag} {player.countryName[lang]}
-                    </div>
+                  {player.youthClub && (
+                    <span className="text-xs text-zinc-500 font-medium">
+                      Startade i: <strong className="text-zinc-800">{player.youthClub}</strong>
+                    </span>
                   )}
                 </div>
-              </div>
 
-              {/* Section: National Team & FIB Eligibility (Heritage & Passports) */}
-              {(player.openForNationalTeam || (player.secondaryCitizenships && player.secondaryCitizenships.length > 0) || player.heritageCountry) && (
-                <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950 flex items-center gap-2">
-                      <span>🌍</span>
-                      <span>{lang === "sv" ? "Landslag & Internationell behörighet" : "National Team & International Eligibility"}</span>
-                    </h2>
-                    {player.openForNationalTeam && (
-                      <span className="px-2 py-0.5 rounded bg-zinc-100 text-zinc-800 border border-zinc-200 text-[11px] font-bold">
-                        ✓ {lang === "sv" ? "Öppen för landslag" : "Open for National Team"}
+                {player.careerHistory && player.careerHistory.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead>
+                        <tr className="border-b border-zinc-200 text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+                          <th className="py-2.5 px-3">Säsong</th>
+                          <th className="py-2.5 px-3">Klubb</th>
+                          <th className="py-2.5 px-3">Serie / Nivå</th>
+                          <th className="py-2.5 px-3">Roll / Notering</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-100">
+                        {player.careerHistory.map((item, i) => (
+                          <tr key={i} className="hover:bg-zinc-50/70 transition-colors">
+                            <td className="py-2.5 px-3 font-bold text-zinc-950 whitespace-nowrap">
+                              {item.season}
+                            </td>
+                            <td className="py-2.5 px-3 font-semibold text-zinc-900">
+                              {item.club}
+                            </td>
+                            <td className="py-2.5 px-3 text-zinc-600">
+                              <span className="px-2 py-0.5 rounded bg-zinc-100 text-zinc-800 text-[11px] font-medium border border-zinc-200">
+                                {item.league}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3 text-zinc-600 italic">
+                              {item.role || "—"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-600">
+                    <span className="font-semibold text-zinc-900 block mb-0.5">Senaste klubb:</span>
+                    <span>{player.previousClub}</span>
+                    {player.youthClub && (
+                      <span className="block text-zinc-500 mt-1">
+                        Moderklubb: {player.youthClub}
                       </span>
                     )}
                   </div>
+                )}
+              </div>
 
-                  <div className="space-y-3 text-xs">
-                    {player.secondaryCitizenships && player.secondaryCitizenships.length > 0 && (
-                      <div>
-                        <span className="font-semibold text-zinc-500 block mb-1.5 uppercase text-[10px] tracking-wider">
-                          {lang === "sv" ? "Medborgarskap / Pass" : "Citizenships / Passports"}:
-                        </span>
-                        <div className="flex flex-wrap gap-2">
-                          {player.secondaryCitizenships.map((code) => {
-                            const c = getCountry(code);
-                            return (
-                              <div
-                                key={code}
-                                className="px-3 py-1.5 rounded-lg bg-zinc-50 border border-zinc-200 text-zinc-900 text-xs font-semibold flex items-center gap-2"
-                              >
-                                <span className="text-base">{c?.flag || "🛂"}</span>
-                                <span>{c ? c.names[lang] : code}</span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {player.heritageCountry && (
-                      <div className="p-3 rounded-lg bg-zinc-50 border border-zinc-200">
-                        <span className="font-bold text-zinc-900 block text-[11px] uppercase tracking-wider mb-1">
-                          🧬 {lang === "sv" ? "Landslagsanknytning & Rötter (Heritage)" : "Family Heritage & Ancestry"}:
-                        </span>
-                        <p className="text-zinc-800 font-medium">{player.heritageCountry}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
+              {/* SECTION: RESPONSIVE VIDEO EMBED */}
+              {(player.videoUrl || player.youtubeUrl) && (
+                <VideoEmbed
+                  url={player.videoUrl || player.youtubeUrl}
+                  title={`${player.name} - Highlights`}
+                  lang={lang}
+                />
               )}
 
-              {/* Section: Civil Profile & Dual-Career Setup */}
-              <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950 mb-3">
-                  {t.playerDetailPage.civilSetupTitle}
-                </h2>
+              {/* SECTION: CIVILA FÖRUTSÄTTNINGAR & INTEGRATION */}
+              <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-base">💼</span>
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950">
+                    {t.playerDetailPage.civilSetupTitle}
+                  </h2>
+                </div>
 
                 {player.occupationPreferences && player.occupationPreferences.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -330,7 +466,7 @@ export default function PlayerDetailPage() {
                       return (
                         <div
                           key={pref}
-                          className="p-3 rounded-lg bg-zinc-50 border border-zinc-200 text-zinc-800 text-xs font-medium flex items-center gap-2"
+                          className="p-3 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-800 text-xs font-medium flex items-center gap-2"
                         >
                           <span className="text-emerald-600 font-bold text-sm">✓</span>
                           <span>{label}</span>
@@ -345,17 +481,58 @@ export default function PlayerDetailPage() {
                 )}
               </div>
 
-              {/* Section: Spoken Languages & Integration */}
-              <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950 mb-3">
-                  {t.playerDetailPage.spokenLanguagesTitle}
-                </h2>
+              {/* SECTION: GEOGRAFISK MOBILITET */}
+              <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-base">🌍</span>
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950">
+                    {t.playerDetailPage.targetCountriesTitle}
+                  </h2>
+                </div>
+
+                {isWorldwide ? (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 font-semibold mb-3">
+                    {t.playerDetailPage.openWorldwideBadge}
+                  </div>
+                ) : null}
+
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {targetCountriesList.length > 0 ? (
+                    targetCountriesList.map((code) => {
+                      const c = getCountry(code);
+                      return (
+                        <div
+                          key={code}
+                          className="px-3 py-1.5 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-900 text-xs font-semibold flex items-center gap-2"
+                        >
+                          <span className="text-base">{c?.flag || "🏳️"}</span>
+                          <span>{c ? c.names[lang] : code}</span>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-xs text-zinc-500">
+                      {player.countryFlag} {player.countryName[lang]}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* SECTION: SPRÅK & SOCIALA MEDIER */}
+              <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">🗣️</span>
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950">
+                    Språk & Sociala medier
+                  </h2>
+                </div>
+
                 <div className="flex flex-wrap gap-2">
                   {player.spokenLanguages && player.spokenLanguages.length > 0 ? (
                     player.spokenLanguages.map((code) => (
                       <div
                         key={code}
-                        className="px-3 py-1.5 rounded-lg bg-zinc-50 border border-zinc-200 text-zinc-900 text-xs font-semibold flex items-center gap-2"
+                        className="px-3 py-1.5 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-900 text-xs font-semibold flex items-center gap-2"
                       >
                         <span>{getLanguageFlag(code)}</span>
                         <span>{getLanguageName(code, lang)}</span>
@@ -365,61 +542,7 @@ export default function PlayerDetailPage() {
                     <span className="text-xs text-zinc-500">Svenska, Engelska</span>
                   )}
                 </div>
-              </div>
 
-              {/* Section: Transfer Preferences */}
-              <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950 mb-3">
-                  {t.playerDetailPage.transferPreferencesTitle}
-                </h2>
-                <p className="text-xs sm:text-sm text-zinc-700 leading-relaxed">
-                  {player.seekingPreferences[lang]}
-                </p>
-              </div>
-
-              {/* Section: Video Highlights & Social Media */}
-              <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs space-y-4">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950">
-                  {lang === "sv" ? "Highlights & Sociala Medier" : "Highlights & Social Media"}
-                </h2>
-
-                {player.youtubeUrl ? (
-                  <a
-                    href={player.youtubeUrl.startsWith("http") ? player.youtubeUrl : `https://${player.youtubeUrl}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-4 rounded-xl bg-red-50 hover:bg-red-100/70 border border-red-200 text-xs text-red-950 flex items-center justify-between transition-colors group cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-red-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
-                        ▶
-                      </div>
-                      <div>
-                        <span className="font-bold text-zinc-950 block text-xs">
-                          {lang === "sv" ? "Se matchklipp & Highlights" : "Watch Game Tape & Highlights"}
-                        </span>
-                        <span className="text-[11px] text-zinc-600 truncate max-w-xs block">
-                          {player.youtubeUrl}
-                        </span>
-                      </div>
-                    </div>
-                    <span className="text-xs font-bold text-red-700 group-hover:translate-x-0.5 transition-transform">
-                      {lang === "sv" ? "Öppna" : "Watch"} ↗
-                    </span>
-                  </a>
-                ) : (
-                  <div className="p-4 rounded-lg bg-zinc-50 border border-zinc-200 text-xs text-zinc-600 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-zinc-200 flex items-center justify-center text-zinc-600 font-bold">
-                      ▶
-                    </div>
-                    <div>
-                      <span className="font-semibold text-zinc-900 block">Game Tape & Clips</span>
-                      <span>{t.playerDetailPage.videoPlaceholderText}</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Social media links if present */}
                 <SocialLinks
                   instagramUrl={player.instagramUrl}
                   youtubeUrl={player.youtubeUrl}
@@ -428,39 +551,61 @@ export default function PlayerDetailPage() {
               </div>
             </div>
 
-            {/* Right Column (1/3): Quick Specs & Direct Inquiry */}
+            {/* Right Column (1/3): Quick Overview & Gated Contact Card */}
             <div className="space-y-6">
               {/* Quick Specs Card */}
-              <div className="bg-white border border-zinc-200 rounded-xl p-6 shadow-xs">
+              <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-xs">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-950 mb-4 pb-3 border-b border-zinc-100">
                   {t.playerDetailPage.overviewTitle}
                 </h3>
                 <dl className="space-y-3 text-xs">
                   <div className="flex justify-between">
-                    <dt className="text-zinc-500">{t.playerDetailPage.nationality}:</dt>
-                    <dd className="font-semibold text-zinc-900">
-                      {player.countryFlag} {player.countryName[lang]}
-                    </dd>
+                    <dt className="text-zinc-500">Position:</dt>
+                    <dd className="font-semibold text-zinc-900">{player.positionName[lang]}</dd>
                   </div>
+                  {player.secondaryPositionName && (
+                    <div className="flex justify-between">
+                      <dt className="text-zinc-500">Sekundär:</dt>
+                      <dd className="font-semibold text-zinc-900">{player.secondaryPositionName[lang]}</dd>
+                    </div>
+                  )}
                   <div className="flex justify-between">
-                    <dt className="text-zinc-500">{t.playerDetailPage.stickGrip}:</dt>
+                    <dt className="text-zinc-500">Fattning:</dt>
                     <dd className="font-semibold text-zinc-900">{player.gripName[lang]}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-zinc-500">{t.playerDetailPage.heightWeight}:</dt>
+                    <dt className="text-zinc-500">Mått:</dt>
                     <dd className="font-semibold text-zinc-900">{player.heightWeight}</dd>
                   </div>
+                  {player.youthClub && (
+                    <div className="flex justify-between">
+                      <dt className="text-zinc-500">Moderklubb:</dt>
+                      <dd className="font-semibold text-zinc-900">{player.youthClub}</dd>
+                    </div>
+                  )}
+                  {player.academyType && player.academyType !== "none" && (
+                    <div className="flex justify-between">
+                      <dt className="text-zinc-500">Gymnasium:</dt>
+                      <dd className="font-semibold text-zinc-900">
+                        {player.academyType} {player.academySchool ? `(${player.academySchool})` : ""}
+                      </dd>
+                    </div>
+                  )}
                   <div className="flex justify-between">
-                    <dt className="text-zinc-500">{t.playerDetailPage.previousClub}:</dt>
-                    <dd className="font-semibold text-zinc-900">{player.previousClub}</dd>
+                    <dt className="text-zinc-500">Nuvarande:</dt>
+                    <dd className="font-semibold text-zinc-900 truncate max-w-[150px]" title={player.previousClub}>
+                      {player.previousClub}
+                    </dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-zinc-500">{t.playerDetailPage.contractStatus}:</dt>
-                    <dd className="font-semibold text-zinc-900">{player.statusLabel[lang]}</dd>
+                    <dt className="text-zinc-500">Kontrakt:</dt>
+                    <dd className="font-semibold text-zinc-900">
+                      {player.contractStatusLabel?.[lang] || player.statusLabel[lang]}
+                    </dd>
                   </div>
                   {(player.packagePreference || player.packagePreferenceLabel) && (
                     <div className="flex justify-between">
-                      <dt className="text-zinc-500">{lang === "sv" ? "Avtalsnivå:" : "Contract Level:"}</dt>
+                      <dt className="text-zinc-500">Avtalsnivå:</dt>
                       <dd className="font-semibold text-zinc-900">
                         {formatWish(player.packagePreference) || player.packagePreferenceLabel?.[lang]}
                       </dd>

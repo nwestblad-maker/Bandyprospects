@@ -49,6 +49,13 @@ export interface SpokenLanguageItem {
   name: LocalizedString;
 }
 
+export interface CareerSeason {
+  season: string; // e.g. "2025/26"
+  club: string;   // e.g. "Vetlanda BK"
+  league: string; // e.g. "Elitserien"
+  role?: string;  // e.g. "Ordinarie / Lagkapten"
+}
+
 export interface PlayerProfile {
   id: string;
   name: string;
@@ -58,6 +65,8 @@ export interface PlayerProfile {
   countryName: LocalizedString;
   positionCategory: PositionCategory;
   positionName: LocalizedString;
+  secondaryPosition?: PositionCategory | string;
+  secondaryPositionName?: LocalizedString;
   grip: PlayerGrip;
   gripName: LocalizedString;
   heightWeight: string;
@@ -66,6 +75,13 @@ export interface PlayerProfile {
   previousClub: string;
   currentStatus: PlayerStatus;
   statusLabel: LocalizedString;
+  contractStatus?: string;
+  contractStatusLabel?: LocalizedString;
+  youthClub?: string;
+  academyType?: "RIG" | "NIU" | "none" | string;
+  academySchool?: string;
+  playerTraits?: string[];
+  careerHistory?: CareerSeason[];
   avatarInitials: string;
   photoUrl?: string;
   highlightStats: LocalizedString;
@@ -80,6 +96,7 @@ export interface PlayerProfile {
   appearancesCount: number;
   pointsCount: number;
   videoUrlPlaceholder?: string;
+  videoUrl?: string;
   targetCountries?: string[];
   occupationPreferences?: OccupationPreference[];
   spokenLanguages?: string[];

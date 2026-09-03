@@ -15,6 +15,7 @@ import { getCountry, getLanguageName } from "@/data/countries";
 import { getLeagueDisplayName } from "@/lib/leagues";
 import { formatWish } from "@/lib/formatters";
 import { PlayerFilters } from "@/components/PlayerFilters";
+import { BandyNetworkStats } from "@/components/BandyNetworkStats";
 
 export default function PlayersPage() {
   const { lang, t } = useLanguage();
@@ -255,6 +256,9 @@ export default function PlayersPage() {
         {/* Content & Filter Section */}
         <section className="py-6 sm:py-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Bandy Network Stats Banner */}
+            <BandyNetworkStats players={playersList} lang={lang} />
+
             {/* Mobile Filter Toggle & Compact Button Bar (< lg) */}
             <div className="lg:hidden mb-4">
               <div className="flex items-center gap-2">
