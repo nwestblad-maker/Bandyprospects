@@ -4,6 +4,28 @@ import React, { useState, useEffect } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 
+const AUTH_SYNC_CHANNEL = 'bp_auth_sync_channel';
+const AUTH_SYNC_STORAGE_KEY = 'bp_auth_sync_timestamp';
+
+function broadcastAuthSuccess(userEmail?: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(AUTH_SYNC_STORAGE_KEY, Date.now().toString());
+  } catch {
+    // ignore storage restrictions
+  }
+
+  try {
+    if (typeof BroadcastChannel !== 'undefined') {
+      const channel = new BroadcastChannel(AUTH_SYNC_CHANNEL);
+      channel.postMessage({ type: 'AUTH_SUCCESS', email: userEmail, timestamp: Date.now() });
+      channel.close();
+    }
+  } catch {
+    // ignore broadcast errors
+  }
+}
+
 export default function GatedContactCard({
   contactName,
   contactEmail,
@@ -41,13 +63,112 @@ export default function GatedContactCard({
   const [directSuccess, setDirectSuccess] = useState(false);
   const [directError, setDirectError] = useState('');
 
+  // Cross-tab synchronization and auth state listener
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user || null));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUser(session?.user || null);
+    const syncUser = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUser(session.user);
+          broadcastAuthSuccess(session.user.email);
+          return session.user;
+        } else {
+          const { data } = await supabase.auth.getUser();
+          if (data?.user) {
+            setUser(data.user);
+            broadcastAuthSuccess(data.user.email);
+            return data.user;
+          }
+        }
+      } catch (err) {
+        console.debug('Error syncing user session:', err);
+      }
+      return null;
+    };
+
+    syncUser();
+
+    // 1. Supabase auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        broadcastAuthSuccess(session.user.email);
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+      }
     });
-    return () => subscription.unsubscribe();
+
+    // 2. BroadcastChannel cross-tab listener
+    let channel: BroadcastChannel | null = null;
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        channel = new BroadcastChannel(AUTH_SYNC_CHANNEL);
+        channel.onmessage = async (event) => {
+          if (event.data?.type === 'AUTH_SUCCESS') {
+            await syncUser();
+          }
+        };
+      } catch (e) {
+        console.debug('BroadcastChannel listener error:', e);
+      }
+    }
+
+    // 3. Storage event listener for cross-window / cross-tab sync
+    const handleStorage = async (e: StorageEvent) => {
+      if (e.key === AUTH_SYNC_STORAGE_KEY) {
+        await syncUser();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    // 4. Focus & visibility change listeners (re-check when returning to tab from inbox)
+    const handleFocus = () => {
+      syncUser();
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        syncUser();
+      }
+    };
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      subscription.unsubscribe();
+      if (channel) {
+        channel.close();
+      }
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
+
+  // Active polling when waiting for magic link verification in another tab/window
+  useEffect(() => {
+    if (!sentLink || user) return;
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUser(session.user);
+          broadcastAuthSuccess(session.user.email);
+          return;
+        }
+
+        const { data } = await supabase.auth.getUser();
+        if (data?.user) {
+          setUser(data.user);
+          broadcastAuthSuccess(data.user.email);
+        }
+      } catch (err) {
+        console.debug('Auth verification poll error:', err);
+      }
+    }, 2000);
+
+    return () => clearInterval(pollInterval);
+  }, [sentLink, user]);
 
   useEffect(() => {
     if (isFormOnly) {
@@ -60,14 +181,17 @@ export default function GatedContactCard({
     if (!authEmail) return;
     setLoading(true);
     setErrorMsg('');
-    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+
+    const returnUrl = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/';
     const redirectUrl = typeof window !== 'undefined'
-      ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(currentPath)}`
+      ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnUrl)}`
       : undefined;
+
     const { error } = await supabase.auth.signInWithOtp({
-      email: authEmail,
+      email: authEmail.trim(),
       options: { emailRedirectTo: redirectUrl },
     });
+
     setLoading(false);
     if (error) {
       setErrorMsg(error.message);
@@ -285,8 +409,39 @@ export default function GatedContactCard({
           För att skydda spelare och ledare mot spam krävs inloggning med e-post för att visa kontaktuppgifter.
         </p>
         {sentLink ? (
-          <div className="bg-white border border-emerald-300 text-emerald-800 text-sm p-3 rounded-lg">
-            📩 En inloggningslänk har skickats till <strong>{authEmail}</strong>!
+          <div className="bg-emerald-50/80 border border-emerald-300/80 rounded-xl p-5 text-center shadow-2xs space-y-3">
+            <div className="w-10 h-10 mx-auto bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center text-lg shadow-2xs">
+              ✉️
+            </div>
+            <div>
+              <p className="text-sm font-bold text-slate-900 leading-snug">
+                Länk skickad till <span className="text-emerald-800 font-extrabold break-all">{authEmail}</span>! Klicka på länken i din inkorg.
+              </p>
+              <p className="text-xs text-slate-600 mt-1">
+                När du har klickat på länken i ditt mail låses kontaktuppgifterna upp automatiskt här.
+              </p>
+            </div>
+
+            <div className="inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-emerald-300 text-xs font-semibold text-emerald-800 shadow-2xs">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <span>Väntar på verifiering...</span>
+            </div>
+
+            <div className="pt-2 border-t border-emerald-200/60">
+              <button
+                type="button"
+                onClick={() => {
+                  setSentLink(false);
+                  setErrorMsg('');
+                }}
+                className="text-[11px] text-slate-500 hover:text-slate-800 underline cursor-pointer transition-colors"
+              >
+                Angav du fel adress? Klicka här för att byta e-post
+              </button>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSendMagicLink} className="flex flex-col sm:flex-row gap-2">

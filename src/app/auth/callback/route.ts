@@ -16,12 +16,6 @@ export async function GET(request: NextRequest) {
     ? rawNext
     : (rawNext ? `/${rawNext}` : "/my-profile");
 
-  // Ta hänsyn till eventuell reverse proxy / load balancer i produktion
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const isLocalEnv = process.env.NODE_ENV === "development";
-  const origin = !isLocalEnv && forwardedHost
-    ? `https://${forwardedHost}`
-    : requestUrl.origin;
 
   if (code || (token_hash && type)) {
     const cookieStore = await cookies();
@@ -59,11 +53,11 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error("Auth callback error:", error);
       return NextResponse.redirect(
-        `${origin}/login?error=${encodeURIComponent(error.message)}`
+        `${requestUrl.origin}/login?error=${encodeURIComponent(error.message)}`
       );
     }
   }
 
-  // Omdirigera till profilsidan eller angiven 'next'-sida efter lyckad inloggning
-  return NextResponse.redirect(`${origin}${next}`);
+  // Explicitly redirect to target origin + next after successful auth session exchange
+  return NextResponse.redirect(`${requestUrl.origin}${next}`);
 }
