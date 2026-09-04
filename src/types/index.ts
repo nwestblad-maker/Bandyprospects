@@ -50,10 +50,13 @@ export interface SpokenLanguageItem {
 }
 
 export interface CareerSeason {
-  season: string; // e.g. "2025/26"
-  club: string;   // e.g. "Vetlanda BK"
-  league: string; // e.g. "Elitserien"
-  role?: string;  // e.g. "Ordinarie / Lagkapten"
+  season?: string;      // e.g. "2024/25" or "2021/22 – 2024/25"
+  from_season?: string; // e.g. "2020/21"
+  to_season?: string;   // e.g. "2024/25" or "Nuvarande"
+  club: string;         // e.g. "Vetlanda BK"
+  league: string;       // e.g. "Elitserien"
+  role?: string;        // legacy role
+  note?: string;        // e.g. "Ordinarie, Kapten, 45 m"
 }
 
 export interface PlayerProfile {

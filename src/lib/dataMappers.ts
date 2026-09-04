@@ -319,12 +319,43 @@ export function parseCareerHistory(val: unknown): CareerSeason[] {
     for (const item of val) {
       if (item && typeof item === "object") {
         const s = item as Record<string, unknown>;
-        const season = String(s.season || "").trim();
+        let season = String(s.season || "").trim();
+        let from_season = String(s.from_season || s.fromSeason || "").trim();
+        let to_season = String(s.to_season || s.toSeason || "").trim();
         const club = String(s.club || "").trim();
         const league = String(s.league || "").trim();
         const role = s.role ? String(s.role).trim() : undefined;
-        if (season || club) {
-          list.push({ season, club, league, role });
+        const note = s.note ? String(s.note).trim() : (role || undefined);
+
+        // If from_season / to_season are missing but season exists
+        if (!from_season && !to_season && season) {
+          const parts = season.split(/–|-/).map((p) => p.trim());
+          if (parts.length >= 2) {
+            from_season = parts[0];
+            to_season = parts[1];
+          } else if (parts.length === 1) {
+            from_season = parts[0];
+            to_season = parts[0];
+          }
+        }
+
+        // If from_season / to_season exist but season is empty, synthesize season
+        if (!season && from_season) {
+          season = (!to_season || from_season === to_season)
+            ? from_season
+            : `${from_season} – ${to_season}`;
+        }
+
+        if (season || from_season || club) {
+          list.push({
+            season,
+            from_season: from_season || season,
+            to_season: to_season || from_season || season,
+            club,
+            league,
+            role: note || role,
+            note: note || role,
+          });
         }
       }
     }

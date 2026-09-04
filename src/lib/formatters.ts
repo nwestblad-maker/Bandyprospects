@@ -34,3 +34,28 @@ export const COUNTRIES = [
   { code: 'JP', name: 'Japan 🇯🇵' },
   { code: 'OTHER', name: 'Övrigt land' },
 ];
+
+export function formatCareerPeriod(
+  item: {
+    season?: string;
+    from_season?: string;
+    to_season?: string;
+  },
+  lang: string = 'sv'
+): string {
+  const from = item.from_season?.trim();
+  const to = item.to_season?.trim();
+
+  if (from && to) {
+    if (from === to) return from;
+    const isCurrent = to.toLowerCase() === 'nuvarande' || to.toLowerCase() === 'current';
+    const toFormatted = isCurrent ? (lang === 'sv' ? 'Nuvarande' : 'Current') : to;
+    return `${from} – ${toFormatted}`;
+  }
+  if (from) return from;
+  if (to) {
+    const isCurrent = to.toLowerCase() === 'nuvarande' || to.toLowerCase() === 'current';
+    return isCurrent ? (lang === 'sv' ? 'Nuvarande' : 'Current') : to;
+  }
+  return item.season?.trim() || '—';
+}

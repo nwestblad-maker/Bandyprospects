@@ -15,7 +15,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { transformSupabasePlayer, SupabasePlayerRow } from "@/lib/dataMappers";
 import { getCountry, getLanguageName, getLanguageFlag } from "@/data/countries";
 import { getTraitIcon } from "@/data/attributes";
-import { formatWish } from "@/lib/formatters";
+import { formatWish, formatCareerPeriod } from "@/lib/formatters";
 
 export default function PlayerDetailPage() {
   const { id } = useParams() as { id: string };
@@ -413,7 +413,7 @@ export default function PlayerDetailPage() {
                         {player.careerHistory.map((item, i) => (
                           <tr key={i} className="hover:bg-zinc-50/70 transition-colors">
                             <td className="py-2.5 px-3 font-bold text-zinc-950 whitespace-nowrap">
-                              {item.season}
+                              {formatCareerPeriod(item, lang)}
                             </td>
                             <td className="py-2.5 px-3 font-semibold text-zinc-900">
                               {item.club}
@@ -424,7 +424,7 @@ export default function PlayerDetailPage() {
                               </span>
                             </td>
                             <td className="py-2.5 px-3 text-zinc-600 italic">
-                              {item.role || "—"}
+                              {item.note || item.role || "—"}
                             </td>
                           </tr>
                         ))}
