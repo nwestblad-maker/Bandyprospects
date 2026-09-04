@@ -145,6 +145,14 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                   {t.nav.market}
                 </Link>
                 <Link
+                  href="/statistik"
+                  className={`transition-colors hover:text-zinc-950 ${
+                    pathname?.startsWith("/statistik") || pathname?.startsWith("/stats") ? "text-zinc-950 font-bold" : ""
+                  }`}
+                >
+                  {lang === "sv" ? "Statistik" : "Stats"}
+                </Link>
+                <Link
                   href="/#how-it-works"
                   className="transition-colors hover:text-zinc-950"
                 >
@@ -330,6 +338,13 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                 className="block px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 rounded-md"
               >
                 {t.nav.market}
+              </Link>
+              <Link
+                href="/statistik"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 rounded-md"
+              >
+                {lang === "sv" ? "Statistik & Insikter" : "Stats & Insights"}
               </Link>
               <Link
                 href="/#how-it-works"

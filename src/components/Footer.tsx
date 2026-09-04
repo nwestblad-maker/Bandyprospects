@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 
 export function Footer() {
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
 
   return (
     <footer id="about" className="bg-zinc-900 text-zinc-400 text-xs border-t border-zinc-800">
@@ -55,6 +55,11 @@ export function Footer() {
               <li>
                 <Link href="/players" className="hover:text-white transition-colors">
                   {t.footer.scoutDatabase}
+                </Link>
+              </li>
+              <li>
+                <Link href="/statistik" className="hover:text-white transition-colors">
+                  {lang === "sv" ? "Statistik & Insikter" : "Stats & Insights"}
                 </Link>
               </li>
             </ul>
@@ -121,6 +126,9 @@ export function Footer() {
             © {new Date().getFullYear()} Bandyprospects. {t.footer.copyright}
           </div>
           <div className="flex items-center gap-4">
+            <Link href="/statistik" className="hover:text-zinc-400">
+              {lang === "sv" ? "Statistik & Insikter" : "Stats & Insights"}
+            </Link>
             <Link href="/integritet" className="hover:text-zinc-400">
               {t.footer.privacy}
             </Link>

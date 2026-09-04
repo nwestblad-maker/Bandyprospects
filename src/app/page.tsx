@@ -13,7 +13,6 @@ import { transformSupabasePlayer, transformSupabaseClubAd, SupabasePlayerRow, Su
 import SocialLinks from "@/components/SocialLinks";
 import { formatWish } from "@/lib/formatters";
 import { LatestTransfersTicker } from "@/components/LatestTransfersTicker";
-import { BandyNetworkStats } from "@/components/BandyNetworkStats";
 
 export default function HomePage() {
   const { lang, t } = useLanguage();
@@ -200,11 +199,6 @@ export default function HomePage() {
 
         {/* 1.5. OFFICIAL TRANSFERS LIVE TICKER */}
         <LatestTransfersTicker />
-
-        {/* 1.75. AGGREGATED BANDY STATS BANNER */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mb-4">
-          <BandyNetworkStats lang={lang} />
-        </div>
 
         {/* 2. SECTION 1: LATEST ACTIVE CLUB OPPORTUNITIES */}
         <section id="market" className="py-14 sm:py-20 border-b border-zinc-200 bg-zinc-50">
