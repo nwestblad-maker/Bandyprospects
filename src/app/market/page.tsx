@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ClubAdFilters } from "@/components/ClubAdFilters";
@@ -13,8 +14,9 @@ import { SupabaseClubAdRow, transformSupabaseClubAd } from "@/lib/dataMappers";
 import { getLeagueDisplayName } from "@/lib/leagues";
 import { getLanguageFlag, getLanguageName } from "@/data/countries";
 
-export default function MarketPage() {
+function MarketContent() {
   const { lang, t } = useLanguage();
+  const searchParams = useSearchParams();
 
   const [clubAdsList, setClubAdsList] = useState<ClubAd[]>([]);
   const [loadingDb, setLoadingDb] = useState(true);
@@ -28,6 +30,39 @@ export default function MarketPage() {
   const [selectedTeamCategory, setSelectedTeamCategory] = useState<string>("all");
   const [selectedPerk, setSelectedPerk] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
+
+  // Sync URL search parameters with state on mount or when searchParams change
+  useEffect(() => {
+    const countryParam = searchParams.get("country");
+    if (countryParam) {
+      setSelectedCountry(countryParam.toUpperCase());
+    }
+
+    const leagueParam = searchParams.get("league");
+    if (leagueParam) {
+      setSelectedLeague(leagueParam);
+    }
+
+    const roleParam = searchParams.get("role") || searchParams.get("position");
+    if (roleParam) {
+      setSelectedRole(roleParam);
+    }
+
+    const filterParam = searchParams.get("filter");
+    if (filterParam === "tryout") {
+      setSearchQuery(lang === "sv" ? "provspel" : "tryout");
+    }
+
+    const qParam = searchParams.get("search") || searchParams.get("q");
+    if (qParam) {
+      setSearchQuery(qParam);
+    }
+
+    const orgParam = searchParams.get("orgType") || searchParams.get("org");
+    if (orgParam && (orgParam === "club" || orgParam === "national_team" || orgParam === "all")) {
+      setSelectedOrgType(orgParam);
+    }
+  }, [searchParams, lang]);
 
   const [contactModal, setContactModal] = useState<{
     isOpen: boolean;
@@ -83,6 +118,7 @@ export default function MarketPage() {
 
       // 1. Search Query
       const query = searchQuery.toLowerCase().trim();
+      const isTryoutSearch = query === "tryout" || query === "provspel";
       const matchesSearch =
         query === "" ||
         ad.club.toLowerCase().includes(query) ||
@@ -91,7 +127,20 @@ export default function MarketPage() {
         ad.divisionName[lang].toLowerCase().includes(query) ||
         ad.countryName[lang].toLowerCase().includes(query) ||
         (ad.tournament && ad.tournament.toLowerCase().includes(query)) ||
-        (ad.rolesDescription && ad.rolesDescription[lang]?.toLowerCase().includes(query));
+        (ad.rolesDescription && (
+          ad.rolesDescription[lang]?.toLowerCase().includes(query) ||
+          (isTryoutSearch && (
+            ad.rolesDescription[lang]?.toLowerCase().includes("provspel") ||
+            ad.rolesDescription[lang]?.toLowerCase().includes("tryout")
+          ))
+        )) ||
+        (ad.description && (
+          ad.description[lang]?.toLowerCase().includes(query) ||
+          (isTryoutSearch && (
+            ad.description[lang]?.toLowerCase().includes("provspel") ||
+            ad.description[lang]?.toLowerCase().includes("tryout")
+          ))
+        ));
 
       // 2. Country Filter
       const matchesCountry =
@@ -632,5 +681,19 @@ export default function MarketPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function MarketPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-zinc-50 flex items-center justify-center text-xs text-zinc-400">
+          Laddar efterlysningar...
+        </div>
+      }
+    >
+      <MarketContent />
+    </Suspense>
   );
 }

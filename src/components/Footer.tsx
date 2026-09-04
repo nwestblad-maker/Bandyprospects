@@ -29,23 +29,18 @@ export function Footer() {
             </div>
             <ul className="space-y-2">
               <li>
-                <Link href="/players" className="hover:text-white transition-colors">
+                <Link href="/join" className="hover:text-white transition-colors">
                   {t.footer.createProfile}
                 </Link>
               </li>
               <li>
-                <Link href="/market" className="hover:text-white transition-colors">
+                <Link href="/clubs" className="hover:text-white transition-colors">
                   {t.footer.browseClubs}
                 </Link>
               </li>
               <li>
-                <Link href="/#how-it-works" className="hover:text-white transition-colors">
+                <Link href="/clubs?filter=tryout" className="hover:text-white transition-colors">
                   {t.footer.tryouts}
-                </Link>
-              </li>
-              <li>
-                <Link href="/#about" className="hover:text-white transition-colors">
-                  {t.footer.careerRelocation}
                 </Link>
               </li>
             </ul>
@@ -58,7 +53,7 @@ export function Footer() {
             </div>
             <ul className="space-y-2">
               <li>
-                <Link href="/market" className="hover:text-white transition-colors">
+                <Link href="/clubs/new" className="hover:text-white transition-colors">
                   {t.footer.postOpportunity}
                 </Link>
               </li>
@@ -68,9 +63,12 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/market" className="hover:text-white transition-colors">
+                <a
+                  href="mailto:kontakt@bandyprospects.com?subject=F%C3%B6reningsverifiering"
+                  className="hover:text-white transition-colors"
+                >
                   {t.footer.clubVerification}
-                </Link>
+                </a>
               </li>
             </ul>
           </div>
@@ -81,11 +79,51 @@ export function Footer() {
               {t.footer.leagues}
             </div>
             <ul className="space-y-2">
-              <li>🇸🇪 Elitserien & Bandyallsvenskan</li>
-              <li>🇫🇮 Bandyliiga</li>
-              <li>🇳🇴 Eliteserien Norge</li>
-              <li>🇳🇱 Dutch 1e Klasse</li>
-              <li>🇺🇸 USA Bandy Premier League</li>
+              <li>
+                <Link
+                  href="/players?country=SE"
+                  className="hover:text-white transition-colors flex items-center gap-1.5"
+                >
+                  <span>🇸🇪</span>
+                  <span>Elitserien & Bandyallsvenskan</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/players?country=FI"
+                  className="hover:text-white transition-colors flex items-center gap-1.5"
+                >
+                  <span>🇫🇮</span>
+                  <span>Bandyliiga</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/players?country=NO"
+                  className="hover:text-white transition-colors flex items-center gap-1.5"
+                >
+                  <span>🇳🇴</span>
+                  <span>Eliteserien Norge</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/players?country=NL"
+                  className="hover:text-white transition-colors flex items-center gap-1.5"
+                >
+                  <span>🇳🇱</span>
+                  <span>Dutch 1e Klasse</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/players?country=US"
+                  className="hover:text-white transition-colors flex items-center gap-1.5"
+                >
+                  <span>🇺🇸</span>
+                  <span>USA Bandy Premier League</span>
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
@@ -99,9 +137,9 @@ export function Footer() {
             <Link href="/integritet" className="hover:text-zinc-400">
               {t.footer.privacy}
             </Link>
-            <a href="#" className="hover:text-zinc-400">
+            <Link href="/integritet" className="hover:text-zinc-400">
               {t.footer.terms}
-            </a>
+            </Link>
           </div>
         </div>
       </div>

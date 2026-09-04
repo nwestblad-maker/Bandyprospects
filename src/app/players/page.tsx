@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ContactModal } from "@/components/ContactModal";
@@ -17,8 +18,9 @@ import { formatWish } from "@/lib/formatters";
 import { PlayerFilters } from "@/components/PlayerFilters";
 import { BandyNetworkStats } from "@/components/BandyNetworkStats";
 
-export default function PlayersPage() {
+function PlayersContent() {
   const { lang, t } = useLanguage();
+  const searchParams = useSearchParams();
 
   const [playersList, setPlayersList] = useState<PlayerProfile[]>([]);
   const [loadingDb, setLoadingDb] = useState(true);
@@ -35,6 +37,42 @@ export default function PlayersPage() {
   const [selectedHeritageCountry, setSelectedHeritageCountry] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [showFilters, setShowFilters] = useState(false);
+
+  // Sync URL search parameters with state on mount or when searchParams change
+  useEffect(() => {
+    const countryParam = searchParams.get("country") || searchParams.get("nationality");
+    if (countryParam) {
+      setSelectedNationality(countryParam.toUpperCase());
+    }
+
+    const leagueParam = searchParams.get("league");
+    if (leagueParam) {
+      setSelectedLeague(leagueParam);
+    }
+
+    const posParam = searchParams.get("position") || searchParams.get("pos");
+    if (posParam) {
+      setSelectedPosition(posParam);
+    }
+
+    const statusParam = searchParams.get("status");
+    const filterParam = searchParams.get("filter");
+    if (filterParam === "tryout" || statusParam === "tryout" || statusParam === "open_for_trials") {
+      setSelectedStatus("open_for_trials");
+    } else if (statusParam) {
+      setSelectedStatus(statusParam);
+    }
+
+    const qParam = searchParams.get("search") || searchParams.get("q");
+    if (qParam) {
+      setSearchQuery(qParam);
+    }
+
+    const civilParam = searchParams.get("civil");
+    if (civilParam) {
+      setSelectedCivilSetup(civilParam);
+    }
+  }, [searchParams]);
 
   const [contactModal, setContactModal] = useState<{
     isOpen: boolean;
@@ -794,5 +832,19 @@ export default function PlayersPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function PlayersPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-zinc-50 flex items-center justify-center text-xs text-zinc-400">
+          Laddar spelare...
+        </div>
+      }
+    >
+      <PlayersContent />
+    </Suspense>
   );
 }
