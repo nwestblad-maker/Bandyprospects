@@ -27,7 +27,7 @@ export function Footer() {
             <div className="font-bold text-zinc-200 uppercase tracking-wider mb-3">
               {t.footer.forPlayers}
             </div>
-            <ul className="space-y-2">
+            <ul className="space-y-2.5">
               <li>
                 <Link href="/join" className="hover:text-white transition-colors">
                   {t.footer.createProfile}
@@ -38,11 +38,6 @@ export function Footer() {
                   {t.footer.browseClubs}
                 </Link>
               </li>
-              <li>
-                <Link href="/clubs?filter=tryout" className="hover:text-white transition-colors">
-                  {t.footer.tryouts}
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -51,7 +46,7 @@ export function Footer() {
             <div className="font-bold text-zinc-200 uppercase tracking-wider mb-3">
               {t.footer.forClubs}
             </div>
-            <ul className="space-y-2">
+            <ul className="space-y-2.5">
               <li>
                 <Link href="/clubs/new" className="hover:text-white transition-colors">
                   {t.footer.postOpportunity}
@@ -62,14 +57,6 @@ export function Footer() {
                   {t.footer.scoutDatabase}
                 </Link>
               </li>
-              <li>
-                <a
-                  href="mailto:kontakt@bandyprospects.com?subject=F%C3%B6reningsverifiering"
-                  className="hover:text-white transition-colors"
-                >
-                  {t.footer.clubVerification}
-                </a>
-              </li>
             </ul>
           </div>
 
@@ -78,7 +65,7 @@ export function Footer() {
             <div className="font-bold text-zinc-200 uppercase tracking-wider mb-3">
               {t.footer.leagues}
             </div>
-            <ul className="space-y-2">
+            <ul className="space-y-2.5">
               <li>
                 <Link
                   href="/players?country=SE"
