@@ -4,8 +4,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { CountrySelect } from "@/components/CountrySelect";
-import { LeagueSelect } from "@/components/LeagueSelect";
+import { ClubAdFilters } from "@/components/ClubAdFilters";
 import { ContactModal } from "@/components/ContactModal";
 import { useLanguage } from "@/context/LanguageContext";
 import { supabase } from "@/lib/supabaseClient";
@@ -28,6 +27,7 @@ export default function MarketPage() {
   const [selectedRole, setSelectedRole] = useState<string>("all");
   const [selectedTeamCategory, setSelectedTeamCategory] = useState<string>("all");
   const [selectedPerk, setSelectedPerk] = useState<string>("all");
+  const [showFilters, setShowFilters] = useState(false);
 
   const [contactModal, setContactModal] = useState<{
     isOpen: boolean;
@@ -144,6 +144,26 @@ export default function MarketPage() {
     lang,
   ]);
 
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (selectedOrgType !== "all") count++;
+    if (searchQuery.trim() !== "") count++;
+    if (selectedCountry !== "all") count++;
+    if (selectedLeague !== "all") count++;
+    if (selectedRole !== "all") count++;
+    if (selectedTeamCategory !== "all") count++;
+    if (selectedPerk !== "all") count++;
+    return count;
+  }, [
+    selectedOrgType,
+    searchQuery,
+    selectedCountry,
+    selectedLeague,
+    selectedRole,
+    selectedTeamCategory,
+    selectedPerk,
+  ]);
+
   const handleResetFilters = () => {
     setSelectedOrgType("all");
     setSearchQuery("");
@@ -255,166 +275,107 @@ export default function MarketPage() {
         </section>
 
         {/* Content & Filter Section */}
-        <section className="py-8 sm:py-12">
+        <section className="py-6 sm:py-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Left Column: Filter Sidebar Panel */}
-              <aside className="lg:col-span-3 bg-white border border-zinc-200 rounded-xl p-5 shadow-xs sticky top-24">
-                <div className="flex items-center justify-between pb-3 border-b border-zinc-100 mb-4">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
-                    {t.marketPage.filtersTitle}
-                  </h2>
-                  {(searchQuery ||
-                    selectedOrgType !== "all" ||
-                    selectedCountry !== "all" ||
-                    selectedLeague !== "all" ||
-                    selectedRole !== "all" ||
-                    selectedTeamCategory !== "all" ||
-                    selectedPerk !== "all") && (
-                    <button
-                      onClick={handleResetFilters}
-                      className="text-[11px] font-semibold text-zinc-500 hover:text-zinc-950 underline cursor-pointer"
-                    >
-                      {t.marketPage.clearFilters}
-                    </button>
-                  )}
+            {/* Mobile Filter Toggle & Compact Button Bar (< lg) */}
+            <div className="lg:hidden mb-4">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowFilters((prev) => !prev)}
+                  className={`flex-1 flex items-center justify-between px-4 py-2.5 rounded-xl border text-xs font-bold transition-all shadow-xs cursor-pointer ${
+                    showFilters || activeFilterCount > 0
+                      ? "bg-zinc-900 text-white border-zinc-900"
+                      : "bg-white text-zinc-900 border-zinc-200 hover:bg-zinc-50"
+                  }`}
+                  aria-expanded={showFilters}
+                  aria-controls="mobile-club-filters"
+                >
+                  <div className="flex items-center gap-2">
+                    <span>
+                      {showFilters
+                        ? (lang === "sv" ? "Dölj filter ✕" : "Hide filters ✕")
+                        : (lang === "sv" ? "Filtrera annonser ⚙️" : "Filter postings ⚙️")}
+                    </span>
+                    {activeFilterCount > 0 && (
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-400 text-zinc-950 text-[11px] font-black">
+                        {activeFilterCount}
+                      </span>
+                    )}
+                  </div>
+
+                  <span className={`text-[11px] font-normal ${showFilters || activeFilterCount > 0 ? "text-zinc-300" : "text-zinc-500"}`}>
+                    {filteredClubAds.length} {lang === "sv" ? "träffar" : "matches"}
+                  </span>
+                </button>
+
+                {activeFilterCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className="px-3 py-2.5 bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-700 hover:text-zinc-950 text-xs font-semibold rounded-xl shadow-xs cursor-pointer transition-colors whitespace-nowrap"
+                    title={t.marketPage.clearFilters}
+                  >
+                    {lang === "sv" ? "Rensa ✕" : "Clear ✕"}
+                  </button>
+                )}
+              </div>
+
+              {/* Collapsible Mobile Filter Drawer / Accordion */}
+              {showFilters && (
+                <div id="mobile-club-filters" className="mt-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <ClubAdFilters
+                    selectedOrgType={selectedOrgType}
+                    setSelectedOrgType={setSelectedOrgType}
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    selectedCountry={selectedCountry}
+                    setSelectedCountry={setSelectedCountry}
+                    selectedLeague={selectedLeague}
+                    setSelectedLeague={setSelectedLeague}
+                    selectedRole={selectedRole}
+                    setSelectedRole={setSelectedRole}
+                    selectedTeamCategory={selectedTeamCategory}
+                    setSelectedTeamCategory={setSelectedTeamCategory}
+                    selectedPerk={selectedPerk}
+                    setSelectedPerk={setSelectedPerk}
+                    activeFilterCount={activeFilterCount}
+                    handleResetFilters={handleResetFilters}
+                    totalMatches={filteredClubAds.length}
+                    isMobile={true}
+                    onCloseMobile={() => setShowFilters(false)}
+                  />
                 </div>
+              )}
+            </div>
 
-                <div className="space-y-4 text-xs">
-                  {/* Search */}
-                  <div>
-                    <label className="block font-semibold text-zinc-700 mb-1.5">Search</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-zinc-400">
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                      </div>
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder={t.marketPage.searchPlaceholder}
-                        className="w-full pl-8 pr-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Organization Type Filter */}
-                  <div>
-                    <label className="block font-semibold text-zinc-700 mb-1.5">
-                      {lang === "sv" ? "Organisationstyp" : "Organization"}
-                    </label>
-                    <select
-                      value={selectedOrgType}
-                      onChange={(e) => setSelectedOrgType(e.target.value as any)}
-                      className="w-full px-2.5 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-800 focus:outline-none focus:border-zinc-900 cursor-pointer"
-                    >
-                      <option value="all">{lang === "sv" ? "Alla organisationer" : "All Organizations"}</option>
-                      <option value="club">🏟️ {lang === "sv" ? "Klubblag" : "Club Teams"}</option>
-                      <option value="national_team">🌍 {lang === "sv" ? "Landslag (National Teams)" : "National Teams"}</option>
-                    </select>
-                  </div>
-
-                  {/* Country Filter */}
-                  <div>
-                    <CountrySelect
-                      label={t.marketPage.countryFilter}
-                      value={selectedCountry === "all" ? "" : selectedCountry}
-                      onChange={(code) => {
-                        setSelectedCountry(code || "all");
-                        setSelectedLeague("all");
-                      }}
-                      includeAllOption={true}
-                      allOptionLabel={lang === "sv" ? "Alla länder" : "All Countries"}
-                    />
-                  </div>
-
-                  {/* League / Division Filter */}
-                  {selectedOrgType !== "national_team" && (
-                    <div>
-                      <LeagueSelect
-                        countryCode={selectedCountry === "all" ? "SE" : selectedCountry}
-                        value={selectedLeague === "all" ? "" : selectedLeague}
-                        onChange={(leagueId) => setSelectedLeague(leagueId || "all")}
-                        label={t.marketPage.leagueFilter}
-                        includeAllOption={true}
-                        allOptionLabel={lang === "sv" ? "Alla ligor & serier" : "All Leagues & Series"}
-                      />
-                    </div>
-                  )}
-
-                  {/* Position Filter */}
-                  <div>
-                    <label className="block font-semibold text-zinc-700 mb-1.5">
-                      {t.marketPage.roleFilter}
-                    </label>
-                    <select
-                      value={selectedRole}
-                      onChange={(e) => setSelectedRole(e.target.value)}
-                      className="w-full px-2.5 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-800 focus:outline-none focus:border-zinc-900 cursor-pointer"
-                    >
-                      <option value="all">{t.positions.all}</option>
-                      <option value="goalkeeper">{t.positions.goalkeeper}</option>
-                      <option value="defender">{t.positions.defender}</option>
-                      <option value="halv">{t.positions.halv}</option>
-                      <option value="midfielder">{t.positions.midfielder}</option>
-                      <option value="forward">{t.positions.forward}</option>
-                    </select>
-                  </div>
-
-                  {/* Team Category Filter */}
-                  <div>
-                    <label className="block font-semibold text-zinc-700 mb-1.5">
-                      {t.marketPage.teamCategoryFilter}
-                    </label>
-                    <select
-                      value={selectedTeamCategory}
-                      onChange={(e) => setSelectedTeamCategory(e.target.value)}
-                      className="w-full px-2.5 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-800 focus:outline-none focus:border-zinc-900 cursor-pointer"
-                    >
-                      <option value="all">{t.marketPage.teamTypeAll}</option>
-                      <option value="men">{t.marketPage.teamTypeMen}</option>
-                      <option value="women">{t.marketPage.teamTypeWomen}</option>
-                      <option value="junior">{t.marketPage.teamTypeJunior}</option>
-                    </select>
-                  </div>
-
-                  {/* Benefits Filter */}
-                  <div>
-                    <label className="block font-semibold text-zinc-700 mb-1.5">
-                      {t.marketPage.benefitsFilter}
-                    </label>
-                    <select
-                      value={selectedPerk}
-                      onChange={(e) => setSelectedPerk(e.target.value)}
-                      className="w-full px-2.5 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-800 focus:outline-none focus:border-zinc-900 cursor-pointer"
-                    >
-                      <option value="all">{t.marketPage.allBenefits}</option>
-                      <option value="job">{t.marketPage.benefitJob}</option>
-                      <option value="studies">{t.marketPage.benefitStudies}</option>
-                      <option value="housing">{t.marketPage.benefitHousing}</option>
-                      <option value="salary">{t.marketPage.benefitSalary}</option>
-                      <option value="travel">{t.marketPage.benefitTravel}</option>
-                      <option value="equipment">{t.perks.equipment}</option>
-                      <option value="gym">{t.perks.gym}</option>
-                    </select>
-                  </div>
-
-                  {/* Reset Button */}
-                  <div className="pt-2">
-                    <button
-                      onClick={handleResetFilters}
-                      className="w-full py-2 px-3 text-center text-xs font-semibold text-zinc-700 bg-zinc-100 hover:bg-zinc-200/80 rounded-lg border border-zinc-200 transition-colors cursor-pointer"
-                    >
-                      {t.search.resetBtn}
-                    </button>
-                  </div>
-                </div>
+            <div className="flex flex-col lg:flex-row gap-8 items-start">
+              {/* Desktop Left Column: Filter Sidebar Panel (Always open & sticky beside ad cards) */}
+              <aside className="hidden lg:block w-80 shrink-0 sticky top-24">
+                <ClubAdFilters
+                  selectedOrgType={selectedOrgType}
+                  setSelectedOrgType={setSelectedOrgType}
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                  selectedCountry={selectedCountry}
+                  setSelectedCountry={setSelectedCountry}
+                  selectedLeague={selectedLeague}
+                  setSelectedLeague={setSelectedLeague}
+                  selectedRole={selectedRole}
+                  setSelectedRole={setSelectedRole}
+                  selectedTeamCategory={selectedTeamCategory}
+                  setSelectedTeamCategory={setSelectedTeamCategory}
+                  selectedPerk={selectedPerk}
+                  setSelectedPerk={setSelectedPerk}
+                  activeFilterCount={activeFilterCount}
+                  handleResetFilters={handleResetFilters}
+                  totalMatches={filteredClubAds.length}
+                  isMobile={false}
+                />
               </aside>
 
               {/* Right Column: Club Postings List */}
-              <div className="lg:col-span-9">
+              <div className="flex-1 w-full min-w-0">
                 {/* Result header */}
                 <div className="flex items-center justify-between mb-5 text-xs text-zinc-500">
                   <span className="font-semibold text-zinc-800 flex items-center gap-2">
@@ -451,11 +412,11 @@ export default function MarketPage() {
                       return (
                         <div
                           key={ad.id}
-                          className="flex flex-col justify-between bg-white border border-zinc-200 hover:border-zinc-400 rounded-xl p-6 transition-all shadow-xs group"
+                          className="flex flex-col justify-between bg-white border border-zinc-200 hover:border-zinc-400 rounded-xl p-5 sm:p-6 transition-all shadow-xs group"
                         >
                           <div>
                             {/* Top Line: Flag, City, Urgent & Category & Badge */}
-                            <div className="flex items-center justify-between text-xs text-zinc-500 mb-3">
+                            <div className="flex items-start justify-between gap-2 text-xs text-zinc-500 mb-3 flex-wrap">
                               <div className="flex items-center gap-1.5 font-medium text-zinc-700">
                                 <span className="text-base">{ad.countryFlag}</span>
                                 <span className="font-semibold text-zinc-900">
@@ -540,13 +501,13 @@ export default function MarketPage() {
 
                             {/* Optional Roles Description */}
                             {ad.rolesDescription && ad.rolesDescription[lang] && (
-                              <div className="mb-3 text-xs font-medium text-zinc-700 bg-zinc-50/80 p-2.5 rounded-lg border border-zinc-200/70 italic">
+                              <div className="mb-3 text-xs font-medium text-zinc-700 bg-zinc-50/80 p-2.5 rounded-lg border border-zinc-200/70 italic break-words">
                                 &ldquo;{ad.rolesDescription[lang]}&rdquo;
                               </div>
                             )}
 
                             {/* Main Description */}
-                            <p className="text-xs text-zinc-600 leading-relaxed mb-4">
+                            <p className="text-xs text-zinc-600 leading-relaxed mb-4 break-words">
                               {ad.description[lang]}
                             </p>
 
@@ -589,12 +550,12 @@ export default function MarketPage() {
                           </div>
 
                           {/* Card Footer: Contact details and Apply button */}
-                          <div className="border-t border-zinc-100 pt-4 mt-2 flex items-center justify-between">
-                            <div className="text-xs">
+                          <div className="border-t border-zinc-100 pt-4 mt-2 flex items-center justify-between gap-3">
+                            <div className="text-xs min-w-0 flex-1">
                               <span className="text-zinc-400 block text-[10px]">
                                 {t.marketPage.contactPersonLabel}
                               </span>
-                              <span className="font-semibold text-zinc-900 block truncate max-w-[180px]">
+                              <span className="font-semibold text-zinc-900 block truncate">
                                 {ad.contactPerson}
                               </span>
                             </div>
@@ -610,7 +571,7 @@ export default function MarketPage() {
                                   type: "club",
                                 })
                               }
-                              className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer"
+                              className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer shrink-0"
                             >
                               {t.marketPage.applyBtn} →
                             </button>
