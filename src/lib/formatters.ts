@@ -59,3 +59,12 @@ export function formatCareerPeriod(
   }
   return item.season?.trim() || '—';
 }
+
+/**
+ * Validates if a given string matches standard UUID pattern (hexadecimal 8-4-4-4-12).
+ * Prevents invalid cast errors when querying Supabase/PostgreSQL.
+ */
+export function isValidUuid(id: unknown): id is string {
+  if (!id || typeof id !== "string") return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id.trim());
+}

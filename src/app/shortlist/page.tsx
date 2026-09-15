@@ -12,12 +12,12 @@ import { supabase } from "@/lib/supabaseClient";
 import { transformSupabasePlayer, SupabasePlayerRow } from "@/lib/dataMappers";
 import { PlayerProfile } from "@/types";
 import SocialLinks from "@/components/SocialLinks";
-import { formatWish } from "@/lib/formatters";
+import { formatWish, isValidUuid } from "@/lib/formatters";
 
 export default function ShortlistPage() {
   const router = useRouter();
   const { lang, t } = useLanguage();
-  const { user, savedPlayerIds, notes, updateNote, removeSaved, loading: loadingShortlist } = useShortlist();
+  const { user, savedPlayerIds, notes, updateNote, removeSaved, clearShortlist, loading: loadingShortlist } = useShortlist();
 
   const [players, setPlayers] = useState<PlayerProfile[]>([]);
   const [loadingDb, setLoadingDb] = useState(true);
@@ -50,38 +50,87 @@ export default function ShortlistPage() {
     setLocalNotes(notes);
   }, [notes]);
 
+  // Safety fallback timeout: prevent stuck loading under unexpected network issues
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoadingDb(false);
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Fetch players for saved IDs
   useEffect(() => {
+    let isCancelled = false;
+
     async function fetchShortlistedPlayers() {
-      if (savedPlayerIds.length === 0) {
-        setPlayers([]);
-        setLoadingDb(false);
+      // 1. Sanitize IDs: filter out any empty, invalid, or obsolete mock IDs
+      const validIds = (savedPlayerIds || []).filter(
+        (id) => typeof id === "string" && isValidUuid(id)
+      );
+
+      // 2. If no valid player IDs are found in the list, immediately set the players list to empty [] and setLoading(false)
+      if (validIds.length === 0) {
+        if (!isCancelled) {
+          setPlayers([]);
+          setLoadingDb(false);
+        }
         return;
       }
 
       try {
-        setLoadingDb(true);
+        if (!isCancelled) setLoadingDb(true);
         const { data, error } = await supabase
           .from("players")
           .select("*")
-          .in("id", savedPlayerIds);
+          .in("id", validIds);
+
+        if (isCancelled) return;
 
         if (error) {
           console.error("Error fetching shortlisted players:", error);
           setPlayers([]);
-        } else if (data) {
+        } else if (data && data.length > 0) {
           const transformed = (data as SupabasePlayerRow[]).map(transformSupabasePlayer);
           setPlayers(transformed);
+        } else {
+          // 0 matches found in Supabase for valid IDs
+          setPlayers([]);
         }
       } catch (err) {
         console.error("Shortlist fetch error:", err);
+        if (!isCancelled) setPlayers([]);
       } finally {
-        setLoadingDb(false);
+        if (!isCancelled) {
+          setLoadingDb(false);
+        }
       }
     }
 
     fetchShortlistedPlayers();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [savedPlayerIds]);
+
+  const handleClearList = async () => {
+    const confirmMsg =
+      lang === "sv"
+        ? "Är du säker på att du vill rensa hela din shortlist?"
+        : "Are you sure you want to clear your shortlist?";
+    if (typeof window !== "undefined" && !window.confirm(confirmMsg)) {
+      return;
+    }
+
+    try {
+      await clearShortlist();
+      setPlayers([]);
+      setLocalNotes({});
+      setLoadingDb(false);
+    } catch (e) {
+      console.error("Error clearing shortlist:", e);
+    }
+  };
 
   const handleNoteChange = (playerId: string, value: string) => {
     setLocalNotes((prev) => ({ ...prev, [playerId]: value }));
@@ -182,7 +231,7 @@ export default function ShortlistPage() {
               </div>
 
               {players.length > 0 && (
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 flex-wrap">
                   <button
                     onClick={() => window.print()}
                     className="px-3.5 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold border border-zinc-200 transition-colors cursor-pointer flex items-center gap-1.5"
@@ -197,6 +246,15 @@ export default function ShortlistPage() {
                     <span>📥</span>
                     <span>{lang === "sv" ? "Exportera till CSV" : "Export to CSV"}</span>
                   </button>
+                  <button
+                    type="button"
+                    onClick={handleClearList}
+                    className="px-3.5 py-2 rounded-lg bg-zinc-100 hover:bg-rose-50 text-zinc-700 hover:text-rose-700 text-xs font-semibold border border-zinc-200 hover:border-rose-200 transition-colors cursor-pointer flex items-center gap-1.5"
+                    title={lang === "sv" ? "Rensa hela din shortlist" : "Clear entire shortlist"}
+                  >
+                    <span>🗑️</span>
+                    <span>{lang === "sv" ? "Rensa lista" : "Clear list"}</span>
+                  </button>
                 </div>
               )}
             </div>
@@ -206,7 +264,7 @@ export default function ShortlistPage() {
           {(loadingDb || loadingShortlist) && (
             <div className="bg-white border border-zinc-200 rounded-2xl p-16 text-center text-xs text-zinc-500">
               <div className="w-7 h-7 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-              <span>Laddar din shortlist...</span>
+              <span>{lang === "sv" ? "Laddar din shortlist..." : "Loading your shortlist..."}</span>
             </div>
           )}
 
@@ -217,19 +275,31 @@ export default function ShortlistPage() {
                 ⭐
               </div>
               <h2 className="text-xl font-bold text-zinc-950 mb-2">
-                {lang === "sv" ? "Din shortlist är tom" : "Your shortlist is empty"}
+                {lang === "sv" ? "Inga sparade spelare hittades" : "No saved players found"}
               </h2>
               <p className="text-xs sm:text-sm text-zinc-600 mb-6 leading-relaxed">
                 {lang === "sv"
-                  ? "Du har inte sparat några spelare än. Bläddra bland registrerade profiler och klicka på stjärnikonen för att samla dina favoritkandidater här."
-                  : "You haven't saved any players yet. Browse through verified prospect profiles and click the star icon to bookmark prospects."}
+                  ? "Inga sparade spelare hittades. Gå till spelarlistan för att lägga till kandidater."
+                  : "No saved players found. Go to the players list to add candidates."}
               </p>
-              <Link
-                href="/players"
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors cursor-pointer"
-              >
-                <span>🔍 {lang === "sv" ? "Bläddra bland spelare" : "Browse Players"} →</span>
-              </Link>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Link
+                  href="/players"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors cursor-pointer"
+                >
+                  <span>🔍 {lang === "sv" ? "Gå till spelarlistan" : "Go to players list"} →</span>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={handleClearList}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-100 hover:bg-rose-50 text-zinc-700 hover:text-rose-700 text-xs font-semibold rounded-xl border border-zinc-200 hover:border-rose-200 transition-colors cursor-pointer"
+                  title={lang === "sv" ? "Rensa sparade spelare från din webbläsare" : "Clear saved players"}
+                >
+                  <span>🗑️</span>
+                  <span>{lang === "sv" ? "Rensa lista" : "Clear list"}</span>
+                </button>
+              </div>
             </div>
           )}
 

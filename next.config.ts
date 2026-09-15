@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
         source: "/players/new",
         destination: "/join",
       },
+      {
+        source: "/spelare",
+        destination: "/players",
+      },
     ];
   },
 };

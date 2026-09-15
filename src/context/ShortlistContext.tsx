@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { isValidUuid } from "@/lib/formatters";
 
 interface ShortlistContextType {
   user: { id: string; email?: string } | null;
@@ -11,6 +12,7 @@ interface ShortlistContextType {
   toggleSave: (playerId: string) => Promise<{ success: boolean; requiresAuth?: boolean; saved?: boolean }>;
   removeSaved: (playerId: string) => Promise<void>;
   updateNote: (playerId: string, noteText: string) => Promise<void>;
+  clearShortlist: () => Promise<void>;
   shortlistCount: number;
   loading: boolean;
   refreshShortlist: () => Promise<void>;
@@ -27,12 +29,19 @@ export function ShortlistProvider({ children }: { children: React.ReactNode }) {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
-  // Load from local storage initially
+  // Load from local storage initially with validation
   useEffect(() => {
     try {
       const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (stored) {
-        setSavedPlayerIds(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          const validIds = parsed.filter(isValidUuid);
+          setSavedPlayerIds(validIds);
+          if (validIds.length !== parsed.length) {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(validIds));
+          }
+        }
       }
       const storedNotes = localStorage.getItem(LOCAL_STORAGE_NOTES_KEY);
       if (storedNotes) {
@@ -61,7 +70,7 @@ export function ShortlistProvider({ children }: { children: React.ReactNode }) {
         const notesMap: Record<string, string> = {};
 
         data.forEach((item: { player_id: string; notes?: string }) => {
-          if (item.player_id) {
+          if (item.player_id && isValidUuid(item.player_id)) {
             ids.push(item.player_id);
             if (item.notes) {
               notesMap[item.player_id] = item.notes;
@@ -82,28 +91,53 @@ export function ShortlistProvider({ children }: { children: React.ReactNode }) {
   }, [notes]);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      const u = data.user;
-      if (u) {
-        setUser({ id: u.id, email: u.email });
-        loadUserDataAndShortlist(u.id);
-      } else {
-        setUser(null);
-        setLoading(false);
+    let isMounted = true;
+
+    async function initAuth() {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (!isMounted) return;
+        if (error) {
+          console.warn("Shortlist auth check:", error.message);
+        }
+        const u = data?.user;
+        if (u) {
+          setUser({ id: u.id, email: u.email });
+          await loadUserDataAndShortlist(u.id);
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
+        console.warn("Error in ShortlistContext auth check:", err);
+        if (isMounted) setUser(null);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+
+    initAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!isMounted) return;
+      try {
+        const u = session?.user;
+        if (u) {
+          setUser({ id: u.id, email: u.email });
+          await loadUserDataAndShortlist(u.id);
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
+        console.warn("Error in onAuthStateChange ShortlistContext:", err);
+      } finally {
+        if (isMounted) setLoading(false);
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      const u = session?.user;
-      if (u) {
-        setUser({ id: u.id, email: u.email });
-        loadUserDataAndShortlist(u.id);
-      } else {
-        setUser(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, [loadUserDataAndShortlist]);
 
   const isSaved = useCallback(
@@ -194,6 +228,28 @@ export function ShortlistProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const clearShortlist = async () => {
+    setSavedPlayerIds([]);
+    setNotes({});
+    try {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      localStorage.removeItem(LOCAL_STORAGE_NOTES_KEY);
+    } catch (e) {
+      console.warn("Could not clear local shortlist storage:", e);
+    }
+
+    if (user) {
+      try {
+        await supabase
+          .from("saved_players")
+          .delete()
+          .eq("user_id", user.id);
+      } catch (err) {
+        console.error("Failed to clear saved players from DB:", err);
+      }
+    }
+  };
+
   const refreshShortlist = async () => {
     if (user) {
       await loadUserDataAndShortlist(user.id);
@@ -210,6 +266,7 @@ export function ShortlistProvider({ children }: { children: React.ReactNode }) {
         toggleSave,
         removeSaved,
         updateNote,
+        clearShortlist,
         shortlistCount: savedPlayerIds.length,
         loading,
         refreshShortlist,
