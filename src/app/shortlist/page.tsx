@@ -17,10 +17,13 @@ import { formatWish, isValidUuid } from "@/lib/formatters";
 export default function ShortlistPage() {
   const router = useRouter();
   const { lang, t } = useLanguage();
-  const { user, savedPlayerIds, notes, updateNote, removeSaved, clearShortlist, loading: loadingShortlist } = useShortlist();
+  const { user, savedPlayerIds, notes, updateNote, removeSaved, clearShortlist } = useShortlist();
 
-  const [players, setPlayers] = useState<PlayerProfile[]>([]);
-  const [loadingDb, setLoadingDb] = useState(true);
+  const [savedItems, setSavedItems] = useState<PlayerProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const players = savedItems;
+  const setPlayers = setSavedItems;
+
   const [localNotes, setLocalNotes] = useState<Record<string, string>>({});
   const [saveNoteStatus, setSaveNoteStatus] = useState<Record<string, "idle" | "saving" | "saved">>({});
 
@@ -53,82 +56,112 @@ export default function ShortlistPage() {
   // Safety fallback timeout: prevent stuck loading under unexpected network issues
   useEffect(() => {
     const timer = setTimeout(() => {
-      setLoadingDb(false);
-    }, 6000);
+      setLoading(false);
+    }, 4000);
     return () => clearTimeout(timer);
   }, []);
 
   // Fetch players for saved IDs
   useEffect(() => {
-    let isCancelled = false;
+    console.log('[Shortlist] Stored state:', localStorage.getItem('shortlist'));
 
     async function fetchShortlistedPlayers() {
-      // 1. Sanitize IDs: filter out any empty, invalid, or obsolete mock IDs
-      const validIds = (savedPlayerIds || []).filter(
-        (id) => typeof id === "string" && isValidUuid(id)
-      );
-
-      // 2. If no valid player IDs are found in the list, immediately set the players list to empty [] and setLoading(false)
-      if (validIds.length === 0) {
-        if (!isCancelled) {
-          setPlayers([]);
-          setLoadingDb(false);
-        }
-        return;
-      }
-
       try {
-        if (!isCancelled) setLoadingDb(true);
+        const stored = typeof window !== "undefined" ? localStorage.getItem("shortlist") : null;
+        let storedIds: string[] = [];
+
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) {
+              if (parsed.length === 0 && (!savedPlayerIds || savedPlayerIds.length === 0)) {
+                setSavedItems([]);
+                setLoading(false);
+                return;
+              }
+              storedIds = parsed
+                .map((item: any) => (typeof item === "string" ? item : item?.id))
+                .filter(Boolean);
+            } else if (typeof parsed === "string" && parsed.trim()) {
+              storedIds = [parsed.trim()];
+            }
+          } catch {
+            storedIds = stored.split(",").map((s) => s.trim()).filter(Boolean);
+          }
+        }
+
+        // Also check bp_saved_player_ids from local storage
+        let bpIds: string[] = [];
+        try {
+          const bpStored = typeof window !== "undefined" ? localStorage.getItem("bp_saved_player_ids") : null;
+          if (bpStored) {
+            const parsed = JSON.parse(bpStored);
+            if (Array.isArray(parsed)) bpIds = parsed;
+          }
+        } catch {}
+
+        const allCandidateIds = Array.from(
+          new Set([...storedIds, ...bpIds, ...(savedPlayerIds || [])])
+        );
+
+        // Sanitize IDs: filter out any empty, invalid, or obsolete mock IDs
+        const validIds = allCandidateIds.filter(
+          (id) => typeof id === "string" && isValidUuid(id)
+        );
+
+        // If stored items/IDs are null, empty, or an empty array [], immediately call:
+        if (!validIds || validIds.length === 0) {
+          setSavedItems([]);
+          setLoading(false);
+          return;
+        }
+
         const { data, error } = await supabase
           .from("players")
           .select("*")
           .in("id", validIds);
 
-        if (isCancelled) return;
-
         if (error) {
           console.error("Error fetching shortlisted players:", error);
-          setPlayers([]);
+          setSavedItems([]);
         } else if (data && data.length > 0) {
           const transformed = (data as SupabasePlayerRow[]).map(transformSupabasePlayer);
-          setPlayers(transformed);
+          setSavedItems(transformed);
         } else {
           // 0 matches found in Supabase for valid IDs
-          setPlayers([]);
+          setSavedItems([]);
         }
       } catch (err) {
         console.error("Shortlist fetch error:", err);
-        if (!isCancelled) setPlayers([]);
+        setSavedItems([]);
       } finally {
-        if (!isCancelled) {
-          setLoadingDb(false);
-        }
+        setLoading(false);
       }
     }
 
     fetchShortlistedPlayers();
-
-    return () => {
-      isCancelled = true;
-    };
   }, [savedPlayerIds]);
 
   const handleClearList = async () => {
-    const confirmMsg =
-      lang === "sv"
-        ? "Är du säker på att du vill rensa hela din shortlist?"
-        : "Are you sure you want to clear your shortlist?";
+    const confirmMsg = "Are you sure you want to clear your shortlist?";
     if (typeof window !== "undefined" && !window.confirm(confirmMsg)) {
       return;
     }
 
     try {
-      await clearShortlist();
-      setPlayers([]);
+      localStorage.removeItem('shortlist');
+      localStorage.removeItem('bp_saved_player_ids');
+      localStorage.removeItem('bp_saved_player_notes');
+      setSavedItems([]);
+      setLoading(false);
       setLocalNotes({});
-      setLoadingDb(false);
+      await clearShortlist();
     } catch (e) {
       console.error("Error clearing shortlist:", e);
+    } finally {
+      localStorage.removeItem('shortlist');
+      setSavedItems([]);
+      setLoading(false);
     }
   };
 
@@ -261,7 +294,7 @@ export default function ShortlistPage() {
           </div>
 
           {/* Loading */}
-          {(loadingDb || loadingShortlist) && (
+          {loading && (
             <div className="bg-white border border-zinc-200 rounded-2xl p-16 text-center text-xs text-zinc-500">
               <div className="w-7 h-7 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
               <span>{lang === "sv" ? "Laddar din shortlist..." : "Loading your shortlist..."}</span>
@@ -269,7 +302,7 @@ export default function ShortlistPage() {
           )}
 
           {/* Empty State */}
-          {!loadingDb && !loadingShortlist && players.length === 0 && (
+          {!loading && savedItems.length === 0 && (
             <div className="bg-white border border-zinc-200 rounded-2xl p-12 sm:p-16 text-center max-w-xl mx-auto shadow-xs">
               <div className="w-16 h-16 rounded-full bg-amber-50 border border-amber-200 text-amber-500 flex items-center justify-center mx-auto mb-4 text-3xl">
                 ⭐
@@ -304,7 +337,7 @@ export default function ShortlistPage() {
           )}
 
           {/* Player Cards Grid */}
-          {!loadingDb && !loadingShortlist && players.length > 0 && (
+          {!loading && savedItems.length > 0 && (
             <div className="space-y-6">
               {players.map((player) => {
                 const noteStatus = saveNoteStatus[player.id] || "idle";
@@ -470,7 +503,22 @@ export default function ShortlistPage() {
 
                           <button
                             type="button"
-                            onClick={() => removeSaved(player.id)}
+                            onClick={async () => {
+                              await removeSaved(player.id);
+                              setSavedItems((prev) => prev.filter((p) => p.id !== player.id));
+                              try {
+                                const stored = localStorage.getItem('shortlist');
+                                if (stored) {
+                                  const parsed = JSON.parse(stored);
+                                  if (Array.isArray(parsed)) {
+                                    const next = parsed.filter(
+                                      (item: any) => (typeof item === 'string' ? item : item?.id) !== player.id
+                                    );
+                                    localStorage.setItem('shortlist', JSON.stringify(next));
+                                  }
+                                }
+                              } catch {}
+                            }}
                             className="text-xs font-semibold text-rose-600 hover:text-rose-800 hover:underline cursor-pointer flex items-center gap-1"
                           >
                             <span>🗑️</span>
