@@ -86,16 +86,16 @@ export default function StatisticsPage() {
     const totalPlayers = players.length;
     const totalClubAds = clubAds.length;
 
-    // 1. RIG / NIU Academy stats
-    let rigCount = 0;
+    // 1. Sports Academy & NIU stats
     let niuCount = 0;
+    let intlAcademyCount = 0;
     const academySchools: Record<string, number> = {};
 
     // 2. Free Agents & Contract Status
     let freeAgentsCount = 0;
     let seekingCount = 0;
 
-    // 3. Youth clubs
+    // 3. Origin / Youth clubs
     const youthClubCounts: Record<string, number> = {};
     let totalWithYouthClub = 0;
 
@@ -128,12 +128,12 @@ export default function StatisticsPage() {
         seekingCount += 1;
       }
 
-      // RIG / NIU
+      // Sports Academy / NIU
       const acad = (p.academyType || '').toUpperCase();
-      if (acad === 'RIG') {
-        rigCount += 1;
-      } else if (acad === 'NIU') {
+      if (acad === 'NIU' || acad.includes('NIU') || acad === 'RIG') {
         niuCount += 1;
+      } else if (acad.includes('INTERNATIONAL') || acad.includes('SPORT') || acad.includes('LOCAL')) {
+        intlAcademyCount += 1;
       }
 
       if (p.academySchool && p.academySchool.trim()) {
@@ -141,7 +141,7 @@ export default function StatisticsPage() {
         academySchools[school] = (academySchools[school] || 0) + 1;
       }
 
-      // Youth Clubs
+      // Origin / Youth Clubs
       if (p.youthClub && p.youthClub.trim()) {
         const yClub = p.youthClub.trim();
         youthClubCounts[yClub] = (youthClubCounts[yClub] || 0) + 1;
@@ -158,14 +158,14 @@ export default function StatisticsPage() {
       }
 
       // League / Division (from latest career history stint or previous club)
-      let leagueName = 'Övrigt / Ungdom';
+      let leagueName = 'Other / Youth';
       if (p.careerHistory && p.careerHistory.length > 0) {
         const latestStint = p.careerHistory[0];
         if (latestStint.league && latestStint.league.trim()) {
           leagueName = latestStint.league.trim();
         }
       } else if (p.previousClub) {
-        leagueName = 'Registrerad klubb';
+        leagueName = 'Registered Club';
       }
 
       if (!leagueCounts[leagueName]) {
@@ -177,10 +177,10 @@ export default function StatisticsPage() {
       }
     });
 
-    // Total RIG/NIU combined
-    const totalRigNiu = rigCount + niuCount;
-    const rigNiuPercentage =
-      totalPlayers > 0 ? Math.round((totalRigNiu / totalPlayers) * 100) : 0;
+    // Total Academy combined
+    const totalAcademy = niuCount + intlAcademyCount;
+    const academyPercentage =
+      totalPlayers > 0 ? Math.round((totalAcademy / totalPlayers) * 100) : 0;
 
     // Sort youth clubs
     const sortedYouthClubs: YouthClubItem[] = Object.entries(youthClubCounts)
@@ -229,10 +229,12 @@ export default function StatisticsPage() {
     return {
       totalPlayers,
       totalClubAds,
-      totalRigNiu,
-      rigCount,
+      totalAcademy,
+      totalRigNiu: totalAcademy,
       niuCount,
-      rigNiuPercentage,
+      intlAcademyCount,
+      academyPercentage,
+      rigNiuPercentage: academyPercentage,
       academySchools,
       freeAgentsCount,
       seekingCount,
@@ -353,12 +355,12 @@ export default function StatisticsPage() {
             </div>
           </div>
 
-          {/* KPI 3: RIG / NIU */}
+          {/* KPI 3: Sports Academy / NIU */}
           <div className="bg-white border border-zinc-200 rounded-2xl p-5 sm:p-6 shadow-xs hover:border-zinc-300 transition-all flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-zinc-500">
-                  {lang === 'sv' ? 'RIG / NIU-Bakgrund' : 'RIG / NIU Academy'}
+                  Bandy Academy / NIU
                 </span>
                 <span className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center text-sm font-bold">
                   🎓
@@ -366,19 +368,19 @@ export default function StatisticsPage() {
               </div>
               <div className="mt-3 flex items-baseline gap-2">
                 <span className="text-3xl sm:text-4xl font-black text-zinc-950 tracking-tight">
-                  {loading ? '—' : stats.totalRigNiu}
+                  {loading ? '—' : stats.totalAcademy}
                 </span>
                 <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
-                  {stats.rigNiuPercentage}%
+                  {stats.academyPercentage}%
                 </span>
               </div>
             </div>
             <div className="mt-4 pt-3 border-t border-zinc-100 text-xs text-zinc-500 flex items-center justify-between">
               <span>
-                {stats.rigCount} RIG • {stats.niuCount} NIU
+                {stats.niuCount} NIU • {stats.intlAcademyCount} International / Other
               </span>
               <span className="font-medium text-zinc-700">
-                {lang === 'sv' ? 'Bandyutbildning' : 'Academy'}
+                Sports Academy
               </span>
             </div>
           </div>
@@ -420,26 +422,25 @@ export default function StatisticsPage() {
 
         {/* Section 1 & 2 Two-Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 sm:mb-12">
-          {/* Moderklubbar & Plantskolor */}
+          {/* Origin / Youth Clubs & Nurseries */}
           <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-xs">
             <div className="flex items-center justify-between pb-4 border-b border-zinc-100 mb-5">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">
-                  {lang === 'sv' ? 'Plantskolor' : 'Youth Academies'}
+                  Grassroots & Development
                 </span>
                 <h2 className="text-lg sm:text-xl font-extrabold text-zinc-950 tracking-tight">
-                  {lang === 'sv' ? 'Moderklubbar' : 'Youth Clubs'}
+                  Origin / Youth Clubs
                 </h2>
               </div>
               <span className="px-2.5 py-1 rounded-md bg-zinc-100 text-zinc-700 text-xs font-bold">
-                {stats.sortedYouthClubs.length}{' '}
-                {lang === 'sv' ? 'klubbar registrerade' : 'clubs registered'}
+                {stats.sortedYouthClubs.length} clubs registered
               </span>
             </div>
 
             {loading ? (
               <div className="py-12 text-center text-xs text-zinc-400">
-                {lang === 'sv' ? 'Laddar moderklubbar...' : 'Loading youth clubs...'}
+                Loading youth clubs...
               </div>
             ) : stats.sortedYouthClubs.length > 0 ? (
               <div className="space-y-3">
@@ -458,14 +459,7 @@ export default function StatisticsPage() {
                             {club.name}
                           </span>
                           <span className="text-xs font-semibold text-zinc-600 shrink-0 ml-2">
-                            {club.count}{' '}
-                            {lang === 'sv'
-                              ? club.count === 1
-                                ? 'spelare'
-                                : 'spelare'
-                              : club.count === 1
-                                ? 'player'
-                                : 'players'}
+                            {club.count} {club.count === 1 ? 'player' : 'players'}
                           </span>
                         </div>
                         {/* Progress Bar */}
@@ -493,9 +487,7 @@ export default function StatisticsPage() {
                 <div className="mt-4 p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-100 text-xs text-emerald-950 flex items-start gap-2.5">
                   <span className="text-base shrink-0">🌱</span>
                   <p className="leading-relaxed">
-                    {lang === 'sv'
-                      ? 'Moderklubben anges av respektive spelare vid profilregistrering. Listan fylls på automatiskt när fler talanger registrerar sig.'
-                      : 'Youth clubs are specified by players when creating a profile. This ranking updates live as more prospects join the network.'}
+                    Youth clubs are specified by players when creating a profile. This ranking updates live as more prospects join the network.
                   </p>
                 </div>
               </div>
@@ -503,20 +495,16 @@ export default function StatisticsPage() {
               <div className="p-8 rounded-xl border border-dashed border-zinc-200 bg-zinc-50 text-center space-y-3">
                 <span className="text-2xl">🌱</span>
                 <h3 className="text-sm font-bold text-zinc-900">
-                  {lang === 'sv'
-                    ? 'Moderklubbar samlas in löpande'
-                    : 'Youth clubs are continually added'}
+                  Origin / Youth clubs are continually added
                 </h3>
                 <p className="text-xs text-zinc-500 max-w-sm mx-auto leading-relaxed">
-                  {lang === 'sv'
-                    ? 'När aktiva spelare anger sin moderklubb rankas Sveriges och världens bandyplantskolor automatiskt här.'
-                    : 'As players specify their youth clubs, the leading developer clubs will be ranked here live.'}
+                  As players specify their youth clubs, leading developer clubs will be ranked here live.
                 </p>
                 <Link
                   href="/join"
                   className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-zinc-900 text-white text-xs font-semibold hover:bg-zinc-800 transition-colors shadow-2xs"
                 >
-                  {lang === 'sv' ? 'Lägg till din moderklubb' : 'Add your youth club'}
+                  Add your youth club
                 </Link>
               </div>
             )}
@@ -626,39 +614,35 @@ export default function StatisticsPage() {
           </div>
         </div>
 
-        {/* Section 3: RIG & NIU Bandygymnasier Detailed Box */}
+        {/* Section 3: Bandy Academy & NIU High Schools Detailed Box */}
         <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs mb-8 sm:mb-12">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-zinc-100 mb-6">
             <div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-600">
-                {lang === 'sv' ? 'Certifierad Elitutbildning' : 'Certified Elite Academies'}
+                Certified Sports Academies
               </span>
               <h2 className="text-lg sm:text-xl font-extrabold text-zinc-950 tracking-tight">
-                {lang === 'sv'
-                  ? 'RIG / NIU Bandygymnasier'
-                  : 'RIG / NIU Bandy High Schools'}
+                Bandy Academy & NIU High Schools
               </h2>
               <p className="text-xs sm:text-sm text-zinc-600 mt-1 max-w-2xl">
-                {lang === 'sv'
-                  ? 'Svenska Bandyförbundets certifierade utbildningar via Riksidrottsgymnasium (RIG Sandviken) och Nationellt godkända idrottsutbildningar (NIU).'
-                  : 'Certified elite bandy secondary programs via National Sports High School (RIG Sandviken) and Nationally Approved Sports Programs (NIU).'}
+                Certified secondary bandy programs via Nationally Approved Sports Programs (NIU) and international sports academies.
               </p>
             </div>
             <div className="flex items-center gap-3 shrink-0">
               <div className="px-3.5 py-2 rounded-xl bg-indigo-50 border border-indigo-100 text-center min-w-[90px]">
                 <span className="text-xs text-indigo-800 font-bold block uppercase tracking-wider text-[10px]">
-                  {lang === 'sv' ? 'RIG-spelare' : 'RIG Players'}
+                  NIU Players
                 </span>
                 <span className="text-xl font-extrabold text-indigo-950">
-                  {stats.rigCount}
+                  {stats.niuCount}
                 </span>
               </div>
               <div className="px-3.5 py-2 rounded-xl bg-indigo-50 border border-indigo-100 text-center min-w-[90px]">
                 <span className="text-xs text-indigo-800 font-bold block uppercase tracking-wider text-[10px]">
-                  {lang === 'sv' ? 'NIU-spelare' : 'NIU Players'}
+                  Total Academy
                 </span>
                 <span className="text-xl font-extrabold text-indigo-950">
-                  {stats.niuCount}
+                  {stats.totalAcademy}
                 </span>
               </div>
             </div>
@@ -668,34 +652,28 @@ export default function StatisticsPage() {
             <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200/80">
               <div className="font-bold text-zinc-900 mb-1 flex items-center gap-1.5 text-sm">
                 <span>🏫</span>
-                <span>RIG Sandviken</span>
+                <span>NIU Programs</span>
               </div>
               <p>
-                {lang === 'sv'
-                  ? 'Sveriges enda Riksidrottsgymnasium för bandy, beläget vid Bessemerskolan i Sandviken. Riktar sig mot de främsta talangerna nationellt.'
-                  : 'Sweden only National Elite Sports High School for bandy, located in Sandviken for elite national prospects.'}
+                Nationally approved sports education (NIU) certified programs in premier bandy hubs such as Edsbyn, Sandviken, Nässjö, Vetlanda, Västerås, Ljusdal, Bollnäs, and Lidköping.
               </p>
             </div>
             <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200/80">
               <div className="font-bold text-zinc-900 mb-1 flex items-center gap-1.5 text-sm">
-                <span>🏒</span>
-                <span>NIU-Orter</span>
+                <span>🌍</span>
+                <span>Sports Academies (International)</span>
               </div>
               <p>
-                {lang === 'sv'
-                  ? 'Nationellt godkända idrottsutbildningar i bandymetropoler som Edsbyn, Nässjö, Vetlanda, Västerås, Ljusdal, Bollnäs och Lidköping.'
-                  : 'Nationally approved secondary programs located in major bandy centers across Sweden.'}
+                Secondary sports academies across Scandinavia and international bandy nations combining secondary education with elite bandy training.
               </p>
             </div>
             <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200/80">
               <div className="font-bold text-zinc-900 mb-1 flex items-center gap-1.5 text-sm">
                 <span>📈</span>
-                <span>{lang === 'sv' ? 'Databasandel' : 'Database Share'}</span>
+                <span>Database Share</span>
               </div>
               <p>
-                {lang === 'sv'
-                  ? `${stats.rigNiuPercentage}% av alla registrerade profiler har angivit RIG eller NIU i sin spelarprofil.`
-                  : `${stats.rigNiuPercentage}% of all registered prospect profiles have verified RIG or NIU secondary background.`}
+                {stats.academyPercentage}% of all registered prospect profiles have verified sports academy or NIU secondary background.
               </p>
             </div>
           </div>

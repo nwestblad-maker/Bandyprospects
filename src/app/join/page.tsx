@@ -32,7 +32,7 @@ export default function JoinPage() {
     nationality: "se",
     photoUrl: "",
     youthClub: "",
-    academyType: "none" as "RIG" | "NIU" | "local" | "none",
+    academyType: "none" as "NIU" | "international" | "local" | "none",
     heightCm: "",
     weightKg: "",
     stickGrip: "left" as PlayerGrip,
@@ -251,11 +251,11 @@ export default function JoinPage() {
                 <div className="pb-3 border-b border-zinc-100">
                   <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 text-[11px] font-bold uppercase tracking-wider mb-1">
                     <span>A</span>
-                    <span>Grundfakta & Fysik</span>
+                    <span>Basic Details & Background</span>
                   </div>
-                  <h2 className="text-base font-bold text-zinc-950">Personuppgifter, Moderklubb & Skola</h2>
+                  <h2 className="text-base font-bold text-zinc-950">Personal Information, Origin / Youth Club & Academy</h2>
                   <p className="text-xs text-zinc-500">
-                    Bandybakgrund från moderklubb till bandygymnasium samt fysiska mått.
+                    Bandy background from origin youth club to sports academy and physical metrics.
                   </p>
                 </div>
 
@@ -265,33 +265,40 @@ export default function JoinPage() {
                   onUploadSuccess={(url) => setFormData({ ...formData, photoUrl: url })}
                 />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-2">
+                {/* Namn & Födelseår */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                   <div>
-                    <label className="block font-semibold text-zinc-700 mb-1">{formT.firstName} *</label>
+                    <label className="block font-semibold text-zinc-700 mb-1">
+                      {lang === "sv" ? "Förnamn *" : "First Name *"}
+                    </label>
                     <input
                       type="text"
                       required
                       value={formData.firstName}
                       onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                      placeholder="t.ex. Viktor"
+                      placeholder="t.ex. Erik"
                       className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-zinc-700 mb-1">{formT.lastName} *</label>
+                    <label className="block font-semibold text-zinc-700 mb-1">
+                      {lang === "sv" ? "Efternamn *" : "Last Name *"}
+                    </label>
                     <input
                       type="text"
                       required
                       value={formData.lastName}
                       onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                      placeholder="t.ex. Eriksson"
+                      placeholder="t.ex. Pettersson"
                       className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-zinc-700 mb-1">{formT.birthYear} *</label>
+                    <label className="block font-semibold text-zinc-700 mb-1">
+                      Birth Year *
+                    </label>
                     <input
                       type="number"
                       required
@@ -303,11 +310,13 @@ export default function JoinPage() {
                       className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
                     />
                   </div>
+                </div>
 
+                {/* Nationality */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   <div>
                     <CountrySelect
-                      label={formT.nationality}
-                      required
+                      label="Primary Nationality *"
                       value={formData.nationality}
                       onChange={(code) => {
                         const available = getLeaguesForCountry(code);
@@ -323,37 +332,37 @@ export default function JoinPage() {
                   </div>
                 </div>
 
-                {/* Moderklubb & Bandygymnasium */}
+                {/* Origin / Youth Club & Sports Academy */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-3 border-t border-zinc-100">
                   <div className="sm:col-span-2">
                     <label className="block font-semibold text-zinc-800 mb-1">
-                      {lang === "sv" ? "Moderklubb (där du startade spela bandy)" : "Youth Club (where you started playing bandy)"}
+                      Origin / Youth Club
                     </label>
                     <input
                       type="text"
                       value={formData.youthClub}
                       onChange={(e) => setFormData({ ...formData, youthClub: e.target.value })}
-                      placeholder="t.ex. Vetlanda BK, Brobergs IF, Edsbyns IF, Bollnäs GIF"
+                      placeholder="e.g. Vetlanda BK, Brobergs IF, Edsbyns IF, Bollnäs GIF"
                       className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900 font-medium"
                     />
                     <p className="text-[11px] text-zinc-400 mt-1">
-                      Klubben där du växte upp och lärde dig grunderna i bandy.
+                      The youth club where you grew up and learned to play bandy.
                     </p>
                   </div>
 
                   <div>
                     <label className="block font-semibold text-zinc-800 mb-1">
-                      {lang === "sv" ? "Bandygymnasium / Utbildning" : "Bandy Academy / High School"}
+                      Sports Academy / Bandy High School
                     </label>
                     <select
                       value={formData.academyType}
-                      onChange={(e) => setFormData({ ...formData, academyType: e.target.value as "RIG" | "NIU" | "local" | "none" })}
+                      onChange={(e) => setFormData({ ...formData, academyType: e.target.value as "NIU" | "international" | "local" | "none" })}
                       className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900 cursor-pointer font-medium"
                     >
-                      <option value="none">Inget av dessa</option>
-                      <option value="RIG">RIG</option>
-                      <option value="NIU">NIU</option>
-                      <option value="local">Lokalt gymnasium</option>
+                      <option value="none">None</option>
+                      <option value="NIU">NIU Bandy Academy (Sweden)</option>
+                      <option value="international">Sports Academy (International)</option>
+                      <option value="local">Sports Academy (Local / Other)</option>
                     </select>
                   </div>
                 </div>

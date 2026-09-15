@@ -141,7 +141,7 @@ export default function PlayerDetailPage() {
   const youthAndAcademyText = (() => {
     const parts: string[] = [];
     if (player.youthClub && player.youthClub.trim()) {
-      parts.push(`Moderklubb: ${player.youthClub.trim()}`);
+      parts.push(`Origin / Youth Club: ${player.youthClub.trim()}`);
     }
     if (player.academyType && player.academyType !== "none" && player.academyType !== "Inget av dessa") {
       parts.push(player.academyType);
@@ -269,63 +269,63 @@ export default function PlayerDetailPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
             <div className="bg-white border border-zinc-200 rounded-xl p-3.5 shadow-2xs">
               <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider mb-1">
-                Födelseår / Ålder
+                Age / Birth Year
               </span>
               <span className="text-sm font-extrabold text-zinc-950 block">
-                {player.age} {t.playersPage.ageLabel}
+                {player.age} yrs
               </span>
               <span className="text-[11px] text-zinc-500">
-                f. {new Date().getFullYear() - player.age}
+                b. {new Date().getFullYear() - player.age}
               </span>
             </div>
 
             <div className="bg-white border border-zinc-200 rounded-xl p-3.5 shadow-2xs">
               <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider mb-1">
-                Längd & Vikt
+                Height & Weight
               </span>
               <span className="text-sm font-extrabold text-zinc-950 block">
                 {player.heightWeight}
               </span>
-              <span className="text-[11px] text-zinc-500">Fysik</span>
+              <span className="text-[11px] text-zinc-500">Physics</span>
             </div>
 
             <div className="bg-white border border-zinc-200 rounded-xl p-3.5 shadow-2xs">
               <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider mb-1">
-                Fattning
+                Shoots (Left/Right)
               </span>
               <span className="text-sm font-extrabold text-zinc-950 block">
                 {player.gripName[lang]}
               </span>
-              <span className="text-[11px] text-zinc-500">Klubbhand</span>
+              <span className="text-[11px] text-zinc-500">Grip</span>
             </div>
 
             <div className="bg-white border border-zinc-200 rounded-xl p-3.5 shadow-2xs">
               <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider mb-1">
-                Moderklubb
+                Origin / Youth Club
               </span>
-              <span className="text-sm font-extrabold text-zinc-950 truncate block" title={player.youthClub?.trim() || "Ej angiven"}>
-                {player.youthClub?.trim() || "Ej angiven"}
+              <span className="text-sm font-extrabold text-zinc-950 truncate block" title={player.youthClub?.trim() || "Not specified"}>
+                {player.youthClub?.trim() || "Not specified"}
               </span>
               <span className="text-[11px] text-zinc-500">
-                {player.youthClub?.trim() ? "Bandybakgrund" : "—"}
+                {player.youthClub?.trim() ? "Youth Roots" : "—"}
               </span>
             </div>
 
             <div className="bg-white border border-zinc-200 rounded-xl p-3.5 shadow-2xs">
               <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider mb-1">
-                Gymnasium
+                Sports Academy / Bandy High School
               </span>
-              <span className="text-sm font-extrabold text-zinc-950 block truncate" title={player.academyType && player.academyType !== "none" && player.academyType !== "Inget av dessa" ? player.academyType : "-"}>
-                {player.academyType && player.academyType !== "none" && player.academyType !== "Inget av dessa" ? player.academyType : "-"}
+              <span className="text-sm font-extrabold text-zinc-950 block truncate" title={player.academyType && player.academyType !== "none" && player.academyType !== "Inget av dessa" ? player.academyType : "None"}>
+                {player.academyType && player.academyType !== "none" && player.academyType !== "Inget av dessa" ? player.academyType : "None"}
               </span>
               <span className="text-[11px] text-zinc-500 truncate block">
-                {player.academyType && player.academyType !== "none" && player.academyType !== "Inget av dessa" ? "Idrottsutbildning" : "—"}
+                {player.academyType && player.academyType !== "none" && player.academyType !== "Inget av dessa" ? "Academy Program" : "—"}
               </span>
             </div>
 
             <div className="bg-white border border-zinc-200 rounded-xl p-3.5 shadow-2xs">
               <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider mb-1">
-                Nationalitet
+                Nationality
               </span>
               <span className="text-sm font-extrabold text-zinc-950 flex items-center gap-1.5 block">
                 <span>{player.countryFlag}</span>
@@ -388,12 +388,12 @@ export default function PlayerDetailPage() {
                   <div className="flex items-center gap-2">
                     <span className="text-base">🏒</span>
                     <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950">
-                      Karriärhistorik & Tidigare klubbar
+                      Career History & Previous Clubs
                     </h2>
                   </div>
                   {player.youthClub && (
                     <span className="text-xs text-zinc-500 font-medium">
-                      Startade i: <strong className="text-zinc-800">{player.youthClub}</strong>
+                      Origin / Youth Club: <strong className="text-zinc-800">{player.youthClub}</strong>
                     </span>
                   )}
                 </div>
@@ -403,10 +403,10 @@ export default function PlayerDetailPage() {
                     <table className="w-full text-left text-xs">
                       <thead>
                         <tr className="border-b border-zinc-200 text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
-                          <th className="py-2.5 px-3">Säsong / Period</th>
-                          <th className="py-2.5 px-3">Klubb</th>
-                          <th className="py-2.5 px-3">Serie / Nivå</th>
-                          <th className="py-2.5 px-3">Roll / Notering</th>
+                          <th className="py-2.5 px-3">Period / Seasons</th>
+                          <th className="py-2.5 px-3">Club / Team</th>
+                          <th className="py-2.5 px-3">Level / League</th>
+                          <th className="py-2.5 px-3">Role / Notes (Optional)</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-zinc-100">
@@ -434,7 +434,7 @@ export default function PlayerDetailPage() {
                 ) : (
                   <div className="p-6 rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 text-center">
                     <p className="text-xs text-zinc-500">
-                      {lang === "sv" ? "Ingen tidigare klubbhistorik angiven ännu." : "No career history provided yet."}
+                      No career history provided yet.
                     </p>
                   </div>
                 )}
@@ -564,45 +564,45 @@ export default function PlayerDetailPage() {
                   </div>
                   {player.secondaryPositionName && (
                     <div className="flex justify-between">
-                      <dt className="text-zinc-500">Sekundär:</dt>
+                      <dt className="text-zinc-500">Secondary Position:</dt>
                       <dd className="font-semibold text-zinc-900">{player.secondaryPositionName[lang]}</dd>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <dt className="text-zinc-500">Fattning:</dt>
+                    <dt className="text-zinc-500">Shoots (Left/Right):</dt>
                     <dd className="font-semibold text-zinc-900">{player.gripName[lang]}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-zinc-500">Mått:</dt>
+                    <dt className="text-zinc-500">Measurements:</dt>
                     <dd className="font-semibold text-zinc-900">{player.heightWeight}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-zinc-500">Moderklubb:</dt>
-                    <dd className="font-semibold text-zinc-900">{player.youthClub?.trim() || "Ej angiven"}</dd>
+                    <dt className="text-zinc-500">Origin / Youth Club:</dt>
+                    <dd className="font-semibold text-zinc-900">{player.youthClub?.trim() || "Not specified"}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-zinc-500">Gymnasium:</dt>
+                    <dt className="text-zinc-500">Sports Academy / Bandy High School:</dt>
                     <dd className="font-semibold text-zinc-900">
                       {player.academyType && player.academyType !== "none" && player.academyType !== "Inget av dessa"
                         ? player.academyType
-                        : "-"}
+                        : "None"}
                     </dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-zinc-500">Nuvarande:</dt>
+                    <dt className="text-zinc-500">Current Club:</dt>
                     <dd className="font-semibold text-zinc-900 truncate max-w-[150px]" title={player.previousClub}>
                       {player.previousClub}
                     </dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-zinc-500">Kontrakt:</dt>
+                    <dt className="text-zinc-500">Current Status:</dt>
                     <dd className="font-semibold text-zinc-900">
                       {player.contractStatusLabel?.[lang] || player.statusLabel[lang]}
                     </dd>
                   </div>
                   {(player.packagePreference || player.packagePreferenceLabel) && (
                     <div className="flex justify-between">
-                      <dt className="text-zinc-500">Avtalsnivå:</dt>
+                      <dt className="text-zinc-500">Package Wish:</dt>
                       <dd className="font-semibold text-zinc-900">
                         {formatWish(player.packagePreference) || player.packagePreferenceLabel?.[lang]}
                       </dd>

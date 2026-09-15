@@ -537,12 +537,12 @@ export function transformSupabasePlayer(row: SupabasePlayerRow): PlayerProfile {
   const youthClub = row.youth_club?.trim() || undefined;
   const rawAcademy = (row.academy_type || "").trim();
   let academyType: string | undefined = undefined;
-  if (rawAcademy.toUpperCase() === "RIG") {
-    academyType = "RIG";
-  } else if (rawAcademy.toUpperCase() === "NIU") {
-    academyType = "NIU";
+  if (rawAcademy.toUpperCase() === "NIU" || rawAcademy.toLowerCase().includes("niu") || rawAcademy.toUpperCase() === "RIG") {
+    academyType = "NIU Bandy Academy (Sweden)";
+  } else if (rawAcademy.toLowerCase() === "international" || rawAcademy.toLowerCase().includes("sports academy")) {
+    academyType = "Sports Academy (International)";
   } else if (rawAcademy.toLowerCase() === "local" || rawAcademy.toLowerCase().includes("lokalt")) {
-    academyType = "Lokalt gymnasium";
+    academyType = "Sports Academy (Local / Other)";
   } else if (rawAcademy.toLowerCase() === "none" || rawAcademy.toLowerCase().includes("inget")) {
     academyType = undefined;
   } else if (rawAcademy) {

@@ -17,33 +17,26 @@ const LanguageContext = createContext<LanguageContextValue>({
 });
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
+  // Platform is unified to 100% English
   const [lang, setLangState] = useState<Language>("en");
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("bandyprospects_lang") as Language;
-      const validLangs: Language[] = ["en", "sv", "fi", "no", "nl", "de", "fr"];
-      if (saved && validLangs.includes(saved)) {
-        setLangState(saved);
-      }
-    } catch {
-      // ignore in environments without localStorage
-    }
-  }, []);
-
-  const setLang = (newLang: Language) => {
-    setLangState(newLang);
-    try {
-      localStorage.setItem("bandyprospects_lang", newLang);
+      localStorage.setItem("bandyprospects_lang", "en");
     } catch {
       // ignore
     }
+  }, []);
+
+  const setLang = (_newLang: Language) => {
+    // English is the sole language
+    setLangState("en");
   };
 
-  const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+  const t = TRANSLATIONS.en;
 
   return (
-    <LanguageContext.Provider value={{ lang, setLang, t }}>
+    <LanguageContext.Provider value={{ lang: "en", setLang, t }}>
       {children}
     </LanguageContext.Provider>
   );

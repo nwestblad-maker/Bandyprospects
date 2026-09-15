@@ -3,19 +3,19 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useLanguage } from "@/context/LanguageContext";
 import { useShortlist } from "@/context/ShortlistContext";
-import { Language } from "@/types";
 import { supabase } from "@/lib/supabaseClient";
 
 export function Header({ onOpenContact }: { onOpenContact?: (target: string, type: "club" | "player") => void }) {
   const router = useRouter();
-  const { lang, setLang, t } = useLanguage();
   const { shortlistCount } = useShortlist();
-  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<{ email?: string; id?: string } | null>(null);
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
+  const [profileInfo, setProfileInfo] = useState<{
+    role: "player" | "club";
+    name: string;
+  } | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -35,44 +35,88 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
 
     async function checkUserProfile(currentUser: { email?: string; id?: string } | null) {
       if (!currentUser?.email && !currentUser?.id) {
-        if (!isCancelled) setHasProfile(null);
+        if (!isCancelled) {
+          setHasProfile(null);
+          setProfileInfo(null);
+        }
         return;
       }
 
       const email = currentUser.email?.toLowerCase().trim();
+      const userId = currentUser.id;
 
       try {
         // 1. Check players table
-        let playerQuery = supabase.from("players").select("id").limit(1);
-        if (email) {
+        let playerQuery = supabase.from("players").select("id, first_name, last_name").limit(1);
+        if (userId && email) {
+          playerQuery = playerQuery.or(`user_id.eq.${userId},email.ilike.${email}`);
+        } else if (email) {
           playerQuery = playerQuery.ilike("email", email);
+        } else if (userId) {
+          playerQuery = playerQuery.eq("user_id", userId);
         }
         const { data: playerData } = await playerQuery.maybeSingle();
 
         if (playerData) {
-          if (!isCancelled) setHasProfile(true);
+          const playerName = `${playerData.first_name || ""} ${playerData.last_name || ""}`.trim() || "Player";
+          if (!isCancelled) {
+            setHasProfile(true);
+            setProfileInfo({ role: "player", name: playerName });
+          }
           return;
         }
 
-        // 2. Check club_ads table (by contact_email)
-        if (email) {
-          const { data: clubData } = await supabase
-            .from("club_ads")
-            .select("id")
-            .ilike("contact_email", email)
-            .limit(1)
+        // 2. Check club_ads table (by user_id or contact_email)
+        let clubQuery = supabase.from("club_ads").select("id, club_name, contact_name").limit(1);
+        if (userId && email) {
+          clubQuery = clubQuery.or(`user_id.eq.${userId},contact_email.ilike.${email}`);
+        } else if (email) {
+          clubQuery = clubQuery.ilike("contact_email", email);
+        } else if (userId) {
+          clubQuery = clubQuery.eq("user_id", userId);
+        }
+        const { data: clubData } = await clubQuery.maybeSingle();
+
+        if (clubData) {
+          const clubName = clubData.club_name || clubData.contact_name || "Club";
+          if (!isCancelled) {
+            setHasProfile(true);
+            setProfileInfo({ role: "club", name: clubName });
+          }
+          return;
+        }
+
+        // 3. Check user_profiles table (for registered club accounts)
+        if (userId) {
+          const { data: userProfileData } = await supabase
+            .from("user_profiles")
+            .select("club_name, display_name, role")
+            .eq("id", userId)
             .maybeSingle();
 
-          if (clubData) {
-            if (!isCancelled) setHasProfile(true);
+          if (userProfileData) {
+            const clubName = userProfileData.club_name || userProfileData.display_name || "Club";
+            if (!isCancelled) {
+              setHasProfile(true);
+              setProfileInfo({
+                role: userProfileData.role === "player" ? "player" : "club",
+                name: clubName,
+              });
+            }
             return;
           }
         }
 
-        if (!isCancelled) setHasProfile(false);
+        if (!isCancelled) {
+          setHasProfile(false);
+          setProfileInfo(null);
+        }
       } catch (err) {
         console.error("Error checking user profile in Header:", err);
-        if (!isCancelled) setHasProfile(false);
+        if (!isCancelled) {
+          setHasProfile(false);
+          setProfileInfo(null);
+        }
       }
     }
 
@@ -87,19 +131,10 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
     await supabase.auth.signOut();
     setUser(null);
     setHasProfile(null);
+    setProfileInfo(null);
     router.push("/");
     router.refresh();
   };
-
-  const languagesList: { code: Language; name: string; flag: string }[] = [
-    { code: "en", name: "English", flag: "🇬🇧" },
-    { code: "sv", name: "Svenska", flag: "🇸🇪" },
-    { code: "fi", name: "Suomi", flag: "🇫🇮" },
-    { code: "no", name: "Norsk", flag: "🇳🇴" },
-    { code: "nl", name: "Nederlands", flag: "🇳🇱" },
-    { code: "de", name: "Deutsch", flag: "🇩🇪" },
-    { code: "fr", name: "Français", flag: "🇫🇷" },
-  ];
 
   return (
     <>
@@ -107,7 +142,9 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
       <div className="bg-zinc-900 text-zinc-300 text-xs px-4 py-2 border-b border-zinc-800 text-center">
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
-          <span className="font-medium text-zinc-200">{t.topBanner}</span>
+          <span className="font-medium text-zinc-200">
+            Transfer window open for season 2026/27. Connect with international clubs and prospects.
+          </span>
         </div>
       </div>
 
@@ -134,7 +171,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                     pathname?.startsWith("/players") ? "text-zinc-950 font-bold" : ""
                   }`}
                 >
-                  {t.nav.players}
+                  Players
                 </Link>
                 <Link
                   href="/market"
@@ -142,7 +179,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                     pathname === "/market" ? "text-zinc-950 font-bold" : ""
                   }`}
                 >
-                  {t.nav.market}
+                  Club Listings
                 </Link>
                 <Link
                   href="/statistik"
@@ -150,70 +187,67 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                     pathname?.startsWith("/statistik") || pathname?.startsWith("/stats") ? "text-zinc-950 font-bold" : ""
                   }`}
                 >
-                  {lang === "sv" ? "Statistik" : "Stats"}
+                  Insights
                 </Link>
                 <Link
                   href="/#how-it-works"
                   className="transition-colors hover:text-zinc-950"
                 >
-                  {t.nav.howItWorks}
+                  How it Works
                 </Link>
                 <Link
                   href="/#about"
                   className="transition-colors hover:text-zinc-950"
                 >
-                  {t.nav.about}
+                  About
                 </Link>
               </nav>
             </div>
 
-            {/* Language & Actions */}
-            <div className="flex items-center gap-3">
-              {/* Language Selector Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-zinc-700 bg-zinc-100 hover:bg-zinc-200/80 rounded-md border border-zinc-200/80 transition-colors cursor-pointer"
-                  aria-label="Change language"
-                >
-                  <span>{t.flag}</span>
-                  <span className="uppercase tracking-wider">{lang}</span>
-                  <svg className="w-3.5 h-3.5 text-zinc-500" viewBox="0 0 20 20" fill="currentColor">
-                    <path
-                      fillRule="evenodd"
-                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
-
-                {langDropdownOpen && (
-                  <div className="absolute right-0 mt-1 w-36 bg-white border border-zinc-200 rounded-lg shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
-                    {languagesList.map((item) => (
-                      <button
-                        key={item.code}
-                        onClick={() => {
-                          setLang(item.code);
-                          setLangDropdownOpen(false);
-                        }}
-                        className={`w-full flex items-center justify-between px-3 py-1.5 text-xs text-left transition-colors cursor-pointer ${
-                          lang === item.code ? "bg-zinc-100 font-bold text-zinc-900" : "text-zinc-600 hover:bg-zinc-50"
-                        }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          <span>{item.flag}</span>
-                          <span>{item.name}</span>
-                        </span>
-                        {lang === item.code && <span className="text-zinc-900 font-bold">✓</span>}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* User Authentication Status / Shortlist / Profile Links */}
+            {/* Desktop Actions & Role */}
+            <div className="flex items-center gap-2.5">
+              {/* User Authentication Status / Links */}
               {user ? (
                 <div className="hidden sm:flex items-center gap-2">
+                  {/* Role Indicator Badge */}
+                  {profileInfo?.role === "player" && (
+                    <div
+                      className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-emerald-950 bg-emerald-50 rounded-md border border-emerald-200"
+                      title={profileInfo.name}
+                    >
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                      <span className="truncate max-w-[200px]">
+                        Signed in as: <strong>{profileInfo.name}</strong> (Player)
+                      </span>
+                    </div>
+                  )}
+
+                  {profileInfo?.role === "club" && (
+                    <div
+                      className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-blue-950 bg-blue-50 rounded-md border border-blue-200"
+                      title={profileInfo.name}
+                    >
+                      <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                      <span className="truncate max-w-[200px]">
+                        Signed in as: <strong>{profileInfo.name}</strong> (Club)
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Messages Link */}
+                  <Link
+                    href="/messages"
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border transition-colors ${
+                      pathname?.startsWith("/messages")
+                        ? "bg-zinc-900 text-white border-zinc-900"
+                        : "bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border-zinc-200"
+                    }`}
+                  >
+                    <span>✉️</span>
+                    <span>Messages</span>
+                  </Link>
+
+                  {/* Shortlist Link */}
                   <Link
                     href="/shortlist"
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border transition-colors ${
@@ -231,6 +265,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                     )}
                   </Link>
 
+                  {/* My Profile Link */}
                   {hasProfile === true && (
                     <Link
                       href="/my-profile"
@@ -241,7 +276,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                       }`}
                     >
                       <span>👤</span>
-                      <span>{lang === "sv" ? "Min profil" : "My Profile"}</span>
+                      <span>My Profile</span>
                     </Link>
                   )}
 
@@ -258,49 +293,42 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                         href="/join"
                         className="inline-flex items-center justify-center px-2.5 py-1.5 text-xs font-semibold text-zinc-900 bg-emerald-50 hover:bg-emerald-100 rounded-md border border-emerald-300 transition-colors"
                       >
-                        + {lang === "sv" ? "Skapa profil" : "Create Profile"}
+                        + Create Profile
                       </Link>
                     </div>
                   )}
 
                   <button
                     onClick={handleSignOut}
-                    className="px-2 py-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer"
+                    className="px-2.5 py-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer"
                   >
-                    {lang === "sv" ? "Logga ut" : "Log out"}
+                    Sign Out
                   </button>
                 </div>
               ) : (
-                <Link
-                  href="/login"
-                  className={`hidden sm:inline-flex px-2.5 py-1.5 text-xs font-semibold transition-colors ${
-                    pathname === "/login" ? "text-zinc-950 font-bold" : "text-zinc-700 hover:text-zinc-950"
-                  }`}
-                >
-                  {lang === "sv"
-                    ? "Logga in / Redigera profil"
-                    : lang === "fi"
-                    ? "Kirjaudu / Muokkaa"
-                    : lang === "no"
-                    ? "Logg inn / Rediger"
-                    : "Sign in / Edit Profile"}
-                </Link>
-              )}
-
-              {!user && (
-                <Link
-                  href="/join"
-                  className="hidden md:inline-flex items-center justify-center px-3 py-1.5 text-xs font-semibold text-zinc-800 bg-zinc-100 hover:bg-zinc-200 rounded-md border border-zinc-200 transition-colors"
-                >
-                  {lang === "sv" ? "Skapa profil" : lang === "fi" ? "Luo profiili" : lang === "no" ? "Opprett profil" : "Join as Player"}
-                </Link>
+                <div className="hidden sm:flex items-center gap-2">
+                  <Link
+                    href="/login"
+                    className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
+                      pathname === "/login" ? "text-zinc-950 font-bold" : "text-zinc-700 hover:text-zinc-950"
+                    }`}
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/join"
+                    className="inline-flex items-center justify-center px-3 py-1.5 text-xs font-semibold text-zinc-800 bg-zinc-100 hover:bg-zinc-200 rounded-md border border-zinc-200 transition-colors"
+                  >
+                    Create Profile
+                  </Link>
+                </div>
               )}
 
               <Link
                 href="/post-ad"
                 className="inline-flex items-center justify-center px-3.5 py-1.5 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded-md shadow-sm transition-colors cursor-pointer"
               >
-                {lang === "sv" ? "+ Klubbannons" : lang === "fi" ? "+ Jätä ilmoitus" : lang === "no" ? "+ Klubbannonse" : "+ Post Club Ad"}
+                + Post Ad
               </Link>
 
               {/* Mobile hamburger */}
@@ -325,79 +353,108 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
           {/* Mobile Drawer */}
           {mobileMenuOpen && (
             <div className="md:hidden py-3 border-t border-zinc-200 space-y-1">
+              {/* Role badge if logged in */}
+              {user && (
+                <div className="pb-2 mb-2 border-b border-zinc-100">
+                  {profileInfo?.role === "player" ? (
+                    <div className="px-3 py-1.5 text-xs font-semibold text-emerald-950 bg-emerald-50 rounded-md border border-emerald-200 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                      <span className="truncate">Signed in as: {profileInfo.name} (Player)</span>
+                    </div>
+                  ) : profileInfo?.role === "club" ? (
+                    <div className="px-3 py-1.5 text-xs font-semibold text-blue-950 bg-blue-50 rounded-md border border-blue-200 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                      <span className="truncate">Signed in as: {profileInfo.name} (Club)</span>
+                    </div>
+                  ) : (
+                    <div className="px-3 py-1.5 text-xs font-medium text-zinc-600 bg-zinc-50 rounded-md border border-zinc-200 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                      <span className="truncate">{user.email}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <Link
                 href="/players"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 rounded-md"
               >
-                {t.nav.players}
+                Players
               </Link>
               <Link
                 href="/market"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 rounded-md"
               >
-                {t.nav.market}
+                Club Listings
               </Link>
               <Link
                 href="/statistik"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 rounded-md"
               >
-                {lang === "sv" ? "Statistik & Insikter" : "Stats & Insights"}
+                Insights
               </Link>
               <Link
                 href="/#how-it-works"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 rounded-md"
               >
-                {t.nav.howItWorks}
+                How it Works
               </Link>
               <Link
                 href="/#about"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 rounded-md"
               >
-                {t.nav.about}
+                About
               </Link>
 
               {user ? (
                 <div className="pt-2 border-t border-zinc-100 space-y-1">
                   <Link
+                    href="/messages"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-zinc-900 bg-zinc-100 rounded-md"
+                  >
+                    <span>✉️</span>
+                    <span>Messages</span>
+                  </Link>
+
+                  <Link
                     href="/shortlist"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center justify-between px-3 py-2 text-sm font-bold text-amber-950 bg-amber-50 rounded-md border border-amber-200"
                   >
-                    <span>⭐ {lang === "sv" ? "Min Shortlist" : "My Shortlist"}</span>
+                    <span>⭐ My Shortlist</span>
                     {shortlistCount > 0 && (
                       <span className="px-2 py-0.5 rounded-full bg-zinc-900 text-white text-xs font-bold">
                         {shortlistCount}
                       </span>
                     )}
                   </Link>
+
                   {hasProfile === true ? (
                     <Link
                       href="/my-profile"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="block px-3 py-2 text-sm font-bold text-zinc-900 bg-zinc-100 rounded-md"
+                      className="block px-3 py-2 text-sm font-bold text-zinc-900 hover:bg-zinc-100 rounded-md"
                     >
-                      👤 {lang === "sv" ? "Min profil" : "My Profile"}
+                      👤 My Profile
                     </Link>
                   ) : (
                     <div className="space-y-1.5 py-1">
-                      <div className="px-3 py-2 text-xs text-zinc-600 bg-zinc-50 rounded-md border border-zinc-200 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                        <span className="truncate font-medium">{user.email}</span>
-                      </div>
                       <Link
                         href="/join"
                         onClick={() => setMobileMenuOpen(false)}
                         className="block px-3 py-2 text-sm font-semibold text-emerald-950 bg-emerald-50 hover:bg-emerald-100 rounded-md border border-emerald-200"
                       >
-                        + {lang === "sv" ? "Skapa profil" : "Create Profile"}
+                        + Create Profile
                       </Link>
                     </div>
                   )}
+
                   <button
                     onClick={() => {
                       setMobileMenuOpen(false);
@@ -405,7 +462,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                     }}
                     className="w-full text-left px-3 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 rounded-md"
                   >
-                    {lang === "sv" ? "Logga ut" : "Log out"}
+                    Sign Out
                   </button>
                 </div>
               ) : (
@@ -415,25 +472,27 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                     onClick={() => setMobileMenuOpen(false)}
                     className="block px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 rounded-md"
                   >
-                    {lang === "sv" ? "Logga in / Redigera profil" : "Sign In / Edit Profile"}
+                    Sign In
                   </Link>
                 </div>
               )}
 
               <div className="pt-2 border-t border-zinc-100 grid grid-cols-2 gap-2">
-                <Link
-                  href="/join"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-zinc-100 text-zinc-800 border border-zinc-200"
-                >
-                  {lang === "sv" ? "Skapa profil" : lang === "fi" ? "Luo profiili" : lang === "no" ? "Opprett profil" : "Join as Player"}
-                </Link>
+                {!user && (
+                  <Link
+                    href="/join"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-zinc-100 text-zinc-800 border border-zinc-200"
+                  >
+                    Create Profile
+                  </Link>
+                )}
                 <Link
                   href="/post-ad"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-zinc-900 text-white"
+                  className={`px-3 py-2 text-center text-xs font-semibold rounded-lg bg-zinc-900 text-white ${user ? "col-span-2" : ""}`}
                 >
-                  {lang === "sv" ? "+ Klubbannons" : lang === "fi" ? "+ Jätä ilmoitus" : lang === "no" ? "+ Klubbannonse" : "+ Post Club Ad"}
+                  + Post Ad
                 </Link>
               </div>
             </div>

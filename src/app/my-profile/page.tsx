@@ -81,7 +81,7 @@ export default function MyProfilePage() {
     nationality: "SE",
     photoUrl: "",
     youthClub: "",
-    academyType: "none" as "RIG" | "NIU" | "local" | "none",
+    academyType: "none" as "NIU" | "international" | "local" | "none",
     heightCm: "",
     weightKg: "",
     stickGrip: "left" as PlayerGrip,
@@ -234,10 +234,10 @@ export default function MyProfilePage() {
             cStatus = "under_contract_loan";
           }
 
-          let acad: "RIG" | "NIU" | "local" | "none" = "none";
+          let acad: "NIU" | "international" | "local" | "none" = "none";
           const rawAcad = (p.academy_type || "").trim();
-          if (rawAcad.toUpperCase() === "RIG") acad = "RIG";
-          else if (rawAcad.toUpperCase() === "NIU") acad = "NIU";
+          if (rawAcad.toUpperCase() === "NIU" || rawAcad.toUpperCase() === "RIG" || rawAcad.toLowerCase().includes("niu")) acad = "NIU";
+          else if (rawAcad.toLowerCase() === "international" || rawAcad.toLowerCase().includes("sports academy")) acad = "international";
           else if (rawAcad.toLowerCase() === "local" || rawAcad.toLowerCase().includes("lokalt")) acad = "local";
 
           setFormData({
@@ -440,15 +440,13 @@ export default function MyProfilePage() {
             <div>
               <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-700 text-[11px] font-semibold uppercase tracking-wider mb-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span>Inloggad som {userEmail}</span>
+                <span>Signed in as {userEmail}</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 tracking-tight">
-                {formData.firstName || "Spelare"} {formData.lastName}
+                {formData.firstName || "Player"} {formData.lastName}
               </h1>
               <p className="text-xs text-zinc-500 mt-0.5">
-                {lang === "sv"
-                  ? "Hantera din bandyprofil, moderklubb, gymnasium och karriärhistorik."
-                  : "Manage your bandy profile, youth club, academy, and career history."}
+                Manage your player profile, origin club, sports academy, and career history.
               </p>
             </div>
 
@@ -549,16 +547,16 @@ export default function MyProfilePage() {
 
           {/* MAIN EDIT FORM */}
           <form onSubmit={handleSaveProfile} className="space-y-8">
-            {/* SECTION A: GRUNDFAKTA & FYSIK */}
+            {/* SECTION A: CORE DETAILS & PHYSICAL METRICS */}
             <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs space-y-5">
               <div className="pb-3 border-b border-zinc-100">
                 <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 text-[11px] font-bold uppercase tracking-wider mb-1">
                   <span>A</span>
-                  <span>Grundfakta & Fysik</span>
+                  <span>Core Details & Physical Metrics</span>
                 </div>
-                <h2 className="text-base font-bold text-zinc-950">Personuppgifter, Moderklubb & Skola</h2>
+                <h2 className="text-base font-bold text-zinc-950">Personal Details, Origin / Youth Club & Academy</h2>
                 <p className="text-xs text-zinc-500">
-                  Moderklubb, gymnasium, fysiska mått och klubbtillhörighet.
+                  Origin club, sports academy, physical metrics, and club affiliation.
                 </p>
               </div>
 
@@ -570,7 +568,7 @@ export default function MyProfilePage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-2">
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">Förnamn *</label>
+                  <label className="block font-semibold text-zinc-700 mb-1">First Name *</label>
                   <input
                     type="text"
                     required
@@ -581,7 +579,7 @@ export default function MyProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">Efternamn *</label>
+                  <label className="block font-semibold text-zinc-700 mb-1">Last Name *</label>
                   <input
                     type="text"
                     required
@@ -592,7 +590,7 @@ export default function MyProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">Födelseår *</label>
+                  <label className="block font-semibold text-zinc-700 mb-1">Birth Year *</label>
                   <input
                     type="number"
                     required
@@ -606,7 +604,7 @@ export default function MyProfilePage() {
 
                 <div>
                   <CountrySelect
-                    label="Nationalitet"
+                    label="Nationality"
                     required
                     value={formData.nationality}
                     onChange={(code) => setFormData({ ...formData, nationality: code })}
@@ -614,42 +612,42 @@ export default function MyProfilePage() {
                 </div>
               </div>
 
-              {/* Moderklubb & Bandygymnasium */}
+              {/* Origin / Youth Club & Sports Academy */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-3 border-t border-zinc-100">
                 <div className="sm:col-span-2">
                   <label className="block font-semibold text-zinc-800 mb-1">
-                    Moderklubb (där du startade spela bandy) *
+                    Origin / Youth Club (where you started playing bandy) *
                   </label>
                   <input
                     type="text"
                     value={formData.youthClub}
                     onChange={(e) => setFormData({ ...formData, youthClub: e.target.value })}
-                    placeholder="t.ex. Vetlanda BK, Brobergs IF, Edsbyns IF"
+                    placeholder="e.g. Vetlanda BK, Brobergs IF, Edsbyns IF"
                     className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900 font-medium"
                   />
                 </div>
 
                 <div>
                   <label className="block font-semibold text-zinc-800 mb-1">
-                    Gymnasium / Idrottsutbildning
+                    Sports Academy / Bandy High School
                   </label>
                   <select
                     value={formData.academyType}
-                    onChange={(e) => setFormData({ ...formData, academyType: e.target.value as "RIG" | "NIU" | "local" | "none" })}
+                    onChange={(e) => setFormData({ ...formData, academyType: e.target.value as "NIU" | "international" | "local" | "none" })}
                     className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900 cursor-pointer font-medium"
                   >
-                    <option value="none">Inget av dessa</option>
-                    <option value="RIG">RIG</option>
-                    <option value="NIU">NIU</option>
-                    <option value="local">Lokalt gymnasium</option>
+                    <option value="none">None</option>
+                    <option value="NIU">NIU Bandy Academy (Sweden)</option>
+                    <option value="international">Sports Academy (International)</option>
+                    <option value="local">Sports Academy (Local / Other)</option>
                   </select>
                 </div>
               </div>
 
-              {/* Fysik & Fattning */}
+              {/* Physics & Stick Grip */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs pt-3 border-t border-zinc-100">
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">Längd (cm)</label>
+                  <label className="block font-semibold text-zinc-700 mb-1">Height (cm)</label>
                   <input
                     type="number"
                     min="140"
@@ -662,7 +660,7 @@ export default function MyProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">Vikt (kg)</label>
+                  <label className="block font-semibold text-zinc-700 mb-1">Weight (kg)</label>
                   <input
                     type="number"
                     min="40"
@@ -675,74 +673,74 @@ export default function MyProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">Fattning *</label>
+                  <label className="block font-semibold text-zinc-700 mb-1">Shoots (Left/Right) *</label>
                   <select
                     value={formData.stickGrip}
                     onChange={(e) => setFormData({ ...formData, stickGrip: e.target.value as PlayerGrip })}
                     className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-800 focus:outline-none focus:border-zinc-900 cursor-pointer"
                   >
-                    <option value="left">Vänster (L)</option>
-                    <option value="right">Höger (R)</option>
+                    <option value="left">Left (L)</option>
+                    <option value="right">Right (R)</option>
                   </select>
                 </div>
               </div>
 
-              {/* Nuvarande klubb */}
+              {/* Current Club */}
               <div className="pt-3 border-t border-zinc-100">
-                <label className="block font-semibold text-zinc-700 text-xs mb-1">Nuvarande klubb *</label>
+                <label className="block font-semibold text-zinc-700 text-xs mb-1">Current Club *</label>
                 <input
                   type="text"
                   required
                   value={formData.currentClub}
                   onChange={(e) => setFormData({ ...formData, currentClub: e.target.value })}
-                  placeholder="t.ex. Sandvikens AIK"
+                  placeholder="e.g. Sandvikens AIK, Villa Lidköping, Edsbyns IF"
                   className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 text-xs focus:outline-none focus:border-zinc-900"
                 />
               </div>
             </div>
 
-            {/* SECTION B: POSITION & SPETSEGENSKAPER */}
+            {/* SECTION B: POSITION & KEY ATTRIBUTES */}
             <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs space-y-5">
               <div className="pb-3 border-b border-zinc-100">
                 <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 text-[11px] font-bold uppercase tracking-wider mb-1">
                   <span>B</span>
-                  <span>Position & Spetsegenskaper</span>
+                  <span>Position & Key Attributes</span>
                 </div>
-                <h2 className="text-base font-bold text-zinc-950">Roll på isen & Spetsegenskaper</h2>
+                <h2 className="text-base font-bold text-zinc-950">On-ice Role & Key Strengths</h2>
                 <p className="text-xs text-zinc-500">
-                  Primär roll, sekundär flexibilitet och dina starkaste spetsegenskaper.
+                  Primary position, secondary versatility, and your key player strengths.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div>
-                  <label className="block font-semibold text-zinc-800 mb-1">Primär position *</label>
+                  <label className="block font-semibold text-zinc-800 mb-1">Primary Position *</label>
                   <select
                     value={formData.position}
                     onChange={(e) => setFormData({ ...formData, position: e.target.value as PositionCategory })}
                     className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 font-semibold focus:outline-none focus:border-zinc-900 cursor-pointer"
                   >
-                    <option value="halv">Halv</option>
-                    <option value="midfielder">Mittfältare</option>
-                    <option value="defender">Försvarare / Back</option>
-                    <option value="forward">Anfallare / Forward</option>
-                    <option value="goalkeeper">Målvakt</option>
+                    <option value="halv">Halv / Wingback</option>
+                    <option value="midfielder">Midfielder</option>
+                    <option value="defender">Defender</option>
+                    <option value="forward">Forward / Striker</option>
+                    <option value="goalkeeper">Goalkeeper</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">Sekundär position (Valfritt)</label>
+                  <label className="block font-semibold text-zinc-700 mb-1">Secondary Position (Optional)</label>
                   <select
                     value={formData.secondaryPosition}
                     onChange={(e) => setFormData({ ...formData, secondaryPosition: e.target.value })}
                     className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-800 focus:outline-none focus:border-zinc-900 cursor-pointer"
                   >
-                    <option value="">Ingen / Endast primär position</option>
-                    <option value="halv">Halv</option>
-                    <option value="midfielder">Mittfältare</option>
-                    <option value="defender">Försvarare / Back</option>
-                    <option value="forward">Anfallare / Forward</option>
-                    <option value="goalkeeper">Målvakt</option>
+                    <option value="">None / Primary position only</option>
+                    <option value="halv">Halv / Wingback</option>
+                    <option value="midfielder">Midfielder</option>
+                    <option value="defender">Defender</option>
+                    <option value="forward">Forward / Striker</option>
+                    <option value="goalkeeper">Goalkeeper</option>
                   </select>
                 </div>
               </div>
@@ -750,7 +748,7 @@ export default function MyProfilePage() {
               {/* Spetsegenskaper */}
               <div className="pt-3 border-t border-zinc-100">
                 <label className="block font-semibold text-zinc-900 text-xs mb-2">
-                  Spetsegenskaper (Klicka för att välja dina främsta styrkor)
+                  Key Attributes (Select your core strengths)
                 </label>
                 <BandyTraitsPicker
                   selectedTraits={formData.playerTraits}
@@ -760,16 +758,16 @@ export default function MyProfilePage() {
               </div>
             </div>
 
-            {/* SECTION C: KONTRAKT & CIVIL PROFIL */}
+            {/* SECTION C: CONTRACT & OFF-ICE PROFILE */}
             <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs space-y-6">
               <div className="pb-3 border-b border-zinc-100">
                 <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 text-[11px] font-bold uppercase tracking-wider mb-1">
                   <span>C</span>
-                  <span>Kontrakt & Civil profil</span>
+                  <span>Contract & Off-Ice Profile</span>
                 </div>
-                <h2 className="text-base font-bold text-zinc-950">Avtalssituation, Video & Civila önskemål</h2>
+                <h2 className="text-base font-bold text-zinc-950">Contract Status, Video & Off-Ice Preferences</h2>
                 <p className="text-xs text-zinc-500">
-                  Definiera din kontraktsstatus, länk till matchvideo och dubbla karriärval.
+                  Define your contract availability, highlight video link, and dual-career preferences.
                 </p>
               </div>
 
@@ -777,13 +775,13 @@ export default function MyProfilePage() {
               <div>
                 <label className="block font-semibold text-zinc-800 text-xs mb-1 flex items-center gap-1.5">
                   <span>▶️</span>
-                  <span>Video / Highlights (YouTube eller Vimeo länk)</span>
+                  <span>Video / Highlights (YouTube or Vimeo link)</span>
                 </label>
                 <input
                   type="url"
                   value={formData.videoUrl}
                   onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value, youtube_url: e.target.value })}
-                  placeholder="https://www.youtube.com/watch?v=... eller https://vimeo.com/..."
+                  placeholder="https://www.youtube.com/watch?v=... or https://vimeo.com/..."
                   className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 text-xs font-medium"
                 />
               </div>
@@ -791,13 +789,13 @@ export default function MyProfilePage() {
               {/* Contract Type */}
               <div className="pt-2 border-t border-zinc-100">
                 <label className="block font-bold text-zinc-800 text-xs mb-2">
-                  Önskad avtalsnivå:
+                  Desired Contract Level:
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   {[
-                    { id: "semi_pro", title: "Semiprofessionell", desc: "Spelarersättning + jobb/studier" },
-                    { id: "full_time", title: "Heltidsproffs", desc: "Heltidsavtal och elitfokus" },
-                    { id: "amateur", title: "Amatör / Utveckling", desc: "Hjälp med boende & jobbmatchning" },
+                    { id: "semi_pro", title: "Semi-Professional", desc: "Player compensation + work/studies" },
+                    { id: "full_time", title: "Full-time Pro", desc: "Full-time contract & elite focus" },
+                    { id: "amateur", title: "Amateur / Development", desc: "Housing support & job matching" },
                   ].map((opt) => (
                     <button
                       key={opt.id}
@@ -824,15 +822,15 @@ export default function MyProfilePage() {
               {/* Occupation Preferences */}
               <div className="space-y-2 pt-2 border-t border-zinc-100">
                 <span className="block font-bold text-zinc-800 text-xs">
-                  Civila önskemål (Kombinera idrott med):
+                  Off-Ice Preferences (Combine bandy with):
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {[
-                    { id: "studies", icon: "🎓", label: "Studier på universitet / högskola" },
-                    { id: "fulltime_job", icon: "💼", label: "Civilt heltidsjobb vid sidan av" },
-                    { id: "parttime_job", icon: "🕒", label: "Flexibelt deltidsarbete" },
-                    { id: "housing", icon: "🏠", label: "Hjälp med lägenhet / boende" },
-                    { id: "sports_only", icon: "🏒", label: "Endast idrott / Spelarersättning" },
+                    { id: "studies", icon: "🎓", label: "University / College studies" },
+                    { id: "fulltime_job", icon: "💼", label: "Civilian full-time job alongside bandy" },
+                    { id: "parttime_job", icon: "🕒", label: "Flexible part-time work" },
+                    { id: "housing", icon: "🏠", label: "Apartment / Housing assistance" },
+                    { id: "sports_only", icon: "🏒", label: "Sports only / Direct compensation" },
                   ].map((item) => (
                     <label
                       key={item.id}
@@ -861,7 +859,7 @@ export default function MyProfilePage() {
               {/* Target Countries */}
               <div className="pt-3 border-t border-zinc-100">
                 <label className="block font-bold text-zinc-800 text-xs mb-2">
-                  Öppen för klubbar i följande länder:
+                  Open to clubs in the following countries:
                 </label>
                 <TargetCountriesPicker
                   selectedCodes={formData.targetCountries}
@@ -880,13 +878,13 @@ export default function MyProfilePage() {
               {/* Bio */}
               <div className="pt-3 border-t border-zinc-100 text-xs">
                 <label className="block font-semibold text-zinc-700 mb-1">
-                  Spelarens presentation & Ambitioner
+                  Player Presentation & Ambitions
                 </label>
                 <textarea
                   rows={4}
                   value={formData.bio}
                   onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                  placeholder="Beskriv din spelstil, ambitioner och vad du söker hos en ny förening..."
+                  placeholder="Describe your playing style, career ambitions, and what you are looking for in a new club..."
                   className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
                 />
               </div>
@@ -895,7 +893,7 @@ export default function MyProfilePage() {
               <div className="pt-4 border-t border-zinc-100 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   <div>
-                    <label className="block font-semibold text-zinc-700 mb-1">Telefon</label>
+                    <label className="block font-semibold text-zinc-700 mb-1">Phone</label>
                     <input
                       type="tel"
                       value={formData.phone}
@@ -918,16 +916,16 @@ export default function MyProfilePage() {
               </div>
             </div>
 
-            {/* SECTION D: TIDIGARE KLUBBAR & SÄSONGER */}
+            {/* SECTION D: CAREER HISTORY & PREVIOUS CLUBS */}
             <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs space-y-5">
               <div className="pb-3 border-b border-zinc-100">
                 <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 text-[11px] font-bold uppercase tracking-wider mb-1">
                   <span>D</span>
-                  <span>Tidigare klubbar & Säsonger</span>
+                  <span>Career History & Previous Clubs</span>
                 </div>
-                <h2 className="text-base font-bold text-zinc-950">Karriärhistorik</h2>
+                <h2 className="text-base font-bold text-zinc-950">Career History</h2>
                 <p className="text-xs text-zinc-500">
-                  Lägg till tidigare säsonger och klubbar du representerat.
+                  Add previous seasons, clubs, leagues, and roles you have represented.
                 </p>
               </div>
 
@@ -948,11 +946,11 @@ export default function MyProfilePage() {
                 {isSaving ? (
                   <>
                     <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Sparar ändringar...</span>
+                    <span>Saving changes...</span>
                   </>
                 ) : (
                   <>
-                    <span>Spara alla ändringar</span>
+                    <span>Save Profile Changes</span>
                     <span>✓</span>
                   </>
                 )}

@@ -179,19 +179,19 @@ export function CareerHistoryEditor({
           {/* Desktop Column Headers */}
           <div className="hidden md:flex items-center gap-2.5 px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500">
             <div className="w-[185px] shrink-0">
-              {lang === 'sv' ? 'Period / Säsonger' : 'Period / Seasons'}
+              Period / Seasons
             </div>
             <div className="flex-1 min-w-[160px]">
-              {lang === 'sv' ? 'Förening / Klubb' : 'Club / Team'}
+              Club / Team
             </div>
             <div className="w-36 shrink-0">
-              {lang === 'sv' ? 'Serie / Nivå' : 'League / Level'}
+              Level / League
             </div>
             <div className="flex-1 min-w-[140px]">
-              {lang === 'sv' ? 'Notering / Roll (valfritt)' : 'Note / Role (optional)'}
+              Role / Notes (Optional)
             </div>
             <div className="w-8 shrink-0 text-center">
-              <span className="sr-only">{lang === 'sv' ? 'Ta bort' : 'Remove'}</span>
+              <span className="sr-only">Remove</span>
             </div>
           </div>
 
@@ -208,7 +208,7 @@ export function CareerHistoryEditor({
                 {/* Period Selector */}
                 <div className="w-full md:w-[185px] shrink-0">
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1 md:hidden">
-                    {lang === 'sv' ? 'Period / Säsonger' : 'Period / Seasons'}
+                    Period / Seasons
                   </label>
                   <div className="flex items-center gap-1.5">
                     <select
@@ -216,7 +216,7 @@ export function CareerHistoryEditor({
                       onChange={(e) =>
                         handlePeriodChange(index, e.target.value, toSeason)
                       }
-                      aria-label={lang === 'sv' ? 'Från säsong' : 'From season'}
+                      aria-label="From season"
                       className="flex-1 min-w-0 px-2 py-1.5 text-xs font-semibold border border-zinc-200 rounded-lg bg-zinc-50 focus:bg-white focus:outline-none focus:border-zinc-900 cursor-pointer"
                     >
                       {!ALL_SEASONS.includes(fromSeason) && (
@@ -234,11 +234,11 @@ export function CareerHistoryEditor({
                       onChange={(e) =>
                         handlePeriodChange(index, fromSeason, e.target.value)
                       }
-                      aria-label={lang === 'sv' ? 'Till säsong' : 'To season'}
+                      aria-label="To season"
                       className="flex-1 min-w-0 px-2 py-1.5 text-xs font-semibold border border-zinc-200 rounded-lg bg-zinc-50 focus:bg-white focus:outline-none focus:border-zinc-900 cursor-pointer"
                     >
-                      <option value="Nuvarande">
-                        {lang === 'sv' ? 'Nuvarande' : 'Current'}
+                      <option value="Current">
+                        Current
                       </option>
                       {!ALL_SEASONS.includes(toSeason) &&
                         toSeason !== 'Nuvarande' &&
@@ -257,13 +257,13 @@ export function CareerHistoryEditor({
                 {/* Club Input */}
                 <div className="w-full md:flex-1 md:min-w-[160px]">
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1 md:hidden">
-                    {lang === 'sv' ? 'Förening / Klubb' : 'Club / Team'}
+                    Club / Team
                   </label>
                   <input
                     type="text"
                     value={row.club}
                     onChange={(e) => handleUpdateRow(index, 'club', e.target.value)}
-                    placeholder="t.ex. Sandvikens AIK"
+                    placeholder="e.g. Sandvikens AIK"
                     className="w-full px-2.5 py-1.5 text-xs border border-zinc-200 rounded-lg bg-white focus:outline-none focus:border-zinc-900"
                   />
                 </div>
@@ -271,14 +271,14 @@ export function CareerHistoryEditor({
                 {/* League Select */}
                 <div className="w-full md:w-36 shrink-0">
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1 md:hidden">
-                    {lang === 'sv' ? 'Serie / Nivå' : 'League / Level'}
+                    Level / League
                   </label>
                   <select
                     value={row.league}
                     onChange={(e) => handleUpdateRow(index, 'league', e.target.value)}
                     className="w-full px-2 py-1.5 text-xs border border-zinc-200 rounded-lg bg-white focus:outline-none focus:border-zinc-900 cursor-pointer"
                   >
-                    <option value="">{lang === 'sv' ? 'Välj nivå' : 'Select level'}</option>
+                    <option value="">Select level</option>
                     {COMMON_LEAGUES.map((lg) => (
                       <option key={lg} value={lg}>
                         {lg}
@@ -293,13 +293,13 @@ export function CareerHistoryEditor({
                 {/* Note / Role */}
                 <div className="w-full md:flex-1 md:min-w-[140px]">
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1 md:hidden">
-                    {lang === 'sv' ? 'Notering / Roll (valfritt)' : 'Note / Role (optional)'}
+                    Role / Notes (Optional)
                   </label>
                   <input
                     type="text"
                     value={row.note || row.role || ''}
                     onChange={(e) => handleUpdateRow(index, 'note', e.target.value)}
-                    placeholder="t.ex. Ordinarie, Kapten, 45 m"
+                    placeholder="e.g. Regular starter, Captain, 24 games"
                     className="w-full px-2.5 py-1.5 text-xs border border-zinc-200 rounded-lg bg-white focus:outline-none focus:border-zinc-900"
                   />
                 </div>
@@ -309,12 +309,12 @@ export function CareerHistoryEditor({
                   <button
                     type="button"
                     onClick={() => handleRemoveRow(index)}
-                    title={lang === 'sv' ? 'Ta bort sejour' : 'Remove stint'}
+                    title="Remove stint"
                     className="inline-flex items-center gap-1 md:justify-center w-full md:w-8 h-7 text-xs text-zinc-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
                   >
                     <span className="text-sm font-semibold">✕</span>
                     <span className="md:hidden text-xs font-medium text-red-600">
-                      {lang === 'sv' ? 'Ta bort sejour' : 'Remove stint'}
+                      Remove stint
                     </span>
                   </button>
                 </div>
@@ -329,21 +329,11 @@ export function CareerHistoryEditor({
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 text-xs font-semibold cursor-pointer transition-colors shadow-2xs"
             >
               <span>+</span>
-              <span>
-                {lang === 'sv'
-                  ? 'Lägg till säsong / klubbsejour'
-                  : 'Add season / club stint'}
-              </span>
+              <span>Add season / club stint</span>
             </button>
             <span className="text-[11px] text-zinc-400">
               {careerHistory.length}{' '}
-              {lang === 'sv'
-                ? careerHistory.length === 1
-                  ? 'sejour listad'
-                  : 'sejourer listade'
-                : careerHistory.length === 1
-                  ? 'stint listed'
-                  : 'stints listed'}
+              {careerHistory.length === 1 ? 'stint listed' : 'stints listed'}
             </span>
           </div>
         </div>
