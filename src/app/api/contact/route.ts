@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase as anonSupabase } from "@/lib/supabaseClient";
+import { createServerSupabase } from "@/lib/supabaseServer";
 
 interface ContactRequestBody {
   senderName: string;
@@ -9,6 +10,7 @@ interface ContactRequestBody {
   senderPhone?: string;
   senderRole?: string;
   senderClub?: string;
+  senderId?: string;
   message: string;
   targetName?: string;
   recipientName?: string;
@@ -46,43 +48,227 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid sender email address." }, { status: 400 });
     }
 
-    // Resolve recipient email address
-    let recipientEmail = effectiveTargetEmail;
+    // Resolve authenticated user if available
+    let currentUserId = body.senderId || "";
+    try {
+      const serverSupabase = await createServerSupabase();
+      const { data: authData } = await serverSupabase.auth.getUser();
+      if (authData?.user) {
+        currentUserId = authData.user.id;
+      }
+    } catch {}
 
-    if (!recipientEmail && targetId) {
-      try {
-        if (type === "player") {
-          const { data: playerData } = await supabase
-            .from("players")
-            .select("email, first_name, last_name")
-            .eq("id", targetId)
-            .maybeSingle();
-
-          if (playerData?.email) {
-            recipientEmail = playerData.email;
-          }
-        } else {
-          const { data: clubData } = await supabase
-            .from("club_ads")
-            .select("contact_email, club_name")
-            .eq("id", targetId)
-            .maybeSingle();
-
-          if (clubData?.contact_email) {
-            recipientEmail = clubData.contact_email;
-          }
+    // Fallback: check Authorization header
+    if (!currentUserId) {
+      const authHeader = request.headers.get("Authorization");
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        const token = authHeader.substring(7);
+        const { data: tokenUser } = await anonSupabase.auth.getUser(token);
+        if (tokenUser?.user) {
+          currentUserId = tokenUser.user.id;
         }
-      } catch (dbErr) {
-        console.error("Error looking up recipient email in Supabase:", dbErr);
+      }
+    }
+
+    // Resolve recipient details
+    let recipientEmail = effectiveTargetEmail;
+    let resolvedPlayerId = "";
+    let resolvedClubUserId = "";
+
+    if (type === "player") {
+      // Recipient is player
+      if (targetId) {
+        resolvedPlayerId = targetId;
+      }
+
+      if (!recipientEmail || !resolvedPlayerId) {
+        try {
+          let playerQuery = anonSupabase.from("players").select("id, email, first_name, last_name");
+          if (targetId) {
+            playerQuery = playerQuery.eq("id", targetId);
+          } else if (recipientEmail) {
+            playerQuery = playerQuery.ilike("email", recipientEmail);
+          }
+          const { data: playerData } = await playerQuery.limit(1).maybeSingle();
+          if (playerData) {
+            recipientEmail = playerData.email || recipientEmail;
+            resolvedPlayerId = playerData.id;
+          }
+        } catch (dbErr) {
+          console.error("Error finding player recipient:", dbErr);
+        }
+      }
+
+      // Sender is the club user
+      resolvedClubUserId = currentUserId;
+
+      // If sender has no user ID yet, try finding or creating profile
+      if (!resolvedClubUserId) {
+        try {
+          const { data: existingClub } = await anonSupabase
+            .from("club_ads")
+            .select("user_id")
+            .ilike("contact_email", effectiveSenderEmail)
+            .limit(1)
+            .maybeSingle();
+
+          if (existingClub?.user_id) {
+            resolvedClubUserId = existingClub.user_id;
+          }
+        } catch {}
+      }
+    } else {
+      // Recipient is club
+      let clubAdUserId = "";
+      if (targetId) {
+        try {
+          const { data: clubData } = await anonSupabase
+            .from("club_ads")
+            .select("user_id, contact_email, club_name")
+            .eq("id", targetId)
+            .maybeSingle();
+
+          if (clubData) {
+            recipientEmail = clubData.contact_email || recipientEmail;
+            clubAdUserId = clubData.user_id || "";
+          }
+        } catch (e) {
+          console.error("Error looking up club ad:", e);
+        }
+      }
+
+      resolvedClubUserId = clubAdUserId;
+
+      // If club user id still missing, try looking up user_profiles
+      if (!resolvedClubUserId && recipientEmail) {
+        try {
+          const { data: clubProfile } = await anonSupabase
+            .from("user_profiles")
+            .select("id")
+            .eq("role", "club")
+            .ilike("club_name", effectiveTargetName)
+            .limit(1)
+            .maybeSingle();
+
+          if (clubProfile) {
+            resolvedClubUserId = clubProfile.id;
+          }
+        } catch {}
+      }
+
+      // Sender is player
+      if (currentUserId) {
+        try {
+          const { data: p } = await anonSupabase
+            .from("players")
+            .select("id")
+            .or(`user_id.eq.${currentUserId},email.ilike.${effectiveSenderEmail}`)
+            .limit(1)
+            .maybeSingle();
+
+          if (p) resolvedPlayerId = p.id;
+        } catch {}
+      }
+
+      if (!resolvedPlayerId && effectiveSenderEmail) {
+        try {
+          const { data: p } = await anonSupabase
+            .from("players")
+            .select("id")
+            .ilike("email", effectiveSenderEmail)
+            .limit(1)
+            .maybeSingle();
+
+          if (p) resolvedPlayerId = p.id;
+        } catch {}
       }
     }
 
     // Fallback recipient if not found
     const finalRecipient = recipientEmail || process.env.ADMIN_CONTACT_EMAIL || "kontakt@bandyprospects.com";
 
-    // Resend Email Integration
+    // -------------------------------------------------------------
+    // CREATE OR REUSE CONVERSATION & INSERT MESSAGE
+    // -------------------------------------------------------------
+    let conversationId: string | null = null;
+    let messageId: string | null = null;
+
+    if (resolvedPlayerId && resolvedClubUserId) {
+      try {
+        // 1. Look up existing conversation between this player and club
+        const { data: existingConv } = await anonSupabase
+          .from("conversations")
+          .select("id")
+          .eq("player_id", resolvedPlayerId)
+          .eq("club_user_id", resolvedClubUserId)
+          .limit(1)
+          .maybeSingle();
+
+        if (existingConv?.id) {
+          conversationId = existingConv.id;
+        } else {
+          // 2. Create new conversation
+          const { data: newConv, error: createConvErr } = await anonSupabase
+            .from("conversations")
+            .insert({
+              player_id: resolvedPlayerId,
+              club_user_id: resolvedClubUserId,
+              subject: `Förfrågan: ${effectiveTargetName}`,
+              last_message_at: new Date().toISOString(),
+            })
+            .select("id")
+            .single();
+
+          if (!createConvErr && newConv) {
+            conversationId = newConv.id;
+          } else {
+            console.error("Error creating conversation:", createConvErr);
+          }
+        }
+
+        // 3. Insert into messages table
+        if (conversationId) {
+          const senderRoleType = type === "player" ? "club" : "player";
+          const { data: newMsg, error: createMsgErr } = await anonSupabase
+            .from("messages")
+            .insert({
+              conversation_id: conversationId,
+              sender_id: currentUserId || resolvedClubUserId,
+              sender_name: effectiveSenderName,
+              sender_role: senderRoleType,
+              body: effectiveMessage,
+              read: false,
+            })
+            .select("id")
+            .single();
+
+          if (!createMsgErr && newMsg) {
+            messageId = newMsg.id;
+          } else {
+            console.error("Error inserting message:", createMsgErr);
+          }
+
+          // Update last_message_at on conversation
+          await anonSupabase
+            .from("conversations")
+            .update({ last_message_at: new Date().toISOString() })
+            .eq("id", conversationId);
+        }
+      } catch (convDbErr) {
+        console.error("Error in conversation/message DB operations:", convDbErr);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // SEND ONE TRANSACTIONAL NOTIFICATION EMAIL VIA RESEND
+    // -------------------------------------------------------------
     const resendApiKey = process.env.RESEND_API_KEY;
     const senderFromEmail = process.env.RESEND_FROM_EMAIL || "Bandyprospects <kontakt@bandyprospects.com>";
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://bandyprospects.com";
+
+    const conversationLink = conversationId
+      ? `${siteUrl}/messages?id=${conversationId}`
+      : `${siteUrl}/messages`;
 
     const roleLabelMap: Record<string, string> = {
       player: "Spelare / Prospect",
@@ -92,10 +278,11 @@ export async function POST(request: Request) {
     };
 
     const roleDisplay = effectiveSenderRole
-      ? (roleLabelMap[effectiveSenderRole] || effectiveSenderRole)
-      : (effectiveSenderClub || "Intressent");
+      ? roleLabelMap[effectiveSenderRole] || effectiveSenderRole
+      : effectiveSenderClub || "Intressent";
 
-    const emailSubject = `[Bandyprospects] Ny förfrågan gällande ${effectiveTargetName} från ${effectiveSenderName}${effectiveSenderClub ? ` (${effectiveSenderClub})` : ""}`;
+    // Transactional notification email
+    const emailSubject = `Nytt meddelande från ${effectiveSenderName} på Bandy Prospects`;
     const emailHtml = `
       <!DOCTYPE html>
       <html>
@@ -114,85 +301,77 @@ export async function POST(request: Request) {
             .label { font-weight: 600; color: #52525b; }
             .message-box { background: #ffffff; border-left: 3px solid #18181b; padding: 16px; margin: 20px 0; font-size: 14px; line-height: 1.6; color: #27272a; white-space: pre-wrap; }
             .footer { font-size: 12px; color: #a1a1aa; border-top: 1px solid #f4f4f5; padding-top: 16px; margin-top: 24px; text-align: center; }
-            .cta-btn { display: inline-block; background-color: #18181b; color: #ffffff !important; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-top: 12px; }
+            .cta-btn { display: inline-block; background-color: #18181b; color: #ffffff !important; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 13px; font-weight: 700; margin-top: 12px; }
           </style>
         </head>
         <body>
           <div class="card">
             <div class="header">
-              <span class="badge">Bandyprospects Kontakt</span>
-              <h1 class="title">Ny direktkontakt gällande ${effectiveTargetName}</h1>
-              <p class="subtitle">En intresseanmälan har skickats via kontaktformuläret på Bandyprospects.</p>
+              <span class="badge">Bandyprospects Meddelanden</span>
+              <h1 class="title">Nytt meddelande från ${effectiveSenderName}</h1>
+              <p class="subtitle">Du har fått ett meddelande gällande ${effectiveTargetName} på Bandy Prospects.</p>
             </div>
 
             <div class="details-box">
               <div class="details-row"><span class="label">Avsändare:</span> ${effectiveSenderName}</div>
-              <div class="details-row"><span class="label">E-post:</span> <a href="mailto:${effectiveSenderEmail}">${effectiveSenderEmail}</a></div>
-              ${effectiveSenderPhone ? `<div class="details-row"><span class="label">Telefon:</span> <a href="tel:${effectiveSenderPhone}">${effectiveSenderPhone}</a></div>` : ""}
-              ${effectiveSenderClub ? `<div class="details-row"><span class="label">Klubb / Organisation:</span> ${effectiveSenderClub}</div>` : ""}
+              ${effectiveSenderClub ? `<div class="details-row"><span class="label">Klubb:</span> ${effectiveSenderClub}</div>` : ""}
               <div class="details-row"><span class="label">Roll:</span> ${roleDisplay}</div>
-              <div class="details-row"><span class="label">Gäller ${type === "club" ? "klubbannons" : "spelare"}:</span> ${effectiveTargetName}</div>
+              <div class="details-row"><span class="label">Gäller:</span> ${effectiveTargetName}</div>
             </div>
 
             <p style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #71717a; margin-bottom: 6px;">Meddelande:</p>
             <div class="message-box">${effectiveMessage}</div>
 
-            <div style="text-align: center; margin-top: 24px;">
-              <a href="mailto:${effectiveSenderEmail}?subject=Re: Förfrågan på Bandyprospects (${effectiveTargetName})" class="cta-btn">
-                Svara direkt till ${effectiveSenderName}
+            <div style="text-align: center; margin-top: 28px; margin-bottom: 12px;">
+              <a href="${conversationLink}" class="cta-btn">
+                Läs och svara här →
               </a>
             </div>
 
             <div class="footer">
-              Detta meddelande skickades automatiskt via <a href="https://bandyprospects.com" style="color: #71717a;">Bandyprospects.com</a>.
+              Detta meddelande skickades via internmeddelanden på <a href="https://bandyprospects.com" style="color: #71717a;">Bandyprospects.com</a>.
             </div>
           </div>
         </body>
       </html>
     `;
 
-    if (!resendApiKey) {
-      console.error("RESEND_API_KEY is not configured.");
-      return NextResponse.json(
-        { error: "E-posttjänsten är för närvarande inte konfigurerad." },
-        { status: 500 }
-      );
-    }
-
-    const resendRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${resendApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: senderFromEmail,
-        to: [finalRecipient],
-        reply_to: effectiveSenderEmail,
-        subject: emailSubject,
-        html: emailHtml,
-      }),
-    });
-
-    if (!resendRes.ok) {
-      const resendError = await resendRes.text();
-      console.error("Resend API Error:", resendError);
-      let errorMsg = "Misslyckades med att skicka e-postmeddelandet.";
+    if (resendApiKey) {
       try {
-        const parsed = JSON.parse(resendError);
-        if (parsed?.message) errorMsg = parsed.message;
-      } catch {}
-      return NextResponse.json({ error: errorMsg }, { status: 502 });
+        const resendRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${resendApiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: senderFromEmail,
+            to: [finalRecipient],
+            reply_to: effectiveSenderEmail,
+            subject: emailSubject,
+            html: emailHtml,
+          }),
+        });
+
+        if (!resendRes.ok) {
+          const resendError = await resendRes.text();
+          console.error("Resend API Error:", resendError);
+        }
+      } catch (e) {
+        console.error("Failed to send Resend email:", e);
+      }
     }
 
     return NextResponse.json({
       success: true,
-      message: "Your inquiry has been sent successfully.",
+      message: "Meddelandet har skickats framgångsrikt.",
+      conversationId,
+      messageId,
       recipient: finalRecipient,
     });
   } catch (error: unknown) {
     console.error("Contact API Route Error:", error);
-    const message = error instanceof Error ? error.message : "Failed to process inquiry.";
+    const message = error instanceof Error ? error.message : "Failed to process message.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

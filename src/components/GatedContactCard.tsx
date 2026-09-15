@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -34,6 +35,8 @@ export default function GatedContactCard({
   showPhone = true,
   showEmail = true,
   contactPreference = 'all',
+  targetId,
+  targetType,
 }: {
   contactName?: string | null;
   contactEmail?: string | null;
@@ -42,6 +45,8 @@ export default function GatedContactCard({
   showPhone?: boolean | null;
   showEmail?: boolean | null;
   contactPreference?: 'all' | 'form_only' | null;
+  targetId?: string | null;
+  targetType?: 'player' | 'club' | null;
 }) {
   const [user, setUser] = useState<User | null>(null);
   const [authEmail, setAuthEmail] = useState('');
