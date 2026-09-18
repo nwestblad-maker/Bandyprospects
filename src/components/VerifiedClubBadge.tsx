@@ -30,7 +30,7 @@ export function VerifiedClubBadge({
       className={`inline-flex items-center font-semibold rounded-full bg-sky-50 text-sky-700 border border-sky-200 shadow-2xs select-none ${
         textSizes[size]
       } ${className}`}
-      title="Verifierad förening (Officiell klubbrepresentant)"
+      title="Verified Club (Official Representative)"
     >
       <svg
         className={`${iconSizes[size]} text-sky-600 shrink-0`}
@@ -44,7 +44,7 @@ export function VerifiedClubBadge({
           clipRule="evenodd"
         />
       </svg>
-      {showText && <span className="tracking-tight whitespace-nowrap">Verifierad förening</span>}
+      {showText && <span className="tracking-tight whitespace-nowrap">Verified Club</span>}
     </span>
   );
 }

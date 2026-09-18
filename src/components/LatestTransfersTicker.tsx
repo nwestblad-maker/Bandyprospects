@@ -1,8 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import { useLanguage } from '@/context/LanguageContext';
 
 export interface OfficialTransfer {
   id: string;
@@ -15,7 +13,7 @@ export interface OfficialTransfer {
   created_at?: string;
 }
 
-function formatTransferDate(dateStr: string, lang: string): string {
+function formatTransferDate(dateStr: string): string {
   if (!dateStr) return '';
   try {
     const today = new Date();
@@ -26,18 +24,18 @@ function formatTransferDate(dateStr: string, lang: string): string {
     const targetISO = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
 
     if (todayISO === targetISO) {
-      return lang === 'sv' ? 'Idag' : 'Today';
+      return 'Today';
     }
 
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayISO = yesterday.toISOString().split('T')[0];
     if (yesterdayISO === targetISO) {
-      return lang === 'sv' ? 'Igår' : 'Yesterday';
+      return 'Yesterday';
     }
 
-    // Format e.g. "2 sep" or "Sep 2"
-    return target.toLocaleDateString(lang === 'sv' ? 'sv-SE' : 'en-US', {
+    // Format e.g. "Sep 2"
+    return target.toLocaleDateString('en-US', {
       day: 'numeric',
       month: 'short',
     });
@@ -47,7 +45,6 @@ function formatTransferDate(dateStr: string, lang: string): string {
 }
 
 export default function LatestTransfersTicker() {
-  const { lang } = useLanguage();
   const [transfers, setTransfers] = useState<OfficialTransfer[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -80,17 +77,13 @@ export default function LatestTransfersTicker() {
       const res = await fetch('/api/transfers/sync', { method: 'POST' });
       const data = await res.json();
       if (data?.success) {
-        setSyncMessage(
-          lang === 'sv'
-            ? `Synk slutförd: ${data.syncedCount || 0} nya övergångar.`
-            : `Sync completed: ${data.syncedCount || 0} new transfers.`
-        );
+        setSyncMessage(`Sync completed: ${data.syncedCount || 0} new transfers.`);
         await fetchTransfers();
       } else {
-        setSyncMessage(data?.error || 'Kunde inte slutföra synk.');
+        setSyncMessage(data?.error || 'Could not complete sync.');
       }
     } catch {
-      setSyncMessage('Ett fel uppstod vid kontakt med Profixio.');
+      setSyncMessage('An error occurred while connecting to Profixio.');
     } finally {
       setSyncing(false);
       setTimeout(() => setSyncMessage(null), 4000);
@@ -105,7 +98,7 @@ export default function LatestTransfersTicker() {
   };
 
   return (
-    <section className="bg-zinc-950 text-white py-6 border-b border-zinc-800">
+    <section className="bg-slate-950 text-white py-6 border-b border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
@@ -117,16 +110,14 @@ export default function LatestTransfersTicker() {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm sm:text-base font-extrabold tracking-tight text-white uppercase">
-                  {lang === 'sv' ? 'Officiella Övergångar 2026/27' : 'Official Transfers 2026/27'}
+                  Official Transfers 2026/27
                 </h3>
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
                   LIVE
                 </span>
               </div>
-              <p className="text-xs text-zinc-400">
-                {lang === 'sv'
-                  ? 'Officiellt bekräftade övergångar via Svenska Bandyförbundet'
-                  : 'Officially confirmed transfers via the Swedish Bandy Association'}
+              <p className="text-xs text-slate-400">
+                Officially confirmed transfers via the Swedish Bandy Association
               </p>
             </div>
           </div>
@@ -141,23 +132,23 @@ export default function LatestTransfersTicker() {
             <button
               onClick={handleManualSync}
               disabled={syncing}
-              title="Synka senaste övergångarna från Profixio / SBF"
-              className="text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700/80 transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              title="Sync latest transfers from Profixio / SBF"
+              className="text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <span className={syncing ? 'animate-spin inline-block' : ''}>🔄</span>
-              <span className="hidden sm:inline">{syncing ? (lang === 'sv' ? 'Synkar...' : 'Syncing...') : (lang === 'sv' ? 'Synka nu' : 'Sync feed')}</span>
+              <span className="hidden sm:inline">{syncing ? 'Syncing...' : 'Sync feed'}</span>
             </button>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => scroll('left')}
-                className="w-7 h-7 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 flex items-center justify-center text-xs transition-colors cursor-pointer"
+                className="w-7 h-7 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 flex items-center justify-center text-xs transition-colors cursor-pointer"
                 aria-label="Scroll left"
               >
                 ◀
               </button>
               <button
                 onClick={() => scroll('right')}
-                className="w-7 h-7 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 flex items-center justify-center text-xs transition-colors cursor-pointer"
+                className="w-7 h-7 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 flex items-center justify-center text-xs transition-colors cursor-pointer"
                 aria-label="Scroll right"
               >
                 ▶
@@ -169,39 +160,39 @@ export default function LatestTransfersTicker() {
         {/* Ticker / Horizontal Cards Scroller */}
         <div
           ref={scrollContainerRef}
-          className="flex gap-3 overflow-x-auto pb-2 pt-1 scroll-smooth snap-x scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent"
+          className="flex gap-3 overflow-x-auto pb-2 pt-1 scroll-smooth snap-x scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent"
         >
           {loading && transfers.length === 0 ? (
-            <div className="py-6 text-xs text-zinc-500 flex items-center gap-2">
+            <div className="py-6 text-xs text-slate-500 flex items-center gap-2">
               <div className="w-3.5 h-3.5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-              <span>{lang === 'sv' ? 'Hämtar officiella övergångar...' : 'Loading official transfers...'}</span>
+              <span>Loading official transfers...</span>
             </div>
           ) : transfers.length === 0 ? (
-            <div className="py-4 text-xs text-zinc-500 italic">
-              {lang === 'sv' ? 'Inga övergångar registrerade ännu.' : 'No transfers recorded yet.'}
+            <div className="py-4 text-xs text-slate-500 italic">
+              No transfers recorded yet.
             </div>
           ) : (
             transfers.map((item) => (
               <div
                 key={item.id}
-                className="shrink-0 w-72 sm:w-80 bg-zinc-900/90 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-xl p-3.5 transition-all snap-start flex flex-col justify-between shadow-2xs group"
+                className="shrink-0 w-72 sm:w-80 bg-slate-900/90 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-3.5 transition-all snap-start flex flex-col justify-between shadow-xs group"
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <span className="font-bold text-sm text-zinc-100 truncate group-hover:text-emerald-400 transition-colors">
+                  <span className="font-bold text-sm text-slate-100 truncate group-hover:text-emerald-400 transition-colors">
                     {item.player_name}
                   </span>
                   <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-950/70 border border-emerald-800/80 px-2 py-0.5 rounded-full shrink-0">
-                    {formatTransferDate(item.transfer_date, lang)}
+                    {formatTransferDate(item.transfer_date)}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 text-xs text-zinc-300">
-                  <div className="flex-1 truncate font-medium text-zinc-400" title={item.from_club}>
-                    {item.from_club || 'Okänd klubb'}
+                <div className="flex items-center gap-2 text-xs text-slate-300">
+                  <div className="flex-1 truncate font-medium text-slate-400" title={item.from_club}>
+                    {item.from_club || 'Unknown club'}
                   </div>
                   <span className="text-emerald-500 font-bold text-sm shrink-0">→</span>
                   <div className="flex-1 truncate font-semibold text-white text-right" title={item.to_club}>
-                    {item.to_club || 'Okänd klubb'}
+                    {item.to_club || 'Unknown club'}
                   </div>
                 </div>
               </div>
@@ -210,23 +201,21 @@ export default function LatestTransfersTicker() {
         </div>
 
         {/* Source link footer */}
-        <div className="mt-3 pt-2.5 border-t border-zinc-800/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-zinc-400">
+        <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-400">
           <div className="flex items-center gap-2">
-            <span>Källa:</span>
+            <span>Source:</span>
             <a
               href="https://www.profixio.com/fx/lisens/public_overgang.php"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-zinc-300 hover:text-white underline font-medium inline-flex items-center gap-1"
+              className="text-slate-300 hover:text-white underline font-medium inline-flex items-center gap-1"
             >
               <span>Svenska Bandyförbundet / Profixio</span>
               <span>↗</span>
             </a>
           </div>
-          <span className="text-zinc-400">
-            {lang === 'sv'
-              ? 'Officiell licens- och övergångsdata för svensk bandy'
-              : 'Official license and transfer data for Swedish bandy'}
+          <span className="text-slate-400">
+            Official license and transfer data for Swedish bandy
           </span>
         </div>
       </div>

@@ -1,38 +1,38 @@
 export const WISH_LABELS: Record<string, string> = {
-  semi_pro: 'Semiprofessionell / Ersättning',
-  pro: 'Heltidsproffs',
-  full_time: 'Heltidsproffs',
-  amateur: 'Amatör / Utveckling',
-  study_combo: 'Kombinera med studier / jobb',
-  tryout: 'Öppen för provspel / Tryout',
-  youth_development: 'Junior- / Utvecklingslag',
-  sports_only: 'Endast idrott / Spelarersättning',
+  semi_pro: 'Semi-Professional / Allowance',
+  pro: 'Full-time Professional',
+  full_time: 'Full-time Professional',
+  amateur: 'Amateur / Development',
+  study_combo: 'Combine with Studies / Work',
+  tryout: 'Open for Trials / Tryouts',
+  youth_development: 'Junior / Development Squad',
+  sports_only: 'Sports Only / Player Compensation',
 };
 
 export function formatWish(value?: string | null): string {
-  if (!value) return 'Ej specificerat';
+  if (!value) return 'Not specified';
   return WISH_LABELS[value] || value.replace(/_/g, ' ');
 }
 
 export const COUNTRIES = [
-  { code: 'SE', name: 'Sverige 🇸🇪' },
+  { code: 'SE', name: 'Sweden 🇸🇪' },
   { code: 'FI', name: 'Finland 🇫🇮' },
-  { code: 'NO', name: 'Norge 🇳🇴' },
-  { code: 'US', name: 'USA 🇺🇸' },
-  { code: 'CA', name: 'Kanada 🇨🇦' },
-  { code: 'NL', name: 'Nederländerna 🇳🇱' },
-  { code: 'DE', name: 'Tyskland 🇩🇪' },
-  { code: 'HU', name: 'Ungern 🇭🇺' },
-  { code: 'CZ', name: 'Tjeckien 🇨🇿' },
-  { code: 'CH', name: 'Schweiz 🇨🇭' },
-  { code: 'EE', name: 'Estland 🇪🇪' },
-  { code: 'LV', name: 'Lettland 🇱🇻' },
-  { code: 'GB', name: 'Storbritannien 🇬🇧' },
-  { code: 'UA', name: 'Ukraina 🇺🇦' },
-  { code: 'KZ', name: 'Kazakstan 🇰🇿' },
-  { code: 'MN', name: 'Mongoliet 🇲🇳' },
+  { code: 'NO', name: 'Norway 🇳🇴' },
+  { code: 'US', name: 'United States 🇺🇸' },
+  { code: 'CA', name: 'Canada 🇨🇦' },
+  { code: 'NL', name: 'Netherlands 🇳🇱' },
+  { code: 'DE', name: 'Germany 🇩🇪' },
+  { code: 'HU', name: 'Hungary 🇭🇺' },
+  { code: 'CZ', name: 'Czech Republic 🇨🇿' },
+  { code: 'CH', name: 'Switzerland 🇨🇭' },
+  { code: 'EE', name: 'Estonia 🇪🇪' },
+  { code: 'LV', name: 'Latvia 🇱🇻' },
+  { code: 'GB', name: 'United Kingdom 🇬🇧' },
+  { code: 'UA', name: 'Ukraine 🇺🇦' },
+  { code: 'KZ', name: 'Kazakhstan 🇰🇿' },
+  { code: 'MN', name: 'Mongolia 🇲🇳' },
   { code: 'JP', name: 'Japan 🇯🇵' },
-  { code: 'OTHER', name: 'Övrigt land' },
+  { code: 'OTHER', name: 'Other Country' },
 ];
 
 export function formatCareerPeriod(
@@ -41,7 +41,7 @@ export function formatCareerPeriod(
     from_season?: string;
     to_season?: string;
   },
-  lang: string = 'sv'
+  lang: string = 'en'
 ): string {
   const from = item.from_season?.trim();
   const to = item.to_season?.trim();
@@ -49,13 +49,13 @@ export function formatCareerPeriod(
   if (from && to) {
     if (from === to) return from;
     const isCurrent = to.toLowerCase() === 'nuvarande' || to.toLowerCase() === 'current';
-    const toFormatted = isCurrent ? (lang === 'sv' ? 'Nuvarande' : 'Current') : to;
+    const toFormatted = isCurrent ? 'Current' : to;
     return `${from} – ${toFormatted}`;
   }
   if (from) return from;
   if (to) {
     const isCurrent = to.toLowerCase() === 'nuvarande' || to.toLowerCase() === 'current';
-    return isCurrent ? (lang === 'sv' ? 'Nuvarande' : 'Current') : to;
+    return isCurrent ? 'Current' : to;
   }
   return item.season?.trim() || '—';
 }

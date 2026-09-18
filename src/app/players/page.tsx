@@ -127,10 +127,10 @@ function PlayersContent() {
         query === "" ||
         player.name.toLowerCase().includes(query) ||
         player.previousClub.toLowerCase().includes(query) ||
-        player.countryName[lang].toLowerCase().includes(query) ||
-        player.positionName[lang].toLowerCase().includes(query) ||
+        (player.countryName[lang] || player.countryName.en).toLowerCase().includes(query) ||
+        (player.positionName[lang] || player.positionName.en).toLowerCase().includes(query) ||
         (player.heritageCountry && player.heritageCountry.toLowerCase().includes(query)) ||
-        player.skills[lang].some((s) => s.toLowerCase().includes(query)) ||
+        (player.skills[lang] || player.skills.en || []).some((s) => s.toLowerCase().includes(query)) ||
         (player.spokenLanguages && player.spokenLanguages.some((sl) => sl.toLowerCase().includes(query)));
 
       // 2. Position
@@ -260,30 +260,30 @@ function PlayersContent() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 flex flex-col font-sans selection:bg-zinc-900 selection:text-zinc-50">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-slate-900 selection:text-slate-50">
       <Header />
 
       <main className="flex-1">
         {/* Ingress Header */}
-        <section className="bg-white border-b border-zinc-200 py-10 sm:py-12">
+        <section className="bg-white border-b border-slate-200/80 py-10 sm:py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div>
-                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-700 text-xs font-semibold uppercase tracking-wider mb-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-900" />
+                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold uppercase tracking-wider mb-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-900" />
                   {t.playersPage.badge}
                 </div>
-                <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-950 tracking-tight">
+                <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight">
                   {t.playersPage.title}
                 </h1>
-                <p className="text-sm sm:text-base text-zinc-600 mt-2 max-w-2xl leading-relaxed">
+                <p className="text-sm sm:text-base text-slate-600 mt-2 max-w-2xl leading-relaxed">
                   {t.playersPage.subtitle}
                 </p>
               </div>
 
               <Link
                 href="/join"
-                className="inline-flex items-center justify-center px-4 py-2.5 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded-lg shadow-sm transition-colors whitespace-nowrap cursor-pointer"
+                className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-colors whitespace-nowrap cursor-pointer"
               >
                 + {t.nav.join}
               </Link>
@@ -305,23 +305,23 @@ function PlayersContent() {
                   onClick={() => setShowFilters((prev) => !prev)}
                   className={`flex-1 flex items-center justify-between px-4 py-2.5 rounded-xl border text-xs font-bold transition-all shadow-xs cursor-pointer ${
                     showFilters || activeFilterCount > 0
-                      ? "bg-zinc-900 text-white border-zinc-900"
-                      : "bg-white text-zinc-900 border-zinc-200 hover:bg-zinc-50"
+                      ? "bg-slate-900 text-white border-slate-900"
+                      : "bg-white text-slate-900 border-slate-200 hover:bg-slate-50"
                   }`}
                   aria-expanded={showFilters}
                   aria-controls="mobile-player-filters"
                 >
                   <div className="flex items-center gap-2">
-                    <span>{showFilters ? "Dölj filter ✕" : "Filtrera spelare ⚙️"}</span>
+                    <span>{showFilters ? "Hide filters ✕" : "Filter prospects ⚙️"}</span>
                     {activeFilterCount > 0 && (
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-400 text-zinc-950 text-[11px] font-black">
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-400 text-slate-950 text-[11px] font-black">
                         {activeFilterCount}
                       </span>
                     )}
                   </div>
 
-                  <span className={`text-[11px] font-normal ${showFilters || activeFilterCount > 0 ? "text-zinc-300" : "text-zinc-500"}`}>
-                    {filteredPlayers.length} {lang === "sv" ? "träffar" : "matches"}
+                  <span className={`text-[11px] font-normal ${showFilters || activeFilterCount > 0 ? "text-slate-300" : "text-slate-500"}`}>
+                    {filteredPlayers.length} matches
                   </span>
                 </button>
 
@@ -329,10 +329,10 @@ function PlayersContent() {
                   <button
                     type="button"
                     onClick={handleResetFilters}
-                    className="px-3 py-2.5 bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-700 hover:text-zinc-950 text-xs font-semibold rounded-xl shadow-xs cursor-pointer transition-colors whitespace-nowrap"
+                    className="px-3 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 hover:text-slate-950 text-xs font-semibold rounded-xl shadow-xs cursor-pointer transition-colors whitespace-nowrap"
                     title={t.playersPage.clearFilters}
                   >
-                    {lang === "sv" ? "Rensa ✕" : "Clear ✕"}
+                    Clear ✕
                   </button>
                 )}
               </div>
@@ -372,7 +372,7 @@ function PlayersContent() {
             </div>
 
             <div className="flex flex-col lg:flex-row gap-8 items-start">
-              {/* Desktop Left Column: Filter Sidebar Panel (Always open & sticky beside player cards) */}
+              {/* Desktop Left Column: Filter Sidebar Panel */}
               <aside className="hidden lg:block w-80 shrink-0 sticky top-24">
                 <PlayerFilters
                   searchQuery={searchQuery}
@@ -405,8 +405,8 @@ function PlayersContent() {
               {/* Right Column: Player Results */}
               <div className="flex-1 w-full min-w-0">
                 {/* Result header & View Toggle */}
-                <div className="flex items-center justify-between mb-5 text-xs text-zinc-500">
-                  <span className="font-semibold text-zinc-800 flex items-center gap-2">
+                <div className="flex items-center justify-between mb-5 text-xs text-slate-500">
+                  <span className="font-semibold text-slate-800 flex items-center gap-2">
                     <span>
                       {filteredPlayers.length} {t.playersPage.matchesFound}
                     </span>
@@ -418,11 +418,11 @@ function PlayersContent() {
                   </span>
 
                   {/* Grid vs Table View Mode */}
-                  <div className="flex items-center gap-1 bg-zinc-100 p-1 rounded-lg border border-zinc-200">
+                  <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
                     <button
                       onClick={() => setViewMode("cards")}
                       className={`px-2.5 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
-                        viewMode === "cards" ? "bg-white text-zinc-950 font-bold shadow-2xs" : "text-zinc-600 hover:text-zinc-950"
+                        viewMode === "cards" ? "bg-white text-slate-950 font-bold shadow-xs" : "text-slate-600 hover:text-slate-950"
                       }`}
                     >
                       Cards
@@ -430,7 +430,7 @@ function PlayersContent() {
                     <button
                       onClick={() => setViewMode("table")}
                       className={`px-2.5 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
-                        viewMode === "table" ? "bg-white text-zinc-950 font-bold shadow-2xs" : "text-zinc-600 hover:text-zinc-950"
+                        viewMode === "table" ? "bg-white text-slate-950 font-bold shadow-xs" : "text-slate-600 hover:text-slate-950"
                       }`}
                     >
                       Table
@@ -440,9 +440,9 @@ function PlayersContent() {
 
                 {/* Loading State */}
                 {loadingDb && (
-                  <div className="bg-white border border-zinc-200 rounded-xl p-12 text-center text-xs text-zinc-500">
-                    <div className="w-6 h-6 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                    <span>{lang === "sv" ? "Laddar spelarprofiler..." : "Loading prospects..."}</span>
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-12 text-center text-xs text-slate-500 shadow-sm">
+                    <div className="w-6 h-6 border-2 border-slate-900 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                    <span>Loading prospects...</span>
                   </div>
                 )}
 
@@ -493,7 +493,7 @@ function PlayersContent() {
                                 <div className="text-sm font-medium text-slate-500 flex items-center gap-1.5 mt-0.5">
                                   <span>{player.countryFlag}</span>
                                   <span>
-                                    {player.countryName[lang]} • {player.age} {t.playersPage.ageLabel}
+                                    {player.countryName[lang] || player.countryName.en} • {player.age} {t.playersPage.ageLabel}
                                   </span>
                                 </div>
                               </div>
@@ -506,13 +506,13 @@ function PlayersContent() {
                                     ? "bg-amber-50 text-amber-700 border-amber-200"
                                     : "bg-slate-100 text-slate-700 border-slate-200"
                                 }`}>
-                                  {player.statusLabel[lang]}
+                                  {player.statusLabel[lang] || player.statusLabel.en}
                                 </span>
                                 <BookmarkButton playerId={player.id} playerName={player.name} size="sm" />
                               </div>
                               {(player.packagePreference || player.packagePreferenceLabel) && (
                                 <span className="px-2.5 py-0.5 text-xs font-semibold rounded bg-sky-50 text-sky-700 border border-sky-200">
-                                  {formatWish(player.packagePreference) || player.packagePreferenceLabel?.[lang]}
+                                  {formatWish(player.packagePreference) || player.packagePreferenceLabel?.[lang] || player.packagePreferenceLabel?.en}
                                 </span>
                               )}
                             </div>
@@ -524,13 +524,17 @@ function PlayersContent() {
                               <span className="text-xs text-slate-500 uppercase font-semibold block tracking-wider">
                                 {t.playersPage.positionFilter}
                               </span>
-                              <span className="font-bold text-slate-900 text-sm">{player.positionName[lang]}</span>
+                              <span className="font-bold text-slate-900 text-sm">
+                                {player.positionName[lang] || player.positionName.en}
+                              </span>
                             </div>
                             <div>
                               <span className="text-xs text-slate-500 uppercase font-semibold block tracking-wider">
                                 {t.playersPage.gripFilter}
                               </span>
-                              <span className="font-bold text-slate-900 text-sm">{player.gripName[lang]}</span>
+                              <span className="font-bold text-slate-900 text-sm">
+                                {player.gripName[lang] || player.gripName.en}
+                              </span>
                             </div>
                             <div>
                               <span className="text-xs text-slate-500 uppercase font-semibold block tracking-wider">
@@ -551,7 +555,7 @@ function PlayersContent() {
                               </span>
                               {player.targetCountries?.includes("ALL") ? (
                                 <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold text-xs">
-                                  🌍 {lang === "sv" ? "Hela världen" : "Worldwide"}
+                                  🌍 Worldwide
                                 </span>
                               ) : player.targetCountries && player.targetCountries.length > 0 ? (
                                 player.targetCountries.map((code) => {
@@ -562,12 +566,12 @@ function PlayersContent() {
                                       className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white text-slate-800 border border-slate-200 text-xs font-medium"
                                     >
                                       <span>{c?.flag || "🏳️"}</span>
-                                      <span>{c ? c.names[lang] : code}</span>
+                                      <span>{c ? (c.names[lang] || c.names.en) : code}</span>
                                     </span>
                                   );
                                 })
                               ) : (
-                                <span className="text-slate-600 text-xs">{player.countryName[lang]}</span>
+                                <span className="text-slate-600 text-xs">{player.countryName[lang] || player.countryName.en}</span>
                               )}
                             </div>
 
@@ -576,14 +580,14 @@ function PlayersContent() {
                               <div className="flex items-center gap-1.5 flex-wrap pt-1.5 border-t border-slate-200/60 text-xs">
                                 {player.openForNationalTeam && (
                                   <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-200 font-semibold text-xs">
-                                    🌍 {lang === "sv" ? "Öppen för landslag" : "Open for National Team"}
+                                    🌍 Open for National Team
                                   </span>
                                 )}
                                 {player.secondaryCitizenships?.map((code) => {
                                   const c = getCountry(code);
                                   return (
                                     <span key={code} className="px-2 py-0.5 rounded bg-white text-slate-800 border border-slate-200 font-medium text-xs">
-                                      🛂 {c?.flag || ""} {c ? c.names[lang] : code}
+                                      🛂 {c?.flag || ""} {c ? (c.names[lang] || c.names.en) : code}
                                     </span>
                                   );
                                 })}
@@ -640,13 +644,13 @@ function PlayersContent() {
                           </div>
 
                           {/* Key Attributes Tags (Only if defined) */}
-                          {player.skills[lang] && player.skills[lang].length > 0 && (
+                          {(player.skills[lang] || player.skills.en) && (player.skills[lang] || player.skills.en).length > 0 && (
                             <div className="mb-4">
                               <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
                                 {t.playersPage.skillsLabel}
                               </div>
                               <div className="flex flex-wrap gap-1.5">
-                                {player.skills[lang].map((skill, index) => (
+                                {(player.skills[lang] || player.skills.en).map((skill, index) => (
                                   <span
                                     key={index}
                                     className="px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-medium border border-slate-200"
@@ -660,7 +664,7 @@ function PlayersContent() {
 
                           {/* Bio Snippet */}
                           <p className="text-base text-slate-600 line-clamp-2 leading-relaxed mb-3">
-                            {player.bio[lang]}
+                            {player.bio[lang] || player.bio.en}
                           </p>
 
                           {/* Social media links if available */}
@@ -691,7 +695,7 @@ function PlayersContent() {
                                 type: "player",
                               })
                             }
-                            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded-xl transition-colors cursor-pointer shadow-xs"
+                            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded-lg transition-colors cursor-pointer shadow-sm"
                           >
                             {t.playersPage.contactBtn}
                           </button>
@@ -703,10 +707,10 @@ function PlayersContent() {
 
                 {/* Table View */}
                 {!loadingDb && viewMode === "table" && filteredPlayers.length > 0 && (
-                  <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden shadow-xs">
+                  <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-sm">
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs">
-                        <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 uppercase text-[10px] tracking-wider">
+                        <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[10px] tracking-wider">
                           <tr>
                             <th className="py-3 px-4 font-bold">Player</th>
                             <th className="py-3 px-4 font-bold">Pos</th>
@@ -718,12 +722,12 @@ function PlayersContent() {
                             <th className="py-3 px-4 font-bold text-right">Actions</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-zinc-100 text-zinc-800">
+                        <tbody className="divide-y divide-slate-100 text-slate-800">
                           {filteredPlayers.map((player) => (
-                            <tr key={player.id} className="hover:bg-zinc-50/80 transition-colors">
-                              <td className="py-3 px-4 font-bold text-zinc-950 whitespace-nowrap">
+                            <tr key={player.id} className="hover:bg-slate-50/80 transition-colors">
+                              <td className="py-3 px-4 font-bold text-slate-950 whitespace-nowrap">
                                 <Link href={`/players/${player.id}`} className="hover:underline flex items-center gap-2">
-                                  <div className="w-6 h-6 rounded-md bg-zinc-900 text-white font-bold text-[10px] flex items-center justify-center overflow-hidden shrink-0">
+                                  <div className="w-6 h-6 rounded-md bg-slate-900 text-white font-bold text-[10px] flex items-center justify-center overflow-hidden shrink-0">
                                     {player.photoUrl ? (
                                       // eslint-disable-next-line @next/next/no-img-element
                                       <img src={player.photoUrl} alt="" className="w-full h-full object-cover" />
@@ -733,21 +737,21 @@ function PlayersContent() {
                                   </div>
                                   <span>{player.name}</span>
                                   {player.verified && (
-                                    <span className="text-zinc-900 text-[10px]">✓</span>
+                                    <span className="text-slate-900 text-[10px]">✓</span>
                                   )}
                                 </Link>
                               </td>
                               <td className="py-3 px-4 whitespace-nowrap font-medium">
-                                {player.positionName[lang]}
+                                {player.positionName[lang] || player.positionName.en}
                               </td>
-                              <td className="py-3 px-4 whitespace-nowrap text-zinc-600">
+                              <td className="py-3 px-4 whitespace-nowrap text-slate-600">
                                 {player.age}
                               </td>
                               <td className="py-3 px-4 whitespace-nowrap">
                                 <span className="mr-1">{player.countryFlag}</span>
-                                <span>{player.countryName[lang]}</span>
+                                <span>{player.countryName[lang] || player.countryName.en}</span>
                               </td>
-                              <td className="py-3 px-4 whitespace-nowrap text-zinc-600">
+                              <td className="py-3 px-4 whitespace-nowrap text-slate-600">
                                 {player.previousClub}
                               </td>
                               <td className="py-3 px-4 whitespace-nowrap">
@@ -757,29 +761,29 @@ function PlayersContent() {
                                       ? "bg-amber-50 text-amber-700 border-amber-200"
                                       : "bg-slate-100 text-slate-700 border-slate-200"
                                   }`}>
-                                    {player.statusLabel[lang]}
+                                    {player.statusLabel[lang] || player.statusLabel.en}
                                   </span>
                                   {(player.packagePreference || player.packagePreferenceLabel) && (
                                     <span className="px-2 py-0.5 text-xs font-semibold rounded bg-sky-50 text-sky-800 border border-sky-200">
-                                      {formatWish(player.packagePreference) || player.packagePreferenceLabel?.[lang]}
+                                      {formatWish(player.packagePreference) || player.packagePreferenceLabel?.[lang] || player.packagePreferenceLabel?.en}
                                     </span>
                                   )}
                                 </div>
                               </td>
                               <td className="py-3 px-4 whitespace-nowrap">
                                 {player.openForNationalTeam ? (
-                                  <span className="px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-800 border border-zinc-200 text-[10px] font-semibold">
+                                  <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-200 text-[10px] font-semibold">
                                     🌍 Open
                                   </span>
                                 ) : (
-                                  <span className="text-zinc-400 text-[10px]">-</span>
+                                  <span className="text-slate-400 text-[10px]">-</span>
                                 )}
                               </td>
                               <td className="py-3 px-4 whitespace-nowrap text-right space-x-2">
                                 <BookmarkButton playerId={player.id} playerName={player.name} size="sm" />
                                 <Link
                                   href={`/players/${player.id}`}
-                                  className="font-semibold text-zinc-900 hover:underline"
+                                  className="font-semibold text-slate-900 hover:underline"
                                 >
                                   Profile
                                 </Link>
@@ -794,28 +798,26 @@ function PlayersContent() {
 
                 {/* Empty State */}
                 {!loadingDb && filteredPlayers.length === 0 && (
-                  <div className="bg-white border border-zinc-200 rounded-xl p-12 text-center">
-                    <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center mx-auto mb-4 text-zinc-400 text-xl font-bold">
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-12 text-center shadow-sm">
+                    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4 text-slate-400 text-xl font-bold">
                       ∅
                     </div>
-                    <h3 className="text-base font-bold text-zinc-900 mb-1">
-                      {lang === "sv" ? "Inga spelarprofiler hittades" : "No players match your filters"}
+                    <h3 className="text-base font-bold text-slate-900 mb-1">
+                      No players match your filters
                     </h3>
-                    <p className="text-xs text-zinc-500 max-w-sm mx-auto mb-6">
-                      {lang === "sv"
-                        ? "Testa att nollställa dina filter eller registrera en ny spelarprofil gratis."
-                        : "Try adjusting your search criteria or register a player profile for free."}
+                    <p className="text-sm text-slate-500 max-w-sm mx-auto mb-6">
+                      Try adjusting your search criteria or register a player profile for free.
                     </p>
                     <div className="flex items-center justify-center gap-3">
                       <button
                         onClick={handleResetFilters}
-                        className="px-4 py-2 text-xs font-semibold text-zinc-900 bg-zinc-100 hover:bg-zinc-200 rounded-lg transition-colors cursor-pointer"
+                        className="px-4 py-2 text-xs font-semibold text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
                       >
                         {t.search.resetBtn}
                       </button>
                       <Link
                         href="/join"
-                        className="px-4 py-2 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded-lg transition-colors"
+                        className="px-4 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors"
                       >
                         {t.nav.join}
                       </Link>
@@ -847,8 +849,8 @@ export default function PlayersPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-zinc-50 flex items-center justify-center text-xs text-zinc-400">
-          Laddar spelare...
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center text-xs text-slate-400">
+          Loading prospects...
         </div>
       }
     >

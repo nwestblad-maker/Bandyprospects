@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { useLanguage } from '@/context/LanguageContext';
 import { supabase } from '@/lib/supabaseClient';
 import { PlayerProfile, ClubAd, PositionCategory } from '@/types';
 import {
@@ -35,8 +34,6 @@ interface LeagueStatItem {
 }
 
 export default function StatisticsPage() {
-  const { lang } = useLanguage();
-
   const [players, setPlayers] = useState<PlayerProfile[]>([]);
   const [clubAds, setClubAds] = useState<ClubAd[]>([]);
   const [loading, setLoading] = useState(true);
@@ -157,7 +154,7 @@ export default function StatisticsPage() {
         }
       }
 
-      // League / Division (from latest career history stint or previous club)
+      // League / Division
       let leagueName = 'Other / Youth';
       if (p.careerHistory && p.careerHistory.length > 0) {
         const latestStint = p.careerHistory[0];
@@ -194,13 +191,12 @@ export default function StatisticsPage() {
       }))
       .sort((a, b) => b.count - a.count);
 
-    // Positions format
-    const positionLabels: Record<PositionCategory, { sv: string; en: string }> = {
-      goalkeeper: { sv: 'Målvakter', en: 'Goalkeepers' },
-      defender: { sv: 'Försvarare / Backar', en: 'Defenders' },
-      halv: { sv: 'Halvor', en: 'Halvs' },
-      midfielder: { sv: 'Mittfältare', en: 'Midfielders' },
-      forward: { sv: 'Anfallare', en: 'Forwards' },
+    const positionLabels: Record<PositionCategory, string> = {
+      goalkeeper: 'Goalkeepers',
+      defender: 'Defenders',
+      halv: 'Halvs',
+      midfielder: 'Midfielders',
+      forward: 'Forwards',
     };
 
     const positionList: PositionStatItem[] = (
@@ -209,7 +205,7 @@ export default function StatisticsPage() {
       const c = posCounts[key] || { total: 0, freeAgent: 0 };
       return {
         key,
-        label: lang === 'sv' ? positionLabels[key].sv : positionLabels[key].en,
+        label: positionLabels[key],
         count: c.total,
         freeAgentCount: c.freeAgent,
         percentage:
@@ -217,7 +213,6 @@ export default function StatisticsPage() {
       };
     });
 
-    // League format sorted by total
     const leagueList: LeagueStatItem[] = Object.entries(leagueCounts)
       .map(([name, data]) => ({
         name,
@@ -230,11 +225,9 @@ export default function StatisticsPage() {
       totalPlayers,
       totalClubAds,
       totalAcademy,
-      totalRigNiu: totalAcademy,
       niuCount,
       intlAcademyCount,
       academyPercentage,
-      rigNiuPercentage: academyPercentage,
       academySchools,
       freeAgentsCount,
       seekingCount,
@@ -243,123 +236,117 @@ export default function StatisticsPage() {
       positionList,
       leagueList,
     };
-  }, [players, clubAds, lang]);
+  }, [players, clubAds]);
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-slate-900 selection:text-white">
       <Header />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Breadcrumb Navigation */}
-        <nav aria-label="Breadcrumb" className="mb-5 text-xs text-zinc-500">
+        <nav aria-label="Breadcrumb" className="mb-5 text-xs text-slate-500">
           <ol className="flex items-center gap-1.5">
             <li>
-              <Link href="/" className="hover:text-zinc-900 transition-colors">
-                {lang === 'sv' ? 'Hem' : 'Home'}
+              <Link href="/" className="hover:text-slate-900 transition-colors">
+                Home
               </Link>
             </li>
             <li>/</li>
-            <li className="font-semibold text-zinc-800">
-              {lang === 'sv' ? 'Statistik & Insikter' : 'Statistics & Insights'}
+            <li className="font-semibold text-slate-800">
+              Statistics & Insights
             </li>
           </ol>
         </nav>
 
         {/* Hero Header */}
         <div className="mb-8 sm:mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold uppercase tracking-wider mb-3">
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold uppercase tracking-wider mb-3">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>
-              {lang === 'sv'
-                ? 'Bandyprospects Data & Analys'
-                : 'Bandyprospects Data & Insights'}
-            </span>
+            <span>Bandy Prospects Data & Insights</span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-zinc-950 tracking-tight">
-            {lang === 'sv' ? 'Statistik & Insikter' : 'Statistics & Insights'}
+          <h1 className="text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight">
+            Statistics & Insights
           </h1>
-          <p className="text-sm sm:text-base text-zinc-600 mt-2 max-w-3xl leading-relaxed">
-            {lang === 'sv'
-              ? 'Realtidsstatistik och strukturerad överblick över registrerade spelarprofiler, aktiva klubbannonser, kontraktsstatus, moderklubbar och certifierade bandygymnasier.'
-              : 'Real-time statistics and structured overview of registered player profiles, active club roster postings, contract statuses, youth academies, and certified high schools.'}
+          <p className="text-sm sm:text-base text-slate-600 mt-2 max-w-3xl leading-relaxed">
+            Real-time statistics and structured overview of registered player profiles, active club roster postings, contract statuses, youth academies, and certified high schools.
           </p>
         </div>
 
         {/* Top KPI Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-8 sm:mb-12">
           {/* KPI 1: Players */}
-          <div className="bg-white border border-zinc-200 rounded-2xl p-5 sm:p-6 shadow-xs hover:border-zinc-300 transition-all flex flex-col justify-between">
+          <div className="bg-white rounded-xl border border-slate-200/80 p-5 sm:p-6 shadow-sm hover:border-slate-300 transition-all flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-zinc-500">
-                  {lang === 'sv' ? 'Registrerade Spelare' : 'Registered Players'}
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Registered Players
                 </span>
                 <span className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center text-sm font-bold">
                   👥
                 </span>
               </div>
               <div className="mt-3 flex items-baseline gap-2">
-                <span className="text-3xl sm:text-4xl font-black text-zinc-950 tracking-tight">
+                <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
                   {loading ? '—' : stats.totalPlayers}
                 </span>
-                <span className="text-xs text-zinc-500 font-medium">
-                  {lang === 'sv' ? 'aktiva profiler' : 'active profiles'}
+                <span className="text-xs text-slate-500 font-medium">
+                  active profiles
                 </span>
               </div>
             </div>
-            <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between text-xs">
-              <span className="text-zinc-500">
-                {lang === 'sv' ? 'Verifierade spelare' : 'Verified prospects'}
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span className="text-slate-500">
+                Verified prospects
               </span>
               <Link
                 href="/players"
-                className="font-bold text-zinc-900 hover:text-emerald-600 transition-colors flex items-center gap-1"
+                className="font-bold text-slate-900 hover:text-emerald-600 transition-colors flex items-center gap-1"
               >
-                <span>{lang === 'sv' ? 'Scouta' : 'Scout'}</span>
+                <span>Scout</span>
                 <span>→</span>
               </Link>
             </div>
           </div>
 
           {/* KPI 2: Club Ads */}
-          <div className="bg-white border border-zinc-200 rounded-2xl p-5 sm:p-6 shadow-xs hover:border-zinc-300 transition-all flex flex-col justify-between">
+          <div className="bg-white rounded-xl border border-slate-200/80 p-5 sm:p-6 shadow-sm hover:border-slate-300 transition-all flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-zinc-500">
-                  {lang === 'sv' ? 'Klubbannonser' : 'Club Opportunities'}
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Club Opportunities
                 </span>
                 <span className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center text-sm font-bold">
                   📢
                 </span>
               </div>
               <div className="mt-3 flex items-baseline gap-2">
-                <span className="text-3xl sm:text-4xl font-black text-zinc-950 tracking-tight">
+                <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
                   {loading ? '—' : stats.totalClubAds}
                 </span>
-                <span className="text-xs text-zinc-500 font-medium">
-                  {lang === 'sv' ? 'öppna truppbehov' : 'open roster spots'}
+                <span className="text-xs text-slate-500 font-medium">
+                  open roster spots
                 </span>
               </div>
             </div>
-            <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between text-xs">
-              <span className="text-zinc-500">
-                {lang === 'sv' ? 'Föreningar & ligor' : 'Clubs & leagues'}
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span className="text-slate-500">
+                Clubs & leagues
               </span>
               <Link
                 href="/market"
-                className="font-bold text-zinc-900 hover:text-emerald-600 transition-colors flex items-center gap-1"
+                className="font-bold text-slate-900 hover:text-emerald-600 transition-colors flex items-center gap-1"
               >
-                <span>{lang === 'sv' ? 'Visa alla' : 'View all'}</span>
+                <span>View all</span>
                 <span>→</span>
               </Link>
             </div>
           </div>
 
           {/* KPI 3: Sports Academy / NIU */}
-          <div className="bg-white border border-zinc-200 rounded-2xl p-5 sm:p-6 shadow-xs hover:border-zinc-300 transition-all flex flex-col justify-between">
+          <div className="bg-white rounded-xl border border-slate-200/80 p-5 sm:p-6 shadow-sm hover:border-slate-300 transition-all flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                   Bandy Academy / NIU
                 </span>
                 <span className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center text-sm font-bold">
@@ -367,7 +354,7 @@ export default function StatisticsPage() {
                 </span>
               </div>
               <div className="mt-3 flex items-baseline gap-2">
-                <span className="text-3xl sm:text-4xl font-black text-zinc-950 tracking-tight">
+                <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
                   {loading ? '—' : stats.totalAcademy}
                 </span>
                 <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
@@ -375,46 +362,45 @@ export default function StatisticsPage() {
                 </span>
               </div>
             </div>
-            <div className="mt-4 pt-3 border-t border-zinc-100 text-xs text-zinc-500 flex items-center justify-between">
+            <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-500 flex items-center justify-between">
               <span>
                 {stats.niuCount} NIU • {stats.intlAcademyCount} International / Other
               </span>
-              <span className="font-medium text-zinc-700">
+              <span className="font-medium text-slate-700">
                 Sports Academy
               </span>
             </div>
           </div>
 
           {/* KPI 4: Free Agents & Seekers */}
-          <div className="bg-white border border-zinc-200 rounded-2xl p-5 sm:p-6 shadow-xs hover:border-zinc-300 transition-all flex flex-col justify-between">
+          <div className="bg-white rounded-xl border border-slate-200/80 p-5 sm:p-6 shadow-sm hover:border-slate-300 transition-all flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-zinc-500">
-                  {lang === 'sv' ? 'Kontraktslösa / Sökande' : 'Free Agents / Seeking'}
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Free Agents / Seeking
                 </span>
                 <span className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center text-sm font-bold">
                   🔓
                 </span>
               </div>
               <div className="mt-3 flex items-baseline gap-2">
-                <span className="text-3xl sm:text-4xl font-black text-zinc-950 tracking-tight">
+                <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
                   {loading ? '—' : stats.freeAgentsCount + stats.seekingCount}
                 </span>
-                <span className="text-xs text-zinc-500 font-medium">
-                  {lang === 'sv' ? 'öppna för dialog' : 'open for contact'}
+                <span className="text-xs text-slate-500 font-medium">
+                  open for contact
                 </span>
               </div>
             </div>
-            <div className="mt-4 pt-3 border-t border-zinc-100 text-xs text-zinc-500 flex items-center justify-between">
+            <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-500 flex items-center justify-between">
               <span>
-                {stats.freeAgentsCount} Free Agent • {stats.seekingCount}{' '}
-                {lang === 'sv' ? 'Söker' : 'Seeking'}
+                {stats.freeAgentsCount} Free Agent • {stats.seekingCount} Seeking
               </span>
               <Link
                 href="/players"
-                className="font-bold text-zinc-900 hover:text-emerald-600 transition-colors"
+                className="font-bold text-slate-900 hover:text-emerald-600 transition-colors"
               >
-                {lang === 'sv' ? 'Filtrera' : 'Filter'}
+                Filter
               </Link>
             </div>
           </div>
@@ -423,23 +409,23 @@ export default function StatisticsPage() {
         {/* Section 1 & 2 Two-Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 sm:mb-12">
           {/* Origin / Youth Clubs & Nurseries */}
-          <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-xs">
-            <div className="flex items-center justify-between pb-4 border-b border-zinc-100 mb-5">
+          <div className="bg-white rounded-xl border border-slate-200/80 p-6 shadow-sm">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">
                   Grassroots & Development
                 </span>
-                <h2 className="text-lg sm:text-xl font-extrabold text-zinc-950 tracking-tight">
+                <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
                   Origin / Youth Clubs
                 </h2>
               </div>
-              <span className="px-2.5 py-1 rounded-md bg-zinc-100 text-zinc-700 text-xs font-bold">
+              <span className="px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-bold">
                 {stats.sortedYouthClubs.length} clubs registered
               </span>
             </div>
 
             {loading ? (
-              <div className="py-12 text-center text-xs text-zinc-400">
+              <div className="py-12 text-center text-xs text-slate-400">
                 Loading youth clubs...
               </div>
             ) : stats.sortedYouthClubs.length > 0 ? (
@@ -447,23 +433,23 @@ export default function StatisticsPage() {
                 {stats.sortedYouthClubs.map((club, idx) => (
                   <div
                     key={club.name}
-                    className="p-3 rounded-xl border border-zinc-100 bg-zinc-50/50 hover:bg-zinc-50 transition-colors flex items-center justify-between gap-3"
+                    className="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors flex items-center justify-between gap-3"
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <span className="w-6 h-6 rounded-full bg-zinc-200 text-zinc-700 font-black text-xs flex items-center justify-center shrink-0">
+                      <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-700 font-black text-xs flex items-center justify-center shrink-0">
                         {idx + 1}
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-bold text-zinc-900 truncate">
+                          <span className="text-sm font-bold text-slate-900 truncate">
                             {club.name}
                           </span>
-                          <span className="text-xs font-semibold text-zinc-600 shrink-0 ml-2">
+                          <span className="text-xs font-semibold text-slate-600 shrink-0 ml-2">
                             {club.count} {club.count === 1 ? 'player' : 'players'}
                           </span>
                         </div>
                         {/* Progress Bar */}
-                        <div className="w-full h-1.5 bg-zinc-200 rounded-full overflow-hidden">
+                        <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
                           <div
                             className="h-full bg-emerald-500 rounded-full transition-all duration-500"
                             style={{
@@ -492,17 +478,17 @@ export default function StatisticsPage() {
                 </div>
               </div>
             ) : (
-              <div className="p-8 rounded-xl border border-dashed border-zinc-200 bg-zinc-50 text-center space-y-3">
+              <div className="p-8 rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center space-y-3">
                 <span className="text-2xl">🌱</span>
-                <h3 className="text-sm font-bold text-zinc-900">
+                <h3 className="text-sm font-bold text-slate-900">
                   Origin / Youth clubs are continually added
                 </h3>
-                <p className="text-xs text-zinc-500 max-w-sm mx-auto leading-relaxed">
+                <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
                   As players specify their youth clubs, leading developer clubs will be ranked here live.
                 </p>
                 <Link
                   href="/join"
-                  className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-zinc-900 text-white text-xs font-semibold hover:bg-zinc-800 transition-colors shadow-2xs"
+                  className="inline-flex items-center gap-1 px-4 py-2 rounded-lg bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition-colors shadow-sm"
                 >
                   Add your youth club
                 </Link>
@@ -511,22 +497,19 @@ export default function StatisticsPage() {
           </div>
 
           {/* Kontraktslösa spelare per position & division */}
-          <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-xs flex flex-col justify-between">
+          <div className="bg-white rounded-xl border border-slate-200/80 p-6 shadow-sm flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between pb-4 border-b border-zinc-100 mb-5">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
                 <div>
                   <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
-                    {lang === 'sv' ? 'Spelarmarknad' : 'Player Market'}
+                    Player Market
                   </span>
-                  <h2 className="text-lg sm:text-xl font-extrabold text-zinc-950 tracking-tight">
-                    {lang === 'sv'
-                      ? 'Kontraktslösa & Sökande per position'
-                      : 'Free Agents & Seekers by Position'}
+                  <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                    Free Agents & Seekers by Position
                   </h2>
                 </div>
-                <span className="px-2.5 py-1 rounded-md bg-zinc-100 text-zinc-700 text-xs font-bold">
-                  {stats.freeAgentsCount + stats.seekingCount}{' '}
-                  {lang === 'sv' ? 'tillgängliga' : 'available'}
+                <span className="px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-bold">
+                  {stats.freeAgentsCount + stats.seekingCount} available
                 </span>
               </div>
 
@@ -545,20 +528,19 @@ export default function StatisticsPage() {
                   return (
                     <div key={pos.key} className="space-y-1.5">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="font-bold text-zinc-800">{pos.label}</span>
+                        <span className="font-bold text-slate-800">{pos.label}</span>
                         <div className="flex items-center gap-2">
                           {pos.freeAgentCount > 0 && (
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                              {pos.freeAgentCount}{' '}
-                              {lang === 'sv' ? 'kontraktslösa' : 'free'}
+                              {pos.freeAgentCount} free
                             </span>
                           )}
-                          <span className="font-semibold text-zinc-900 w-8 text-right">
-                            {pos.count} st
+                          <span className="font-semibold text-slate-900 w-8 text-right">
+                            {pos.count}
                           </span>
                         </div>
                       </div>
-                      <div className="w-full h-2 bg-zinc-100 rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-blue-500 rounded-full transition-all duration-500"
                           style={{ width: pos.count > 0 ? `${barWidth}%` : '0%' }}
@@ -571,23 +553,21 @@ export default function StatisticsPage() {
 
               {/* League / Level Distribution */}
               {stats.leagueList.length > 0 && (
-                <div className="pt-5 border-t border-zinc-100">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 block mb-2.5">
-                    {lang === 'sv'
-                      ? 'Fördelning per nivå / senaste liga'
-                      : 'Distribution by League / Level'}
+                <div className="pt-5 border-t border-slate-100">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2.5">
+                    Distribution by League / Level
                   </span>
                   <div className="flex flex-wrap gap-2">
                     {stats.leagueList.map((lg) => (
                       <span
                         key={lg.name}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-100 text-zinc-800 text-xs font-medium border border-zinc-200/80"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-xs font-medium border border-slate-200/80"
                       >
-                        <span className="font-bold text-zinc-950">{lg.name}:</span>
+                        <span className="font-bold text-slate-950">{lg.name}:</span>
                         <span>{lg.count}</span>
                         {lg.freeAgentCount > 0 && (
                           <span className="text-[10px] text-emerald-700 font-bold bg-emerald-100/70 px-1.5 py-0.5 rounded">
-                            {lg.freeAgentCount} {lang === 'sv' ? 'lediga' : 'free'}
+                            {lg.freeAgentCount} free
                           </span>
                         )}
                       </span>
@@ -597,17 +577,15 @@ export default function StatisticsPage() {
               )}
             </div>
 
-            <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center justify-between text-xs">
-              <span className="text-zinc-500">
-                {lang === 'sv'
-                  ? 'Uppdateras i realtid vid profiländring'
-                  : 'Updates in real-time as profiles edit'}
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span className="text-slate-500">
+                Updates in real-time as profiles edit
               </span>
               <Link
                 href="/players"
-                className="font-bold text-zinc-950 hover:text-blue-600 transition-colors flex items-center gap-1"
+                className="font-bold text-slate-950 hover:text-blue-600 transition-colors flex items-center gap-1"
               >
-                <span>{lang === 'sv' ? 'Se alla spelare' : 'View all players'}</span>
+                <span>View all players</span>
                 <span>→</span>
               </Link>
             </div>
@@ -615,16 +593,16 @@ export default function StatisticsPage() {
         </div>
 
         {/* Section 3: Bandy Academy & NIU High Schools Detailed Box */}
-        <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs mb-8 sm:mb-12">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-zinc-100 mb-6">
+        <div className="bg-white rounded-xl border border-slate-200/80 p-6 sm:p-7 shadow-sm mb-8 sm:mb-12">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-slate-100 mb-6">
             <div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-600">
                 Certified Sports Academies
               </span>
-              <h2 className="text-lg sm:text-xl font-extrabold text-zinc-950 tracking-tight">
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
                 Bandy Academy & NIU High Schools
               </h2>
-              <p className="text-xs sm:text-sm text-zinc-600 mt-1 max-w-2xl">
+              <p className="text-sm text-slate-600 mt-1 max-w-2xl">
                 Certified secondary bandy programs via Nationally Approved Sports Programs (NIU) and international sports academies.
               </p>
             </div>
@@ -648,9 +626,9 @@ export default function StatisticsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-zinc-600 leading-relaxed">
-            <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200/80">
-              <div className="font-bold text-zinc-900 mb-1 flex items-center gap-1.5 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-600 leading-relaxed">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+              <div className="font-bold text-slate-900 mb-1 flex items-center gap-1.5 text-sm">
                 <span>🏫</span>
                 <span>NIU Programs</span>
               </div>
@@ -658,8 +636,8 @@ export default function StatisticsPage() {
                 Nationally approved sports education (NIU) certified programs in premier bandy hubs such as Edsbyn, Sandviken, Nässjö, Vetlanda, Västerås, Ljusdal, Bollnäs, and Lidköping.
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200/80">
-              <div className="font-bold text-zinc-900 mb-1 flex items-center gap-1.5 text-sm">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+              <div className="font-bold text-slate-900 mb-1 flex items-center gap-1.5 text-sm">
                 <span>🌍</span>
                 <span>Sports Academies (International)</span>
               </div>
@@ -667,8 +645,8 @@ export default function StatisticsPage() {
                 Secondary sports academies across Scandinavia and international bandy nations combining secondary education with elite bandy training.
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200/80">
-              <div className="font-bold text-zinc-900 mb-1 flex items-center gap-1.5 text-sm">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+              <div className="font-bold text-slate-900 mb-1 flex items-center gap-1.5 text-sm">
                 <span>📈</span>
                 <span>Database Share</span>
               </div>
@@ -680,49 +658,39 @@ export default function StatisticsPage() {
         </div>
 
         {/* Real-time Callout / Professional Growth State */}
-        <div className="bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-950 text-white rounded-3xl p-6 sm:p-10 shadow-lg relative overflow-hidden">
+        <div className="bg-slate-900 text-white rounded-xl p-6 sm:p-10 shadow-lg relative overflow-hidden">
           <div className="relative z-10 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-3">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>
-                {lang === 'sv' ? 'Realtidsuppdaterat nätverk' : 'Live updated network'}
-              </span>
+              <span>Live Updated Network</span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight mb-2">
-              {lang === 'sv'
-                ? 'Var med och forma statistiken inför säsongen 2026/27'
-                : 'Help shape bandy prospect insights for 2026/27'}
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight mb-2">
+              Help Shape Bandy Prospect Insights for 2026/27
             </h2>
-            <p className="text-xs sm:text-sm text-zinc-400 mb-6 leading-relaxed">
-              {lang === 'sv'
-                ? 'All statistik hämtas direkt och transparent från verifierade spelarprofiler och klubbannonser i Bandyprospects. Skapa din profil eller publicera klubbens truppbehov för att synas i nätverket.'
-                : 'All statistics are dynamically extracted from verified player profiles and club opportunity listings on Bandyprospects.'}
+            <p className="text-xs sm:text-sm text-slate-400 mb-6 leading-relaxed">
+              All statistics are dynamically extracted from verified player profiles and club opportunity listings on Bandy Prospects.
             </p>
 
             <div className="flex flex-wrap items-center gap-3">
               <Link
                 href="/join"
-                className="px-4 py-2.5 rounded-xl bg-white text-zinc-950 hover:bg-zinc-100 font-bold text-xs transition-colors shadow-xs inline-flex items-center gap-1.5"
+                className="bg-white hover:bg-slate-100 text-slate-900 font-semibold px-5 py-2.5 rounded-lg text-xs transition-colors shadow-sm inline-flex items-center gap-1.5"
               >
                 <span>+</span>
-                <span>
-                  {lang === 'sv' ? 'Skapa spelarprofil' : 'Create Player Profile'}
-                </span>
+                <span>Create Player Profile</span>
               </Link>
               <Link
                 href="/post-ad"
-                className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs transition-colors border border-zinc-700 inline-flex items-center gap-1.5"
+                className="bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs px-5 py-2.5 rounded-lg transition-colors border border-slate-700 inline-flex items-center gap-1.5"
               >
                 <span>📢</span>
-                <span>
-                  {lang === 'sv' ? 'Publicera klubbannons' : 'Post Club Ad'}
-                </span>
+                <span>Post Club Ad</span>
               </Link>
               <Link
                 href="/players"
-                className="px-4 py-2.5 rounded-xl bg-transparent hover:bg-zinc-800/80 text-zinc-300 font-semibold text-xs transition-colors inline-flex items-center gap-1.5"
+                className="bg-transparent hover:bg-slate-800 text-slate-300 font-semibold text-xs px-5 py-2.5 rounded-lg transition-colors inline-flex items-center gap-1.5"
               >
-                <span>{lang === 'sv' ? 'Scouta spelare' : 'Scout Players'}</span>
+                <span>Scout Players</span>
                 <span>→</span>
               </Link>
             </div>
@@ -734,4 +702,3 @@ export default function StatisticsPage() {
     </div>
   );
 }
-

@@ -5,39 +5,39 @@ import { Footer } from '@/components/Footer';
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 flex flex-col font-sans selection:bg-zinc-900 selection:text-zinc-50">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-slate-900 selection:text-white">
       <Header />
 
       <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 py-12">
         <div className="mb-8">
-          <Link href="/" className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
-            ← Tillbaka till start
+          <Link href="/" className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors inline-flex items-center gap-1.5">
+            ← Back to Home
           </Link>
-          <h1 className="text-3xl font-black text-slate-900 mt-4 tracking-tight">
-            Integritetspolicy & Dataskydd (GDPR)
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-4 tracking-tight">
+            Privacy Policy & GDPR Data Protection
           </h1>
-          <p className="text-sm text-slate-500 mt-1">Senast uppdaterad: Augusti 2026</p>
+          <p className="text-sm text-slate-500 mt-1">Last updated: August 2026</p>
         </div>
 
-        <div className="space-y-6 text-sm text-slate-700 leading-relaxed">
-          <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
-            <h2 className="text-lg font-bold text-slate-900 mb-2">1. Ändamål och Personuppgiftsansvar</h2>
+        <div className="space-y-6 text-base text-slate-600 leading-relaxed">
+          <section className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-6 sm:p-8 space-y-3">
+            <h2 className="text-xl font-bold text-slate-900">1. Purpose and Data Controller</h2>
             <p>
-              Bandy Prospects behandlar endast personuppgifter du själv registrerar i syfte att matcha spelare, klubbar och landslag. Uppgifterna används uteslutande för scouting och rekrytering inom bandysporten.
+              Bandy Prospects processes only the personal data you provide for the purpose of connecting players, clubs, and national team federations. Information is used solely for legitimate bandy scouting and recruitment purposes.
             </p>
           </section>
 
-          <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
-            <h2 className="text-lg font-bold text-slate-900 mb-2">2. Skydd av kontaktuppgifter</h2>
+          <section className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-6 sm:p-8 space-y-3">
+            <h2 className="text-xl font-bold text-slate-900">2. Contact Information Protection</h2>
             <p>
-              Telefonnummer och e-postadresser är låsta bakom inloggning med Magic Link för att skydda mot spambottar och obehörig skrapning. Endast inloggade och verifierade föreningar och spelare kan komma åt direktkontakt.
+              Direct contact details (email and phone number) are gated behind authenticated accounts to prevent spam bots and scraping. Only logged-in and verified clubs, scouts, and players can view contact details or send direct inquiries.
             </p>
           </section>
 
-          <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
-            <h2 className="text-lg font-bold text-slate-900 mb-2">3. Rätten till radering</h2>
+          <section className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-6 sm:p-8 space-y-3">
+            <h2 className="text-xl font-bold text-slate-900">3. Right to Erasure & Data Portability</h2>
             <p>
-              Du kan när som helst ta bort din profil permanent via knappen &quot;Ta bort profil&quot; på din profilsida. Vid radering rensas samtliga sparade uppgifter omedelbart från databasen.
+              You maintain complete ownership of your data. You can edit your privacy settings or permanently delete your profile at any time through the &quot;Delete Profile&quot; action in your dashboard. Upon deletion, all associated personal records are immediately and permanently removed from our active database.
             </p>
           </section>
         </div>

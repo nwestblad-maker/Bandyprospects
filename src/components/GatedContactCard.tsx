@@ -190,7 +190,7 @@ export default function GatedContactCard({
     e.preventDefault();
     const cleanIdentifier = authIdentifier.trim();
     if (!cleanIdentifier || !authPassword) {
-      setErrorMsg('Vänligen ange användarnamn/e-post och lösenord.');
+      setErrorMsg('Please enter username/email and password.');
       return;
     }
     setLoading(true);
@@ -200,7 +200,7 @@ export default function GatedContactCard({
     try {
       const resolvedEmail = await resolveEmailFromIdentifier(cleanIdentifier);
       if (!resolvedEmail.includes('@')) {
-        throw new Error('Kunde inte hitta ett konto för det användarnamnet. Vänligen ange din e-postadress.');
+        throw new Error('Could not find an account for that username. Please enter your email address.');
       }
 
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -214,7 +214,7 @@ export default function GatedContactCard({
         broadcastAuthSuccess(data.user.email);
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Inloggningen misslyckades. Kontrollera dina uppgifter.';
+      const msg = err instanceof Error ? err.message : 'Login failed. Please verify your credentials.';
       setErrorMsg(msg);
     } finally {
       setLoading(false);
@@ -225,11 +225,11 @@ export default function GatedContactCard({
     e.preventDefault();
     const cleanEmail = authIdentifier.trim().toLowerCase();
     if (!cleanEmail.includes('@')) {
-      setErrorMsg('Vänligen ange en giltig e-postadress.');
+      setErrorMsg('Please enter a valid email address.');
       return;
     }
     if (!authPassword || authPassword.length < 6) {
-      setErrorMsg('Lösenordet måste bestå av minst 6 tecken.');
+      setErrorMsg('Password must be at least 6 characters.');
       return;
     }
     setLoading(true);
@@ -253,10 +253,10 @@ export default function GatedContactCard({
         setUser(data.session.user);
         broadcastAuthSuccess(data.session.user.email);
       } else {
-        setSuccessMsg(`Konto skapat! En bekräftelselänk har skickats till ${cleanEmail}.`);
+        setSuccessMsg(`Account created! A confirmation link has been sent to ${cleanEmail}.`);
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Registreringen misslyckades.';
+      const msg = err instanceof Error ? err.message : 'Registration failed.';
       setErrorMsg(msg);
     } finally {
       setLoading(false);
@@ -267,7 +267,7 @@ export default function GatedContactCard({
     e.preventDefault();
     const cleanEmail = authIdentifier.trim().toLowerCase();
     if (!cleanEmail.includes('@')) {
-      setErrorMsg('Vänligen fyll i din e-postadress för återställning.');
+      setErrorMsg('Please enter your email address to reset password.');
       return;
     }
     setLoading(true);
@@ -284,9 +284,9 @@ export default function GatedContactCard({
         redirectTo: redirectUrl,
       });
       if (error) throw error;
-      setSuccessMsg(`Återställningslänk skickad till ${cleanEmail}! Kontrollera din inkorg.`);
+      setSuccessMsg(`Password reset link sent to ${cleanEmail}! Please check your inbox.`);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Kunde inte skicka återställningslänk.';
+      const msg = err instanceof Error ? err.message : 'Could not send password reset link.';
       setErrorMsg(msg);
     } finally {
       setLoading(false);
@@ -297,7 +297,7 @@ export default function GatedContactCard({
     e.preventDefault();
     const cleanEmail = authIdentifier.trim().toLowerCase();
     if (!cleanEmail || !cleanEmail.includes('@')) {
-      setErrorMsg('Vänligen ange en giltig e-postadress.');
+      setErrorMsg('Please enter a valid email address.');
       return;
     }
     setLoading(true);
@@ -332,7 +332,7 @@ export default function GatedContactCard({
     try {
       const payload = {
         toEmail: contactEmail || undefined,
-        recipientName: contactName || "Spelare",
+        recipientName: contactName || "Player",
         senderEmail: user?.email || "",
         senderName: directSenderName.trim(),
         senderClub: directSenderClub.trim(),
@@ -347,13 +347,13 @@ export default function GatedContactCard({
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data?.error || 'Kunde inte skicka meddelandet.');
+        throw new Error(data?.error || 'Could not send message.');
       }
 
       setDirectSuccess(true);
       setDirectMessage('');
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Ett fel uppstod vid utskicket.';
+      const msg = err instanceof Error ? err.message : 'An error occurred while sending message.';
       setDirectError(msg);
     } finally {
       setSendingDirect(false);
@@ -366,7 +366,7 @@ export default function GatedContactCard({
         <div className="flex items-center justify-between gap-2 mb-3 pb-2.5 border-b border-emerald-200/80">
           <span className="text-xs font-bold uppercase tracking-wider text-emerald-900 flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
-            Verifierad Åtkomst (Inloggad)
+            Verified Access (Logged In)
           </span>
           {user.email && (
             <span className="text-[11px] text-emerald-700 font-medium truncate max-w-[170px]" title={user.email}>
@@ -380,7 +380,7 @@ export default function GatedContactCard({
           {contactName && (
             <div>
               <span className="text-[11px] font-semibold text-emerald-900/80 block uppercase tracking-wider">
-                Kontaktperson
+                Contact Person
               </span>
               <span className="font-semibold text-slate-900">
                 {contactName} {contactRole ? `(${contactRole})` : ''}
@@ -391,14 +391,14 @@ export default function GatedContactCard({
           {isFormOnly ? (
             <div className="p-2.5 bg-emerald-100/70 border border-emerald-300/80 text-emerald-950 rounded-lg text-xs font-medium flex items-center gap-1.5">
               <span>✉️</span>
-              <span>Kontakt sker via formuläret nedan</span>
+              <span>Contact is handled via the form below</span>
             </div>
           ) : (
             <>
               {canShowEmail && (
                 <div>
                   <span className="text-[11px] font-semibold text-emerald-900/80 block uppercase tracking-wider">
-                    E-postadress
+                    Email Address
                   </span>
                   <a
                     href={`mailto:${contactEmail}`}
@@ -413,7 +413,7 @@ export default function GatedContactCard({
               {canShowPhone && (
                 <div>
                   <span className="text-[11px] font-semibold text-emerald-900/80 block uppercase tracking-wider">
-                    Telefonnummer
+                    Phone Number
                   </span>
                   <a
                     href={`tel:${contactPhone}`}
@@ -434,21 +434,21 @@ export default function GatedContactCard({
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
                 <span>💬</span>
-                <span>Skicka direktmeddelande via sajten</span>
+                <span>Send direct message via platform</span>
               </span>
               <button
                 type="button"
                 onClick={() => setShowDirectForm(!showDirectForm)}
                 className="text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline cursor-pointer"
               >
-                {showDirectForm ? "Dölj formulär ✕" : "Öppna formulär ▾"}
+                {showDirectForm ? "Hide form ✕" : "Open form ▾"}
               </button>
             </div>
           ) : (
             <div className="mb-2">
               <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
                 <span>💬</span>
-                <span>Skicka meddelande till {contactName || 'mottagaren'}</span>
+                <span>Send message to {contactName || 'recipient'}</span>
               </span>
             </div>
           )}
@@ -457,7 +457,7 @@ export default function GatedContactCard({
             <form onSubmit={handleSendDirectMessage} className="mt-3 space-y-2.5">
               {directSuccess && (
                 <div className="p-2.5 bg-emerald-100 border border-emerald-300 text-emerald-950 rounded-lg text-xs font-medium">
-                  ✓ Ditt meddelande har skickats till {contactName || 'spelaren'}!
+                  ✓ Your message has been sent to {contactName || 'the player'}!
                 </div>
               )}
               {directError && (
@@ -468,42 +468,42 @@ export default function GatedContactCard({
 
               <div>
                 <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                  Avsändarens namn *
+                  Sender Name *
                 </label>
                 <input
                   type="text"
                   required
                   value={directSenderName}
                   onChange={(e) => setDirectSenderName(e.target.value)}
-                  placeholder="Ditt för- och efternamn"
+                  placeholder="Your first and last name"
                   className="w-full px-3 py-1.5 text-xs border border-emerald-300 rounded-lg bg-white focus:outline-none focus:border-emerald-600 text-slate-900"
                 />
               </div>
 
               <div>
                 <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                  Klubb / Roll *
+                  Club / Role *
                 </label>
                 <input
                   type="text"
                   required
                   value={directSenderClub}
                   onChange={(e) => setDirectSenderClub(e.target.value)}
-                  placeholder="T.ex. Bollnäs GIF / Sportchef"
+                  placeholder="e.g. Bollnäs GIF / Head of Scouting"
                   className="w-full px-3 py-1.5 text-xs border border-emerald-300 rounded-lg bg-white focus:outline-none focus:border-emerald-600 text-slate-900"
                 />
               </div>
 
               <div>
                 <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                  Meddelande *
+                  Message *
                 </label>
                 <textarea
                   required
                   rows={3}
                   value={directMessage}
                   onChange={(e) => setDirectMessage(e.target.value)}
-                  placeholder={`Hej ${contactName || 'där'}, vi är intresserade av kontakt angående...`}
+                  placeholder={`Hi ${contactName || 'there'}, we would like to get in touch regarding...`}
                   className="w-full px-3 py-1.5 text-xs border border-emerald-300 rounded-lg bg-white focus:outline-none focus:border-emerald-600 text-slate-900"
                 />
               </div>
@@ -511,9 +511,9 @@ export default function GatedContactCard({
               <button
                 type="submit"
                 disabled={sendingDirect}
-                className="w-full py-2 px-3 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs rounded-lg shadow-sm transition-colors disabled:opacity-50 cursor-pointer text-center"
+                className="w-full py-2 px-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-lg shadow-sm transition-colors disabled:opacity-50 cursor-pointer text-center"
               >
-                {sendingDirect ? "Skickar meddelande..." : "Skicka meddelande"}
+                {sendingDirect ? "Sending message..." : "Send Message"}
               </button>
             </form>
           )}
@@ -526,26 +526,26 @@ export default function GatedContactCard({
     <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 sm:p-6 mt-4 text-left shadow-2xs">
       <div className="max-w-md mx-auto">
         <div className="text-center mb-4">
-          <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-zinc-100 flex items-center justify-center text-lg border border-zinc-200 shadow-2xs">
+          <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-slate-100 flex items-center justify-center text-lg border border-slate-200 shadow-2xs">
             🔒
           </div>
           <h4 className="text-sm sm:text-base font-bold text-slate-900">
             {authMode === 'register'
-              ? 'Skapa konto för kontakt'
+              ? 'Create Account for Contact Details'
               : authMode === 'forgot_password'
-              ? 'Återställ lösenord'
+              ? 'Reset Password'
               : authMode === 'magic_link'
-              ? 'Logga in med engångslänk'
-              : 'Logga in för att visa kontaktuppgifter'}
+              ? 'Log In with Magic Link'
+              : 'Log In to View Contact Details'}
           </h4>
           <p className="text-xs text-slate-600 mt-1">
             {authMode === 'register'
-              ? 'Registrera dig med e-post och lösenord för att kontakta klubbar och spelare.'
+              ? 'Register with email and password to contact clubs and players.'
               : authMode === 'forgot_password'
-              ? 'Ange din e-postadress så skickar vi en länk för att återställa lösenordet.'
+              ? 'Enter your email address and we will send a password reset link.'
               : authMode === 'magic_link'
-              ? 'Fyll i din e-postadress så skickar vi en direktinloggningslänk.'
-              : 'Ange ditt användarnamn/e-post och lösenord för att låsa upp kontaktuppgifter direkt.'}
+              ? 'Enter your email address and we will send a direct login link.'
+              : 'Enter your username/email and password to view contact details directly.'}
           </p>
         </div>
 
@@ -581,12 +581,12 @@ export default function GatedContactCard({
           <form onSubmit={handlePasswordLogin} className="space-y-3">
             <div>
               <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                E-post / Användarnamn
+                Email / Username
               </label>
               <input
                 type="text"
                 required
-                placeholder="namn@exempel.se eller användarnamn"
+                placeholder="name@example.com or username"
                 value={authIdentifier}
                 onChange={(e) => setAuthIdentifier(e.target.value)}
                 className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white focus:outline-none focus:border-slate-900 shadow-2xs"
@@ -596,7 +596,7 @@ export default function GatedContactCard({
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-[11px] font-semibold text-slate-700">
-                  Lösenord
+                  Password
                 </label>
                 <button
                   type="button"
@@ -607,7 +607,7 @@ export default function GatedContactCard({
                   }}
                   className="text-[11px] font-semibold text-slate-500 hover:text-slate-900 underline cursor-pointer"
                 >
-                  Glömt lösenord?
+                  Forgot password?
                 </button>
               </div>
               <div className="relative">
@@ -635,7 +635,7 @@ export default function GatedContactCard({
               className="w-full py-2.5 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-800 disabled:opacity-50 cursor-pointer transition-colors shadow-xs mt-1 flex items-center justify-center gap-2"
             >
               {loading && <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-              <span>{loading ? 'Loggar in...' : 'Logga in & visa kontakt →'}</span>
+              <span>{loading ? 'Logging in...' : 'Log in & View Contact →'}</span>
             </button>
 
             <div className="pt-2 border-t border-slate-200/80 flex items-center justify-between text-[11px] text-slate-500">
@@ -648,7 +648,7 @@ export default function GatedContactCard({
                 }}
                 className="font-semibold text-slate-900 hover:underline cursor-pointer"
               >
-                Inget konto? Registrera dig
+                No account? Register
               </button>
               <button
                 type="button"
@@ -659,7 +659,7 @@ export default function GatedContactCard({
                 }}
                 className="hover:text-slate-800 underline cursor-pointer"
               >
-                Engångslänk istället
+                Magic link instead
               </button>
             </div>
           </form>
@@ -670,12 +670,12 @@ export default function GatedContactCard({
           <form onSubmit={handleRegister} className="space-y-3">
             <div>
               <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                E-postadress
+                Email Address
               </label>
               <input
                 type="email"
                 required
-                placeholder="namn@exempel.se"
+                placeholder="name@example.com"
                 value={authIdentifier}
                 onChange={(e) => setAuthIdentifier(e.target.value)}
                 className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white focus:outline-none focus:border-slate-900 shadow-2xs"
@@ -684,7 +684,7 @@ export default function GatedContactCard({
 
             <div>
               <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                Välj lösenord (minst 6 tecken)
+                Choose Password (min 6 characters)
               </label>
               <input
                 type="password"
@@ -702,7 +702,7 @@ export default function GatedContactCard({
               className="w-full py-2.5 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-800 disabled:opacity-50 cursor-pointer transition-colors shadow-xs mt-1 flex items-center justify-center gap-2"
             >
               {loading && <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-              <span>{loading ? 'Skapar konto...' : 'Skapa konto & visa kontakt →'}</span>
+              <span>{loading ? 'Creating account...' : 'Create Account & View Contact →'}</span>
             </button>
 
             <div className="pt-2 border-t border-slate-200/80 text-center text-[11px]">
@@ -715,7 +715,7 @@ export default function GatedContactCard({
                 }}
                 className="text-slate-600 hover:text-slate-900 underline font-semibold cursor-pointer"
               >
-                Har du redan ett konto? Logga in
+                Already have an account? Log in
               </button>
             </div>
           </form>
@@ -726,12 +726,12 @@ export default function GatedContactCard({
           <form onSubmit={handleForgotPassword} className="space-y-3">
             <div>
               <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                E-postadress för återställning
+                Email Address for Reset
               </label>
               <input
                 type="email"
                 required
-                placeholder="namn@exempel.se"
+                placeholder="name@example.com"
                 value={authIdentifier.includes('@') ? authIdentifier : ''}
                 onChange={(e) => setAuthIdentifier(e.target.value)}
                 className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white focus:outline-none focus:border-slate-900 shadow-2xs"
@@ -744,7 +744,7 @@ export default function GatedContactCard({
               className="w-full py-2.5 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-800 disabled:opacity-50 cursor-pointer transition-colors shadow-xs mt-1 flex items-center justify-center gap-2"
             >
               {loading && <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-              <span>{loading ? 'Skickar...' : 'Skicka återställningslänk →'}</span>
+              <span>{loading ? 'Sending...' : 'Send Reset Link →'}</span>
             </button>
 
             <div className="pt-2 border-t border-slate-200/80 text-center text-[11px]">
@@ -757,7 +757,7 @@ export default function GatedContactCard({
                 }}
                 className="text-slate-600 hover:text-slate-900 underline font-semibold cursor-pointer"
               >
-                ← Tillbaka till inloggning
+                ← Back to log in
               </button>
             </div>
           </form>
@@ -771,10 +771,10 @@ export default function GatedContactCard({
                 ✉️
               </div>
               <p className="text-xs font-bold text-slate-900">
-                Engångslänk skickad till <span className="text-emerald-800 font-extrabold break-all">{authIdentifier}</span>!
+                Magic link sent to <span className="text-emerald-800 font-extrabold break-all">{authIdentifier}</span>!
               </p>
               <p className="text-[11px] text-slate-600">
-                Klicka på länken i din inkorg för att låsa upp kontaktuppgifterna automatiskt.
+                Click the link in your inbox to unlock contact details automatically.
               </p>
               <button
                 type="button"
@@ -784,19 +784,19 @@ export default function GatedContactCard({
                 }}
                 className="text-[11px] text-slate-500 hover:text-slate-800 underline cursor-pointer"
               >
-                Tillbaka till lösenordsinloggning
+                Back to password login
               </button>
             </div>
           ) : (
             <form onSubmit={handleSendMagicLink} className="space-y-3">
               <div>
                 <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                  E-postadress
+                  Email Address
                 </label>
                 <input
                   type="email"
                   required
-                  placeholder="namn@exempel.se"
+                  placeholder="name@example.com"
                   value={authIdentifier.includes('@') ? authIdentifier : ''}
                   onChange={(e) => setAuthIdentifier(e.target.value)}
                   className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white focus:outline-none focus:border-slate-900 shadow-2xs"
@@ -809,7 +809,7 @@ export default function GatedContactCard({
                 className="w-full py-2.5 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-800 disabled:opacity-50 cursor-pointer transition-colors shadow-xs mt-1 flex items-center justify-center gap-2"
               >
                 {loading && <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-                <span>{loading ? 'Skickar länk...' : 'Skicka engångslänk →'}</span>
+                <span>{loading ? 'Sending link...' : 'Send Magic Link →'}</span>
               </button>
 
               <div className="pt-2 border-t border-slate-200/80 text-center text-[11px]">
@@ -822,7 +822,7 @@ export default function GatedContactCard({
                   }}
                   className="text-slate-600 hover:text-slate-900 underline font-semibold cursor-pointer"
                 >
-                  ← Tillbaka till lösenordsinloggning
+                  ← Back to password login
                 </button>
               </div>
             </form>

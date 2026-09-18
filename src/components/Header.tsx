@@ -139,10 +139,10 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
   return (
     <>
       {/* Top Banner */}
-      <div className="bg-zinc-900 text-zinc-300 text-xs px-4 py-2 border-b border-zinc-800 text-center">
+      <div className="bg-slate-900 text-slate-300 text-xs px-4 py-2 border-b border-slate-800 text-center">
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
-          <span className="font-medium text-zinc-200">
+          <span className="font-medium text-slate-200">
             Transfer window open for season 2026/27. Connect with international clubs and prospects.
           </span>
         </div>
@@ -239,8 +239,8 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                     href="/messages"
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border transition-colors ${
                       pathname?.startsWith("/messages")
-                        ? "bg-zinc-900 text-white border-zinc-900"
-                        : "bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border-zinc-200"
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200"
                     }`}
                   >
                     <span>✉️</span>
@@ -253,13 +253,13 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border transition-colors ${
                       pathname === "/shortlist"
                         ? "bg-amber-100 text-amber-950 border-amber-300 font-bold"
-                        : "bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border-zinc-200"
+                        : "bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200"
                     }`}
                   >
                     <span>⭐</span>
                     <span>Shortlist</span>
                     {shortlistCount > 0 && (
-                      <span className="px-1.5 py-0.2 rounded-full bg-zinc-900 text-white text-[10px] font-bold">
+                      <span className="px-1.5 py-0.2 rounded-full bg-slate-900 text-white text-[10px] font-bold">
                         {shortlistCount}
                       </span>
                     )}
@@ -271,8 +271,8 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                       href="/my-profile"
                       className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border transition-colors ${
                         pathname === "/my-profile"
-                          ? "bg-zinc-900 text-white border-zinc-900"
-                          : "bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border-zinc-200"
+                          ? "bg-slate-900 text-white border-slate-900"
+                          : "bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200"
                       }`}
                     >
                       <span>👤</span>
@@ -287,8 +287,8 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                         href={profileInfo.name ? `/market?search=${encodeURIComponent(profileInfo.name)}` : "/market"}
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border transition-colors ${
                           pathname === "/market"
-                            ? "bg-zinc-900 text-white border-zinc-900"
-                            : "bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border-zinc-200"
+                            ? "bg-slate-900 text-white border-slate-900"
+                            : "bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200"
                         }`}
                       >
                         <span>📋</span>
@@ -296,7 +296,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                       </Link>
                       <Link
                         href="/post-ad"
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded-md shadow-xs transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-md shadow-xs transition-colors cursor-pointer"
                       >
                         <span>💼</span>
                         <span>+ Post Club Listing</span>
@@ -309,14 +309,14 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                     <div className="flex items-center gap-2">
                       <Link
                         href="/join"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-800 bg-zinc-100 hover:bg-zinc-200 rounded-md border border-zinc-200 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-md border border-slate-200 transition-colors"
                       >
                         <span>⛸️</span>
                         <span>Join as Player</span>
                       </Link>
                       <Link
                         href="/post-ad"
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded-md shadow-xs transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-md shadow-xs transition-colors cursor-pointer"
                       >
                         <span>💼</span>
                         <span>+ Post Club Listing</span>
@@ -326,7 +326,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
 
                   <button
                     onClick={handleSignOut}
-                    className="px-2.5 py-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer ml-1"
+                    className="px-2.5 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors cursor-pointer ml-1"
                   >
                     Sign Out
                   </button>
@@ -364,7 +364,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
               {/* Mobile hamburger */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-1.5 text-zinc-600 hover:text-zinc-900 rounded-md border border-zinc-200"
+                className="md:hidden p-1.5 text-slate-600 hover:text-slate-900 rounded-md border border-slate-200"
                 aria-label="Toggle navigation menu"
               >
                 {mobileMenuOpen ? (
@@ -382,10 +382,10 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
 
           {/* Mobile Drawer */}
           {mobileMenuOpen && (
-            <div className="md:hidden py-3 border-t border-zinc-200 space-y-1">
+            <div className="md:hidden py-3 border-t border-slate-200 space-y-1">
               {/* Role badge if logged in */}
               {user && (
-                <div className="pb-2 mb-2 border-b border-zinc-100">
+                <div className="pb-2 mb-2 border-b border-slate-100">
                   {profileInfo?.role === "player" ? (
                     <div className="px-3 py-1.5 text-xs font-semibold text-emerald-950 bg-emerald-50 rounded-md border border-emerald-200 flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
@@ -397,7 +397,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                       <span className="truncate">Signed in as: {profileInfo.name} (Club)</span>
                     </div>
                   ) : (
-                    <div className="px-3 py-1.5 text-xs font-medium text-zinc-600 bg-zinc-50 rounded-md border border-zinc-200 flex items-center gap-2">
+                    <div className="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-50 rounded-md border border-slate-200 flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                       <span className="truncate">{user.email}</span>
                     </div>
@@ -408,41 +408,41 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
               <Link
                 href="/players"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 rounded-md"
+                className="block px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md"
               >
                 Players
               </Link>
               <Link
                 href="/market"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 rounded-md"
+                className="block px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md"
               >
                 Club Listings
               </Link>
               <Link
                 href="/statistik"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 rounded-md"
+                className="block px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md"
               >
                 Insights
               </Link>
               <Link
                 href="/#how-it-works"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 rounded-md"
+                className="block px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md"
               >
                 How it Works
               </Link>
               <Link
                 href="/#about"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 rounded-md"
+                className="block px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md"
               >
                 About
               </Link>
 
               {user ? (
-                <div className="pt-2 border-t border-zinc-100 space-y-1">
+                <div className="pt-2 border-t border-slate-100 space-y-1">
                   {/* Role Indicator Badge */}
                   {profileInfo?.role === "player" && (
                     <div className="px-3 py-1.5 text-xs font-semibold text-emerald-950 bg-emerald-50 rounded-md border border-emerald-200">
@@ -458,7 +458,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                   <Link
                     href="/messages"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-zinc-900 bg-zinc-100 rounded-md"
+                    className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-slate-900 bg-slate-100 rounded-md"
                   >
                     <span>✉️</span>
                     <span>Messages</span>
@@ -471,7 +471,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                   >
                     <span>⭐ My Shortlist</span>
                     {shortlistCount > 0 && (
-                      <span className="px-2 py-0.5 rounded-full bg-zinc-900 text-white text-xs font-bold">
+                      <span className="px-2 py-0.5 rounded-full bg-slate-900 text-white text-xs font-bold">
                         {shortlistCount}
                       </span>
                     )}
@@ -482,7 +482,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                     <Link
                       href="/my-profile"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="block px-3 py-2 text-sm font-bold text-zinc-900 hover:bg-zinc-100 rounded-md"
+                      className="block px-3 py-2 text-sm font-bold text-slate-900 hover:bg-slate-100 rounded-md"
                     >
                       👤 My Profile
                     </Link>
@@ -494,14 +494,14 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                       <Link
                         href={profileInfo.name ? `/market?search=${encodeURIComponent(profileInfo.name)}` : "/market"}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="block px-3 py-2 text-sm font-bold text-zinc-900 hover:bg-zinc-100 rounded-md"
+                        className="block px-3 py-2 text-sm font-bold text-slate-900 hover:bg-slate-100 rounded-md"
                       >
                         📋 My Listings
                       </Link>
                       <Link
                         href="/post-ad"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="block px-3 py-2 text-center text-xs font-semibold rounded-lg bg-zinc-900 text-white shadow-xs"
+                        className="block px-3 py-2 text-center text-xs font-semibold rounded-lg bg-slate-900 text-white shadow-xs"
                       >
                         💼 + Post Club Listing
                       </Link>
@@ -514,14 +514,14 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                       <Link
                         href="/join"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-zinc-100 text-zinc-800 border border-zinc-200"
+                        className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-slate-100 text-slate-800 border border-slate-200"
                       >
                         ⛸️ Join as Player
                       </Link>
                       <Link
                         href="/post-ad"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-zinc-900 text-white shadow-xs"
+                        className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-slate-900 text-white shadow-xs"
                       >
                         💼 + Post Club Listing
                       </Link>
@@ -540,11 +540,11 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                 </div>
               ) : (
                 /* Public / Logged-out Mobile */
-                <div className="pt-2 border-t border-zinc-100 space-y-2.5">
+                <div className="pt-2 border-t border-slate-100 space-y-2.5">
                   <Link
                     href="/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 rounded-md text-center"
+                    className="block px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md text-center"
                   >
                     Sign In
                   </Link>
@@ -552,7 +552,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                     <Link
                       href="/join"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center justify-center gap-1.5"
+                      className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-slate-100 text-slate-800 border border-slate-200 flex items-center justify-center gap-1.5"
                     >
                       <span>⛸️</span>
                       <span>Join as Player</span>
@@ -560,7 +560,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                     <Link
                       href="/post-ad"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-zinc-900 text-white shadow-xs flex items-center justify-center gap-1.5"
+                      className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-slate-900 text-white shadow-xs flex items-center justify-center gap-1.5"
                     >
                       <span>💼</span>
                       <span>+ Post Listing</span>

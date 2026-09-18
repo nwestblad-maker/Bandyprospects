@@ -17,14 +17,14 @@ export default function DeleteProfileButton({
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
-    if (!window.confirm('Är du säker på att du vill ta bort denna profil permanent?')) return;
+    if (!window.confirm('Are you sure you want to permanently delete this profile?')) return;
     setLoading(true);
     const { error } = await supabase.from(table).delete().eq('id', recordId);
     setLoading(false);
     if (error) {
-      alert(`Kunde inte radera: ${error.message}`);
+      alert(`Could not delete: ${error.message}`);
     } else {
-      alert('Profilen har raderats.');
+      alert('Profile has been permanently deleted.');
       router.push(redirectPath);
       router.refresh();
     }
@@ -35,10 +35,10 @@ export default function DeleteProfileButton({
       type="button"
       onClick={handleDelete}
       disabled={loading}
-      className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition cursor-pointer"
+      className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition cursor-pointer"
     >
       <span>🗑️</span>
-      <span>{loading ? 'Raderar...' : 'Ta bort profil'}</span>
+      <span>{loading ? 'Deleting...' : 'Delete Profile'}</span>
     </button>
   );
 }

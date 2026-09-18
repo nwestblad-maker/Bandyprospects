@@ -40,8 +40,8 @@ export function SpokenLanguagesPicker({
   return (
     <div className="space-y-3 text-xs">
       <div>
-        {label && <label className="block font-semibold text-zinc-800 text-xs">{label}</label>}
-        {subtitle && <p className="text-[11px] text-zinc-500 mt-0.5">{subtitle}</p>}
+        {label && <label className="block font-semibold text-slate-800 text-xs">{label}</label>}
+        {subtitle && <p className="text-[11px] text-slate-500 mt-0.5">{subtitle}</p>}
       </div>
 
       {/* Grid of common languages */}
@@ -55,12 +55,12 @@ export function SpokenLanguagesPicker({
               onClick={() => handleToggleLanguage(langItem.code)}
               className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer ${
                 isSelected
-                  ? "bg-zinc-900 text-white border-zinc-900 shadow-xs"
-                  : "bg-zinc-50 hover:bg-zinc-100 text-zinc-700 border-zinc-200"
+                  ? "bg-slate-900 text-white border-slate-900 shadow-xs"
+                  : "bg-white hover:bg-slate-50 text-slate-700 border-slate-300"
               }`}
             >
               <span>{langItem.flag}</span>
-              <span>{langItem.name[lang]}</span>
+              <span>{langItem.name.en || langItem.name[lang] || langItem.code}</span>
               {isSelected && <span>✓</span>}
             </button>
           );
@@ -79,15 +79,15 @@ export function SpokenLanguagesPicker({
               handleAddCustom();
             }
           }}
-          placeholder={lang === "sv" ? "Lägg till ytterligare språk..." : lang === "fi" ? "Lisää muu kieli..." : lang === "no" ? "Legg til annet språk..." : "Add other language..."}
-          className="flex-1 px-3 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900"
+          placeholder="Add other language..."
+          className="flex-1 px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900"
         />
         <button
           type="button"
           onClick={handleAddCustom}
-          className="px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-semibold rounded-lg border border-zinc-200 text-xs transition-colors"
+          className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-lg border border-slate-300 text-xs transition-colors cursor-pointer"
         >
-          {lang === "sv" ? "+ Lägg till" : "+ Add"}
+          + Add
         </button>
       </div>
 
@@ -99,13 +99,13 @@ export function SpokenLanguagesPicker({
             .map((custom) => (
               <span
                 key={custom}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-800 text-xs font-medium"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-800 text-xs font-medium"
               >
                 <span>🗣️ {custom}</span>
                 <button
                   type="button"
                   onClick={() => onChange(selectedLanguages.filter((l) => l !== custom))}
-                  className="text-zinc-400 hover:text-zinc-900 font-bold ml-1"
+                  className="text-slate-400 hover:text-slate-900 font-bold ml-1 cursor-pointer"
                 >
                   ×
                 </button>

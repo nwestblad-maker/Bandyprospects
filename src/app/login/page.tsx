@@ -5,14 +5,12 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { useLanguage } from "@/context/LanguageContext";
 import { supabase } from "@/lib/supabaseClient";
 import { resolveEmailFromIdentifier } from "@/lib/authHelpers";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { lang } = useLanguage();
 
   const initialMode = searchParams.get("mode") === "register" ? "register" : "login";
   const nextParam = searchParams.get("next") || "/my-profile";
@@ -48,11 +46,11 @@ function LoginForm() {
 
     const cleanIdentifier = identifier.trim();
     if (!cleanIdentifier) {
-      setErrorMessage(lang === "sv" ? "Vänligen ange e-post eller användarnamn." : "Please enter your email or username.");
+      setErrorMessage("Please enter your email or username.");
       return;
     }
     if (!password) {
-      setErrorMessage(lang === "sv" ? "Vänligen ange ditt lösenord." : "Please enter your password.");
+      setErrorMessage("Please enter your password.");
       return;
     }
 
@@ -62,9 +60,7 @@ function LoginForm() {
 
       if (!resolvedEmail.includes("@")) {
         throw new Error(
-          lang === "sv"
-            ? "Kunde inte hitta ett konto kopplat till det användarnamnet. Vänligen ange din e-postadress."
-            : "Could not find an account associated with that username. Please enter your email address."
+          "Could not find an account associated with that username. Please enter your email address."
         );
       }
 
@@ -97,19 +93,15 @@ function LoginForm() {
 
     const cleanEmail = identifier.trim().toLowerCase();
     if (!cleanEmail || !cleanEmail.includes("@")) {
-      setErrorMessage(lang === "sv" ? "Vänligen ange en giltig e-postadress." : "Please enter a valid email address.");
+      setErrorMessage("Please enter a valid email address.");
       return;
     }
     if (!password || password.length < 6) {
-      setErrorMessage(
-        lang === "sv"
-          ? "Lösenordet måste bestå av minst 6 tecken."
-          : "Password must be at least 6 characters long."
-      );
+      setErrorMessage("Password must be at least 6 characters long.");
       return;
     }
     if (password !== confirmPassword) {
-      setErrorMessage(lang === "sv" ? "Lösenorden matchar inte." : "Passwords do not match.");
+      setErrorMessage("Passwords do not match.");
       return;
     }
 
@@ -139,9 +131,7 @@ function LoginForm() {
       } else {
         // Confirmation email sent
         setSuccessMessage(
-          lang === "sv"
-            ? `Konto skapat! En bekräftelselänk har skickats till ${cleanEmail}. Kontrollera din inkorg.`
-            : `Account created! A confirmation link has been sent to ${cleanEmail}. Please check your inbox.`
+          `Account created! A confirmation link has been sent to ${cleanEmail}. Please check your inbox.`
         );
       }
     } catch (err: unknown) {
@@ -160,11 +150,7 @@ function LoginForm() {
 
     const cleanEmail = identifier.trim().toLowerCase();
     if (!cleanEmail || !cleanEmail.includes("@")) {
-      setErrorMessage(
-        lang === "sv"
-          ? "Vänligen ange din e-postadress för att återställa lösenordet."
-          : "Please enter your email address to reset your password."
-      );
+      setErrorMessage("Please enter your email address to reset your password.");
       return;
     }
 
@@ -184,9 +170,7 @@ function LoginForm() {
       }
 
       setSuccessMessage(
-        lang === "sv"
-          ? `Återställningslänk skickad! Kontrollera inkorgen för ${cleanEmail}.`
-          : `Password reset link sent! Check your inbox for ${cleanEmail}.`
+        `Password reset link sent! Check your inbox for ${cleanEmail}.`
       );
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to send password reset email.";
@@ -204,9 +188,7 @@ function LoginForm() {
 
     const cleanEmail = identifier.trim().toLowerCase();
     if (!cleanEmail || !cleanEmail.includes("@")) {
-      setErrorMessage(
-        lang === "sv" ? "Vänligen ange en giltig e-postadress." : "Please enter a valid email address."
-      );
+      setErrorMessage("Please enter a valid email address.");
       return;
     }
 
@@ -229,9 +211,7 @@ function LoginForm() {
       }
 
       setSuccessMessage(
-        lang === "sv"
-          ? `Engångslänk skickad till ${cleanEmail}. Klicka på länken i mejlet för att logga in.`
-          : `Magic link sent to ${cleanEmail}. Check your inbox to log in.`
+        `Magic link sent to ${cleanEmail}. Check your inbox to log in.`
       );
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to send magic login link.";
@@ -243,11 +223,11 @@ function LoginForm() {
 
   return (
     <div className="max-w-md w-full">
-      <div className="bg-white border border-zinc-200 rounded-2xl p-7 sm:p-9 shadow-xs">
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-6 sm:p-8 space-y-6">
         {/* Header Badge */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-700 text-xs font-semibold uppercase tracking-wider mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        <div className="text-center">
+          <div className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2 animate-pulse" />
             <span>
               {mode === "register"
                 ? "Account Registration"
@@ -259,36 +239,28 @@ function LoginForm() {
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 tracking-tight">
-            {mode === "register" && (lang === "sv" ? "Skapa konto" : "Create Account")}
-            {mode === "login" && (lang === "sv" ? "Logga in" : "Sign In")}
-            {mode === "forgot_password" && (lang === "sv" ? "Återställ lösenord" : "Reset Password")}
-            {mode === "magic_link" && (lang === "sv" ? "Engångslänk via e-post" : "Magic Link Sign In")}
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+            {mode === "register" && "Create Account"}
+            {mode === "login" && "Sign In"}
+            {mode === "forgot_password" && "Reset Password"}
+            {mode === "magic_link" && "Magic Link Sign In"}
           </h1>
 
-          <p className="text-xs sm:text-sm text-zinc-500 mt-2 leading-relaxed">
+          <p className="text-sm text-slate-600 mt-2 leading-relaxed">
             {mode === "login" &&
-              (lang === "sv"
-                ? "Logga in med ditt användarnamn/e-post och lösenord för att administrera din profil eller scouta."
-                : "Sign in with your email or username and password to manage your profile or scout prospects.")}
+              "Sign in with your email or username and password to manage your profile or scout prospects."}
             {mode === "register" &&
-              (lang === "sv"
-                ? "Registrera ditt konto för att skapa och redigera spelarprofiler eller spara shortlists."
-                : "Register your account to manage player profiles, club adverts, or save shortlists.")}
+              "Register your account to manage player profiles, club adverts, or save shortlists."}
             {mode === "forgot_password" &&
-              (lang === "sv"
-                ? "Ange e-postadressen kopplad till ditt konto så skickar vi instruktioner för att återställa lösenordet."
-                : "Enter the email associated with your account and we'll send a link to reset your password.")}
+              "Enter the email associated with your account and we'll send a link to reset your password."}
             {mode === "magic_link" &&
-              (lang === "sv"
-                ? "Vi skickar en direktlänk till din e-post som loggar in dig automatiskt."
-                : "We will send a one-time login link directly to your email address.")}
+              "We will send a one-time login link directly to your email address."}
           </p>
         </div>
 
         {/* Auth mode toggle tabs (Login / Register) */}
         {(mode === "login" || mode === "register") && (
-          <div className="flex bg-zinc-100 p-1 rounded-xl mb-6 text-xs font-semibold">
+          <div className="flex bg-slate-100 p-1 rounded-lg text-xs font-semibold">
             <button
               type="button"
               onClick={() => {
@@ -296,11 +268,11 @@ function LoginForm() {
                 setErrorMessage(null);
                 setSuccessMessage(null);
               }}
-              className={`flex-1 py-2 rounded-lg transition-all cursor-pointer ${
-                mode === "login" ? "bg-white text-zinc-950 shadow-2xs font-bold" : "text-zinc-600 hover:text-zinc-900"
+              className={`flex-1 py-2 rounded-md transition-all cursor-pointer ${
+                mode === "login" ? "bg-white text-slate-900 shadow-sm font-bold" : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              {lang === "sv" ? "Logga in" : "Sign In"}
+              Sign In
             </button>
             <button
               type="button"
@@ -309,23 +281,23 @@ function LoginForm() {
                 setErrorMessage(null);
                 setSuccessMessage(null);
               }}
-              className={`flex-1 py-2 rounded-lg transition-all cursor-pointer ${
-                mode === "register" ? "bg-white text-zinc-950 shadow-2xs font-bold" : "text-zinc-600 hover:text-zinc-900"
+              className={`flex-1 py-2 rounded-md transition-all cursor-pointer ${
+                mode === "register" ? "bg-white text-slate-900 shadow-sm font-bold" : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              {lang === "sv" ? "Skapa konto" : "Create Account"}
+              Create Account
             </button>
           </div>
         )}
 
         {/* Feedback notifications */}
         {errorMessage && (
-          <div className="mb-4 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between">
+          <div className="p-3.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between">
             <span>⚠️ {errorMessage}</span>
             <button
               type="button"
               onClick={() => setErrorMessage(null)}
-              className="font-bold text-rose-900 hover:underline ml-2"
+              className="font-bold text-rose-900 hover:underline ml-2 cursor-pointer"
             >
               ✕
             </button>
@@ -333,12 +305,12 @@ function LoginForm() {
         )}
 
         {successMessage && (
-          <div className="mb-4 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between">
+          <div className="p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between">
             <span>✓ {successMessage}</span>
             <button
               type="button"
               onClick={() => setSuccessMessage(null)}
-              className="font-bold text-emerald-900 hover:underline ml-2"
+              className="font-bold text-emerald-900 hover:underline ml-2 cursor-pointer"
             >
               ✕
             </button>
@@ -349,24 +321,24 @@ function LoginForm() {
         {mode === "login" && (
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 mb-1.5">
-                {lang === "sv" ? "E-post / Användarnamn" : "Email / Username"}
+              <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                Email / Username
               </label>
               <input
                 type="text"
                 required
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder={lang === "sv" ? "namn@exempel.se eller användarnamn" : "name@example.com or username"}
-                className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 shadow-2xs"
+                placeholder="name@example.com or username"
+                className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                 autoFocus
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-zinc-700">
-                  {lang === "sv" ? "Lösenord" : "Password"}
+                <label className="text-sm font-semibold text-slate-700">
+                  Password
                 </label>
                 <button
                   type="button"
@@ -375,9 +347,9 @@ function LoginForm() {
                     setErrorMessage(null);
                     setSuccessMessage(null);
                   }}
-                  className="text-xs font-semibold text-zinc-500 hover:text-zinc-950 transition-colors cursor-pointer"
+                  className="text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
                 >
-                  {lang === "sv" ? "Glömt lösenord?" : "Forgot password?"}
+                  Forgot password?
                 </button>
               </div>
               <div className="relative">
@@ -387,12 +359,12 @@ function LoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 shadow-2xs pr-10"
+                  className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 text-xs"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-sm cursor-pointer"
                 >
                   {showPassword ? "🙈" : "👁️"}
                 </button>
@@ -402,10 +374,10 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 px-4 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2 mt-2"
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-3 rounded-lg shadow-sm transition-colors cursor-pointer flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
             >
               {loading && <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-              <span>{loading ? (lang === "sv" ? "Loggar in..." : "Signing in...") : (lang === "sv" ? "Logga in →" : "Sign In →")}</span>
+              <span>{loading ? "Signing in..." : "Sign In →"}</span>
             </button>
 
             {/* Alternative: Magic link option */}
@@ -417,9 +389,9 @@ function LoginForm() {
                   setErrorMessage(null);
                   setSuccessMessage(null);
                 }}
-                className="text-[11px] text-zinc-500 hover:text-zinc-900 underline cursor-pointer"
+                className="text-xs text-slate-500 hover:text-slate-900 underline cursor-pointer"
               >
-                {lang === "sv" ? "Eller skicka engångslänk (Magic Link)" : "Or sign in with a one-time Magic Link"}
+                Or sign in with a one-time Magic Link
               </button>
             </div>
           </form>
@@ -429,23 +401,23 @@ function LoginForm() {
         {mode === "register" && (
           <form onSubmit={handleRegister} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 mb-1.5">
-                {lang === "sv" ? "E-postadress" : "Email Address"}
+              <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                Email Address
               </label>
               <input
                 type="email"
                 required
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="namn@exempel.se"
-                className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 shadow-2xs"
+                placeholder="name@example.com"
+                className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                 autoFocus
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 mb-1.5">
-                {lang === "sv" ? "Välj ett lösenord (minst 6 tecken)" : "Password (min. 6 characters)"}
+              <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                Password (min. 6 characters)
               </label>
               <div className="relative">
                 <input
@@ -454,12 +426,12 @@ function LoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 shadow-2xs pr-10"
+                  className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 text-xs"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-sm cursor-pointer"
                 >
                   {showPassword ? "🙈" : "👁️"}
                 </button>
@@ -467,8 +439,8 @@ function LoginForm() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 mb-1.5">
-                {lang === "sv" ? "Bekräfta lösenord" : "Confirm Password"}
+              <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                Confirm Password
               </label>
               <input
                 type={showPassword ? "text" : "password"}
@@ -476,17 +448,17 @@ function LoginForm() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 shadow-2xs"
+                className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 px-4 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2 mt-2"
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-3 rounded-lg shadow-sm transition-colors cursor-pointer flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
             >
               {loading && <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-              <span>{loading ? (lang === "sv" ? "Skapar konto..." : "Creating Account...") : (lang === "sv" ? "Skapa konto →" : "Create Account →")}</span>
+              <span>{loading ? "Creating Account..." : "Create Account →"}</span>
             </button>
           </form>
         )}
@@ -495,16 +467,16 @@ function LoginForm() {
         {mode === "forgot_password" && (
           <form onSubmit={handleForgotPassword} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 mb-1.5">
-                {lang === "sv" ? "Din e-postadress" : "Your Email Address"}
+              <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                Your Email Address
               </label>
               <input
                 type="email"
                 required
                 value={identifier.includes("@") ? identifier : ""}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="namn@exempel.se"
-                className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 shadow-2xs"
+                placeholder="name@example.com"
+                className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                 autoFocus
               />
             </div>
@@ -512,10 +484,10 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 px-4 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2"
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-3 rounded-lg shadow-sm transition-colors cursor-pointer flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
             >
               {loading && <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-              <span>{loading ? (lang === "sv" ? "Skickar..." : "Sending...") : (lang === "sv" ? "Skicka återställningslänk →" : "Send Reset Link →")}</span>
+              <span>{loading ? "Sending..." : "Send Reset Link →"}</span>
             </button>
 
             <div className="pt-2 text-center">
@@ -526,9 +498,9 @@ function LoginForm() {
                   setErrorMessage(null);
                   setSuccessMessage(null);
                 }}
-                className="text-xs font-semibold text-zinc-600 hover:text-zinc-950 underline cursor-pointer"
+                className="text-xs font-semibold text-slate-600 hover:text-slate-950 underline cursor-pointer"
               >
-                ← {lang === "sv" ? "Tillbaka till inloggning" : "Back to Sign In"}
+                ← Back to Sign In
               </button>
             </div>
           </form>
@@ -538,16 +510,16 @@ function LoginForm() {
         {mode === "magic_link" && (
           <form onSubmit={handleSendMagicLink} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 mb-1.5">
-                {lang === "sv" ? "Din e-postadress" : "Your Email Address"}
+              <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                Your Email Address
               </label>
               <input
                 type="email"
                 required
                 value={identifier.includes("@") ? identifier : ""}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="namn@exempel.se"
-                className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 shadow-2xs"
+                placeholder="name@example.com"
+                className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                 autoFocus
               />
             </div>
@@ -555,10 +527,10 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 px-4 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2"
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-3 rounded-lg shadow-sm transition-colors cursor-pointer flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
             >
               {loading && <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-              <span>{loading ? (lang === "sv" ? "Skickar länk..." : "Sending link...") : (lang === "sv" ? "Skicka inloggningslänk →" : "Send Magic Link →")}</span>
+              <span>{loading ? "Sending link..." : "Send Magic Link →"}</span>
             </button>
 
             <div className="pt-2 text-center">
@@ -569,21 +541,21 @@ function LoginForm() {
                   setErrorMessage(null);
                   setSuccessMessage(null);
                 }}
-                className="text-xs font-semibold text-zinc-600 hover:text-zinc-950 underline cursor-pointer"
+                className="text-xs font-semibold text-slate-600 hover:text-slate-950 underline cursor-pointer"
               >
-                ← {lang === "sv" ? "Tillbaka till lösenordsinloggning" : "Back to Password Sign In"}
+                ← Back to Password Sign In
               </button>
             </div>
           </form>
         )}
 
         {/* Bottom prompt to create player profile ad */}
-        <div className="mt-8 pt-6 border-t border-zinc-100 text-center text-xs text-zinc-500">
+        <div className="pt-6 border-t border-slate-200 text-center text-xs text-slate-500">
           <span>
-            {lang === "sv" ? "Vill du lägga upp en spelarannons?" : "Looking to publish a player profile?"}{" "}
+            Looking to publish a player profile?{" "}
           </span>
-          <Link href="/join" className="font-bold text-zinc-900 hover:underline cursor-pointer">
-            {lang === "sv" ? "Skapa profilannons här" : "Create Profile Ad"} →
+          <Link href="/join" className="font-bold text-slate-900 hover:underline cursor-pointer">
+            Create Profile Ad →
           </Link>
         </div>
       </div>
@@ -593,10 +565,10 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 flex flex-col font-sans selection:bg-zinc-900 selection:text-zinc-50">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-slate-900 selection:text-white">
       <Header />
       <main className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <Suspense fallback={<div className="text-xs text-zinc-400">Loading...</div>}>
+        <Suspense fallback={<div className="text-xs text-slate-400">Loading...</div>}>
           <LoginForm />
         </Suspense>
       </main>

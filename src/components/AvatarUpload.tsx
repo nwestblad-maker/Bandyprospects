@@ -68,14 +68,14 @@ export default function AvatarUpload({
           <div className="w-6 h-6 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
         ) : preview ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={preview} alt="Profilbild" className="w-full h-full object-cover" />
+          <img src={preview} alt="Profile Photo" className="w-full h-full object-cover" />
         ) : (
           '👤'
         )}
       </div>
       <div>
         <label className="cursor-pointer inline-flex items-center px-4 py-2 border border-slate-300 rounded-lg shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 transition">
-          <span>{uploading ? 'Laddar upp...' : preview ? 'Byt profilbild' : 'Ladda upp profilbild'}</span>
+          <span>{uploading ? 'Uploading...' : preview ? 'Change Photo' : 'Upload Photo'}</span>
           <input
             type="file"
             accept="image/*"
@@ -84,7 +84,7 @@ export default function AvatarUpload({
             disabled={uploading}
           />
         </label>
-        <p className="text-xs text-slate-500 mt-1">JPG, PNG eller WebP</p>
+        <p className="text-xs text-slate-500 mt-1">JPG, PNG or WebP</p>
       </div>
     </div>
   );

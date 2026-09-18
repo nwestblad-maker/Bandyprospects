@@ -5,13 +5,11 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { useLanguage } from "@/context/LanguageContext";
 import { supabase } from "@/lib/supabaseClient";
 
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { lang } = useLanguage();
 
   const nextParam = searchParams.get("next") || "/my-profile";
 
@@ -39,23 +37,17 @@ function RegisterForm() {
 
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail || !cleanEmail.includes("@")) {
-      setErrorMessage(
-        lang === "sv" ? "Vänligen ange en giltig e-postadress." : "Please enter a valid email address."
-      );
+      setErrorMessage("Please enter a valid email address.");
       return;
     }
 
     if (!password || password.length < 6) {
-      setErrorMessage(
-        lang === "sv"
-          ? "Lösenordet måste vara minst 6 tecken långt."
-          : "Password must be at least 6 characters long."
-      );
+      setErrorMessage("Password must be at least 6 characters long.");
       return;
     }
 
     if (password !== confirmPassword) {
-      setErrorMessage(lang === "sv" ? "Lösenorden stämmer inte överens." : "Passwords do not match.");
+      setErrorMessage("Passwords do not match.");
       return;
     }
 
@@ -83,9 +75,7 @@ function RegisterForm() {
         router.refresh();
       } else {
         setSuccessMessage(
-          lang === "sv"
-            ? `Konto skapat! En bekräftelselänk har skickats till ${cleanEmail}. Kontrollera din inkorg.`
-            : `Account created! A confirmation link has been sent to ${cleanEmail}. Please check your inbox.`
+          `Account created! A confirmation link has been sent to ${cleanEmail}. Please check your inbox.`
         );
       }
     } catch (err: unknown) {
@@ -98,31 +88,29 @@ function RegisterForm() {
 
   return (
     <div className="max-w-md w-full">
-      <div className="bg-white border border-zinc-200 rounded-2xl p-7 sm:p-9 shadow-xs">
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-700 text-xs font-semibold uppercase tracking-wider mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-6 sm:p-8 space-y-6">
+        <div className="text-center">
+          <div className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2 animate-pulse" />
             <span>Account Registration</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 tracking-tight">
-            {lang === "sv" ? "Skapa konto" : "Create Account"}
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+            Create Account
           </h1>
 
-          <p className="text-xs sm:text-sm text-zinc-500 mt-2 leading-relaxed">
-            {lang === "sv"
-              ? "Skapa ett BP-konto med e-post och lösenord för att hantera din profil och spara intressanta spelare."
-              : "Create a BP account with email and password to manage your profile and save shortlisted prospects."}
+          <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+            Create a Bandy Prospects account with email and password to manage your profile and save shortlisted prospects.
           </p>
         </div>
 
         {errorMessage && (
-          <div className="mb-4 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between">
+          <div className="p-3.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between">
             <span>⚠️ {errorMessage}</span>
             <button
               type="button"
               onClick={() => setErrorMessage(null)}
-              className="font-bold text-rose-900 hover:underline ml-2"
+              className="font-bold text-rose-900 hover:underline ml-2 cursor-pointer"
             >
               ✕
             </button>
@@ -130,12 +118,12 @@ function RegisterForm() {
         )}
 
         {successMessage && (
-          <div className="mb-4 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between">
+          <div className="p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between">
             <span>✓ {successMessage}</span>
             <button
               type="button"
               onClick={() => setSuccessMessage(null)}
-              className="font-bold text-emerald-900 hover:underline ml-2"
+              className="font-bold text-emerald-900 hover:underline ml-2 cursor-pointer"
             >
               ✕
             </button>
@@ -144,23 +132,23 @@ function RegisterForm() {
 
         <form onSubmit={handleRegister} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 mb-1.5">
-              {lang === "sv" ? "E-postadress" : "Email Address"}
+            <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+              Email Address
             </label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="namn@exempel.se"
-              className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 shadow-2xs"
+              placeholder="name@example.com"
+              className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
               autoFocus
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 mb-1.5">
-              {lang === "sv" ? "Lösenord (minst 6 tecken)" : "Password (min. 6 characters)"}
+            <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+              Password (min. 6 characters)
             </label>
             <div className="relative">
               <input
@@ -169,12 +157,12 @@ function RegisterForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 shadow-2xs pr-10"
+                className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors pr-10"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 text-xs"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-sm cursor-pointer"
               >
                 {showPassword ? "🙈" : "👁️"}
               </button>
@@ -182,8 +170,8 @@ function RegisterForm() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 mb-1.5">
-              {lang === "sv" ? "Bekräfta lösenord" : "Confirm Password"}
+            <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+              Confirm Password
             </label>
             <input
               type={showPassword ? "text" : "password"}
@@ -191,32 +179,26 @@ function RegisterForm() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 shadow-2xs"
+              className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 px-4 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2 mt-2"
+            className="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-3 rounded-lg shadow-sm transition-colors cursor-pointer flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
           >
             {loading && <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
             <span>
-              {loading
-                ? lang === "sv"
-                  ? "Skapar konto..."
-                  : "Creating Account..."
-                : lang === "sv"
-                ? "Skapa konto →"
-                : "Create Account →"}
+              {loading ? "Creating Account..." : "Create Account →"}
             </span>
           </button>
         </form>
 
-        <div className="mt-6 pt-5 border-t border-zinc-100 text-center text-xs text-zinc-500">
-          <span>{lang === "sv" ? "Har du redan ett konto?" : "Already have an account?"}{" "}</span>
-          <Link href="/login" className="font-bold text-zinc-900 hover:underline cursor-pointer">
-            {lang === "sv" ? "Logga in här" : "Sign In here"} →
+        <div className="pt-6 border-t border-slate-200 text-center text-xs text-slate-500">
+          <span>Already have an account?{" "}</span>
+          <Link href="/login" className="font-bold text-slate-900 hover:underline cursor-pointer">
+            Sign In here →
           </Link>
         </div>
       </div>
@@ -226,10 +208,10 @@ function RegisterForm() {
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 flex flex-col font-sans selection:bg-zinc-900 selection:text-zinc-50">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-slate-900 selection:text-white">
       <Header />
       <main className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <Suspense fallback={<div className="text-xs text-zinc-400">Loading...</div>}>
+        <Suspense fallback={<div className="text-xs text-slate-400">Loading...</div>}>
           <RegisterForm />
         </Suspense>
       </main>

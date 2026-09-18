@@ -32,32 +32,17 @@ export function KeyAttributesPicker({
     }
   };
 
-  const defaultLabel =
-    lang === "sv"
-      ? "Nyckelegenskaper på isen (Välj upp till 4)"
-      : lang === "fi"
-      ? "Tärkeimmät vahvuudet jäällä (Valitse enintään 4)"
-      : lang === "no"
-      ? "Nøkkelegenskaper på isen (Velg opptil 4)"
-      : "Key Attributes on Ice (Select up to 4)";
-
-  const defaultSubtitle =
-    lang === "sv"
-      ? "Välj de spetskompetenser som bäst definierar dig som bandyspelare."
-      : lang === "fi"
-      ? "Valitse vahvuudet, jotka parhaiten kuvaavat sinua pelaajana."
-      : lang === "no"
-      ? "Velg egenskapene som best definerer deg som bandyspiller."
-      : "Select the core strengths that best highlight your gameplay style.";
+  const defaultLabel = "Key Attributes on Ice (Select up to 4)";
+  const defaultSubtitle = "Select the core strengths that best highlight your gameplay style.";
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <label className="block text-xs font-semibold text-zinc-700">
+          <label className="block text-xs font-semibold text-slate-700">
             {label || defaultLabel}
           </label>
-          <p className="text-[11px] text-zinc-500 mt-0.5">
+          <p className="text-[11px] text-slate-500 mt-0.5">
             {subtitle || defaultSubtitle}
           </p>
         </div>
@@ -66,8 +51,8 @@ export function KeyAttributesPicker({
             selectedAttributes.length === maxAttributes
               ? "bg-amber-100 text-amber-900 border border-amber-300"
               : selectedAttributes.length > 0
-              ? "bg-zinc-100 text-zinc-900 border border-zinc-200"
-              : "bg-zinc-100 text-zinc-400"
+              ? "bg-slate-100 text-slate-900 border border-slate-200"
+              : "bg-slate-100 text-slate-400"
           }`}
         >
           {selectedAttributes.length} / {maxAttributes}
@@ -87,22 +72,22 @@ export function KeyAttributesPicker({
               disabled={isMaxReached}
               className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
                 isSelected
-                  ? "bg-zinc-900 text-white border-zinc-900 shadow-2xs font-semibold"
+                  ? "bg-slate-900 text-white border-slate-900 shadow-2xs font-semibold"
                   : isMaxReached
-                  ? "bg-zinc-50/50 text-zinc-400 border-zinc-200/60 opacity-60 cursor-not-allowed"
-                  : "bg-zinc-50 hover:bg-zinc-100 text-zinc-800 border-zinc-200"
+                  ? "bg-slate-50/50 text-slate-400 border-slate-200/60 opacity-60 cursor-not-allowed"
+                  : "bg-slate-50 hover:bg-slate-100 text-slate-800 border-slate-200"
               }`}
             >
               <div className="flex items-center gap-2.5 text-xs">
                 <span className="text-base">{attr.icon}</span>
-                <span>{attr.names[lang]}</span>
+                <span>{attr.names.en || attr.names[lang]}</span>
               </div>
 
               <div
                 className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
                   isSelected
-                    ? "bg-white text-zinc-950"
-                    : "border border-zinc-300 text-transparent"
+                    ? "bg-white text-slate-950"
+                    : "border border-slate-300 text-transparent"
                 }`}
               >
                 ✓

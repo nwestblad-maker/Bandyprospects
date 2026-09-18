@@ -20,12 +20,12 @@ export default function GdprConsentCheckbox({
         onChange={(e) => onChange(e.target.checked)}
         className="mt-1 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-0 cursor-pointer"
       />
-      <label htmlFor="gdpr-consent" className="text-xs text-slate-600 leading-relaxed cursor-pointer">
-        Jag godkänner att mina uppgifter sparas i enlighet med Bandy Prospects{' '}
+      <label htmlFor="gdpr-consent" className="text-sm text-slate-600 leading-relaxed cursor-pointer">
+        I agree that my information is stored in accordance with the Bandy Prospects{' '}
         <Link href="/integritet" target="_blank" className="font-semibold text-slate-900 underline">
-          Integritetspolicy
+          Privacy Policy
         </Link>
-        . Jag förstår att mina kontaktuppgifter endast visas för inloggade och verifierade användare och att jag när som helst kan radera min profil.
+        . I understand that my contact details are only visible to verified scouts and club officials, and that I can delete my profile at any time.
       </label>
     </div>
   );

@@ -9,7 +9,7 @@ interface BandyTraitsPickerProps {
   lang?: string;
 }
 
-export function BandyTraitsPicker({ selectedTraits, onChange, lang = 'sv' }: BandyTraitsPickerProps) {
+export function BandyTraitsPicker({ selectedTraits, onChange, lang = 'en' }: BandyTraitsPickerProps) {
   const toggleTrait = (name: string) => {
     if (selectedTraits.includes(name)) {
       onChange(selectedTraits.filter((t) => t !== name));
@@ -22,7 +22,7 @@ export function BandyTraitsPicker({ selectedTraits, onChange, lang = 'sv' }: Ban
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
         {BANDY_TRAITS.map((trait: BandyTrait) => {
-          const isSelected = selectedTraits.includes(trait.name);
+          const isSelected = selectedTraits.includes(trait.name) || (Boolean(trait.swedishAlias) && selectedTraits.includes(trait.swedishAlias!));
           return (
             <button
               key={trait.name}
@@ -30,26 +30,24 @@ export function BandyTraitsPicker({ selectedTraits, onChange, lang = 'sv' }: Ban
               onClick={() => toggleTrait(trait.name)}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none ${
                 isSelected
-                  ? 'bg-zinc-900 text-white shadow-xs scale-100 border border-zinc-900'
-                  : 'bg-white hover:bg-zinc-100 text-zinc-700 border border-zinc-200'
+                  ? 'bg-slate-900 text-white shadow-xs scale-100 border border-slate-900'
+                  : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
               }`}
             >
               <span>{trait.icon}</span>
               <span>{trait.name}</span>
-              {isSelected && <span className="text-[10px] text-zinc-400">✓</span>}
+              {isSelected && <span className="text-[10px] text-slate-400">✓</span>}
             </button>
           );
         })}
       </div>
 
-      <div className="flex justify-between items-center text-[11px] text-zinc-500 pt-1">
+      <div className="flex justify-between items-center text-[11px] text-slate-500 pt-1">
         <span>
-          {lang === 'sv'
-            ? 'Välj 2–6 spetsegenskaper som bäst definierar din profil.'
-            : 'Select 2–6 traits that best define your player profile.'}
+          Select 2–6 traits that best define your player profile.
         </span>
-        <span className="font-semibold text-zinc-800">
-          {selectedTraits.length} {lang === 'sv' ? 'valda' : 'selected'}
+        <span className="font-semibold text-slate-800">
+          {selectedTraits.length} selected
         </span>
       </div>
     </div>

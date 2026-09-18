@@ -76,19 +76,19 @@ function getRowToSeason(row: CareerSeason): string {
   if (row.to_season) return row.to_season;
   if (row.season) {
     const parts = row.season.split(/–|-/).map((s) => s.trim());
-    return parts[1] || parts[0] || 'Nuvarande';
+    return parts[1] || parts[0] || 'Current';
   }
-  return 'Nuvarande';
+  return 'Current';
 }
 
 export function CareerHistoryEditor({
   careerHistory,
   onChange,
-  lang = 'sv',
+  lang = 'en',
 }: CareerHistoryEditorProps) {
   const handleAddRow = () => {
     let nextFromSeason = '2024/25';
-    let nextToSeason = 'Nuvarande';
+    let nextToSeason = 'Current';
 
     if (careerHistory.length > 0) {
       const lastRow = careerHistory[careerHistory.length - 1];
@@ -159,25 +159,23 @@ export function CareerHistoryEditor({
   return (
     <div className="space-y-3">
       {careerHistory.length === 0 ? (
-        <div className="p-5 rounded-xl border border-dashed border-zinc-300 bg-zinc-50/70 text-center">
-          <p className="text-xs text-zinc-500 mb-2.5">
-            {lang === 'sv'
-              ? 'Inga tidigare säsonger tillagda än. Lägg till dina tidigare klubbar och serier här!'
-              : 'No past seasons added yet. Add your previous clubs and leagues here!'}
+        <div className="p-6 rounded-xl border border-dashed border-slate-300 bg-slate-50/70 text-center">
+          <p className="text-sm text-slate-500 mb-3">
+            No past seasons added yet. Add your previous clubs and leagues here!
           </p>
           <button
             type="button"
             onClick={handleAddRow}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold cursor-pointer transition-colors shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold cursor-pointer transition-colors shadow-xs"
           >
             <span>+</span>
-            <span>{lang === 'sv' ? 'Lägg till första säsongen' : 'Add first season'}</span>
+            <span>Add first season</span>
           </button>
         </div>
       ) : (
         <div className="space-y-2.5">
           {/* Desktop Column Headers */}
-          <div className="hidden md:flex items-center gap-2.5 px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+          <div className="hidden md:flex items-center gap-2.5 px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">
             <div className="w-[185px] shrink-0">
               Period / Seasons
             </div>
@@ -203,11 +201,11 @@ export function CareerHistoryEditor({
             return (
               <div
                 key={index}
-                className="p-3.5 md:p-2.5 rounded-xl border border-zinc-200 bg-white shadow-2xs flex flex-col md:flex-row items-stretch md:items-center gap-2.5 hover:border-zinc-300 transition-colors"
+                className="p-3.5 md:p-2.5 rounded-xl border border-slate-200 bg-white shadow-2xs flex flex-col md:flex-row items-stretch md:items-center gap-2.5 hover:border-slate-300 transition-colors"
               >
                 {/* Period Selector */}
                 <div className="w-full md:w-[185px] shrink-0">
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1 md:hidden">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 md:hidden">
                     Period / Seasons
                   </label>
                   <div className="flex items-center gap-1.5">
@@ -217,7 +215,7 @@ export function CareerHistoryEditor({
                         handlePeriodChange(index, e.target.value, toSeason)
                       }
                       aria-label="From season"
-                      className="flex-1 min-w-0 px-2 py-1.5 text-xs font-semibold border border-zinc-200 rounded-lg bg-zinc-50 focus:bg-white focus:outline-none focus:border-zinc-900 cursor-pointer"
+                      className="flex-1 min-w-0 px-2 py-1.5 text-xs font-semibold border border-slate-200 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:border-slate-900 cursor-pointer"
                     >
                       {!ALL_SEASONS.includes(fromSeason) && (
                         <option value={fromSeason}>{fromSeason}</option>
@@ -228,14 +226,14 @@ export function CareerHistoryEditor({
                         </option>
                       ))}
                     </select>
-                    <span className="text-zinc-400 text-xs shrink-0 font-bold">–</span>
+                    <span className="text-slate-400 text-xs shrink-0 font-bold">–</span>
                     <select
                       value={toSeason}
                       onChange={(e) =>
                         handlePeriodChange(index, fromSeason, e.target.value)
                       }
                       aria-label="To season"
-                      className="flex-1 min-w-0 px-2 py-1.5 text-xs font-semibold border border-zinc-200 rounded-lg bg-zinc-50 focus:bg-white focus:outline-none focus:border-zinc-900 cursor-pointer"
+                      className="flex-1 min-w-0 px-2 py-1.5 text-xs font-semibold border border-slate-200 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:border-slate-900 cursor-pointer"
                     >
                       <option value="Current">
                         Current
@@ -256,7 +254,7 @@ export function CareerHistoryEditor({
 
                 {/* Club Input */}
                 <div className="w-full md:flex-1 md:min-w-[160px]">
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1 md:hidden">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 md:hidden">
                     Club / Team
                   </label>
                   <input
@@ -264,19 +262,19 @@ export function CareerHistoryEditor({
                     value={row.club}
                     onChange={(e) => handleUpdateRow(index, 'club', e.target.value)}
                     placeholder="e.g. Sandvikens AIK"
-                    className="w-full px-2.5 py-1.5 text-xs border border-zinc-200 rounded-lg bg-white focus:outline-none focus:border-zinc-900"
+                    className="w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white focus:outline-none focus:border-slate-900"
                   />
                 </div>
 
                 {/* League Select */}
                 <div className="w-full md:w-36 shrink-0">
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1 md:hidden">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 md:hidden">
                     Level / League
                   </label>
                   <select
                     value={row.league}
                     onChange={(e) => handleUpdateRow(index, 'league', e.target.value)}
-                    className="w-full px-2 py-1.5 text-xs border border-zinc-200 rounded-lg bg-white focus:outline-none focus:border-zinc-900 cursor-pointer"
+                    className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg bg-white focus:outline-none focus:border-slate-900 cursor-pointer"
                   >
                     <option value="">Select level</option>
                     {COMMON_LEAGUES.map((lg) => (
@@ -292,7 +290,7 @@ export function CareerHistoryEditor({
 
                 {/* Note / Role */}
                 <div className="w-full md:flex-1 md:min-w-[140px]">
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1 md:hidden">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 md:hidden">
                     Role / Notes (Optional)
                   </label>
                   <input
@@ -300,17 +298,17 @@ export function CareerHistoryEditor({
                     value={row.note || row.role || ''}
                     onChange={(e) => handleUpdateRow(index, 'note', e.target.value)}
                     placeholder="e.g. Regular starter, Captain, 24 games"
-                    className="w-full px-2.5 py-1.5 text-xs border border-zinc-200 rounded-lg bg-white focus:outline-none focus:border-zinc-900"
+                    className="w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white focus:outline-none focus:border-slate-900"
                   />
                 </div>
 
                 {/* Remove Button */}
-                <div className="flex justify-end md:w-8 shrink-0 md:justify-center pt-1 md:pt-0 border-t border-zinc-100 md:border-0">
+                <div className="flex justify-end md:w-8 shrink-0 md:justify-center pt-1 md:pt-0 border-t border-slate-100 md:border-0">
                   <button
                     type="button"
                     onClick={() => handleRemoveRow(index)}
                     title="Remove stint"
-                    className="inline-flex items-center gap-1 md:justify-center w-full md:w-8 h-7 text-xs text-zinc-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1 md:justify-center w-full md:w-8 h-7 text-xs text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
                   >
                     <span className="text-sm font-semibold">✕</span>
                     <span className="md:hidden text-xs font-medium text-red-600">
@@ -326,12 +324,12 @@ export function CareerHistoryEditor({
             <button
               type="button"
               onClick={handleAddRow}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 text-xs font-semibold cursor-pointer transition-colors shadow-2xs"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold cursor-pointer transition-colors shadow-2xs"
             >
               <span>+</span>
               <span>Add season / club stint</span>
             </button>
-            <span className="text-[11px] text-zinc-400">
+            <span className="text-[11px] text-slate-400">
               {careerHistory.length}{' '}
               {careerHistory.length === 1 ? 'stint listed' : 'stints listed'}
             </span>

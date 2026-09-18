@@ -50,7 +50,7 @@ function MarketContent() {
 
     const filterParam = searchParams.get("filter");
     if (filterParam === "tryout") {
-      setSearchQuery(lang === "sv" ? "provspel" : "tryout");
+      setSearchQuery("tryout");
     }
 
     const qParam = searchParams.get("search") || searchParams.get("q");
@@ -62,7 +62,7 @@ function MarketContent() {
     if (orgParam && (orgParam === "club" || orgParam === "national_team" || orgParam === "all")) {
       setSelectedOrgType(orgParam);
     }
-  }, [searchParams, lang]);
+  }, [searchParams]);
 
   const [contactModal, setContactModal] = useState<{
     isOpen: boolean;
@@ -123,22 +123,22 @@ function MarketContent() {
         query === "" ||
         ad.club.toLowerCase().includes(query) ||
         ad.city.toLowerCase().includes(query) ||
-        ad.positionName[lang].toLowerCase().includes(query) ||
-        ad.divisionName[lang].toLowerCase().includes(query) ||
-        ad.countryName[lang].toLowerCase().includes(query) ||
+        (ad.positionName[lang] || ad.positionName.en).toLowerCase().includes(query) ||
+        (ad.divisionName[lang] || ad.divisionName.en).toLowerCase().includes(query) ||
+        (ad.countryName[lang] || ad.countryName.en).toLowerCase().includes(query) ||
         (ad.tournament && ad.tournament.toLowerCase().includes(query)) ||
         (ad.rolesDescription && (
-          ad.rolesDescription[lang]?.toLowerCase().includes(query) ||
+          (ad.rolesDescription[lang] || ad.rolesDescription.en || "").toLowerCase().includes(query) ||
           (isTryoutSearch && (
-            ad.rolesDescription[lang]?.toLowerCase().includes("provspel") ||
-            ad.rolesDescription[lang]?.toLowerCase().includes("tryout")
+            (ad.rolesDescription[lang] || ad.rolesDescription.en || "").toLowerCase().includes("provspel") ||
+            (ad.rolesDescription[lang] || ad.rolesDescription.en || "").toLowerCase().includes("tryout")
           ))
         )) ||
         (ad.description && (
-          ad.description[lang]?.toLowerCase().includes(query) ||
+          (ad.description[lang] || ad.description.en || "").toLowerCase().includes(query) ||
           (isTryoutSearch && (
-            ad.description[lang]?.toLowerCase().includes("provspel") ||
-            ad.description[lang]?.toLowerCase().includes("tryout")
+            (ad.description[lang] || ad.description.en || "").toLowerCase().includes("provspel") ||
+            (ad.description[lang] || ad.description.en || "").toLowerCase().includes("tryout")
           ))
         ));
 
@@ -152,11 +152,11 @@ function MarketContent() {
         selectedLeague === "all" ||
         ad.divisionCategory === selectedLeague ||
         (ad.divisionName && (
-          ad.divisionName[lang]?.toLowerCase().includes(selectedLeague.toLowerCase()) ||
-          ad.divisionName[lang]?.toLowerCase().includes(getLeagueDisplayName(selectedLeague, lang).toLowerCase())
+          (ad.divisionName[lang] || ad.divisionName.en || "").toLowerCase().includes(selectedLeague.toLowerCase()) ||
+          (ad.divisionName[lang] || ad.divisionName.en || "").toLowerCase().includes(getLeagueDisplayName(selectedLeague, lang).toLowerCase())
         ));
 
-      // 4. Role / Position Filter (Matches if multi-positions contains role OR single role matches)
+      // 4. Role / Position Filter
       const matchesRole =
         selectedRole === "all" ||
         (ad.positions && ad.positions.includes(selectedRole as PositionCategory)) ||
@@ -244,48 +244,48 @@ function MarketContent() {
   }, [clubAdsList]);
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 flex flex-col font-sans selection:bg-zinc-900 selection:text-zinc-50">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-slate-900 selection:text-slate-50">
       <Header />
 
       <main className="flex-1">
         {/* Ingress Header */}
-        <section className="bg-white border-b border-zinc-200 py-10 sm:py-12">
+        <section className="bg-white border-b border-slate-200/80 py-10 sm:py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div>
-                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-700 text-xs font-semibold uppercase tracking-wider mb-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-900" />
+                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold uppercase tracking-wider mb-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-900" />
                   {t.marketPage.badge}
                 </div>
-                <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-950 tracking-tight">
+                <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight">
                   {t.marketPage.title}
                 </h1>
-                <p className="text-sm sm:text-base text-zinc-600 mt-2 max-w-2xl leading-relaxed">
+                <p className="text-sm sm:text-base text-slate-600 mt-2 max-w-2xl leading-relaxed">
                   {t.marketPage.subtitle}
                 </p>
               </div>
 
               <Link
                 href="/post-ad"
-                className="inline-flex items-center justify-center px-4 py-2.5 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded-lg shadow-sm transition-colors whitespace-nowrap cursor-pointer"
+                className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-colors whitespace-nowrap cursor-pointer"
               >
                 {t.marketPage.postOpportunityBtn}
               </Link>
             </div>
 
             {/* Quick Segment Tabs: All vs Clubs vs National Teams */}
-            <div className="mt-8 pt-6 border-t border-zinc-100 flex flex-wrap gap-2">
+            <div className="mt-8 pt-6 border-t border-slate-100 flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => setSelectedOrgType("all")}
                 className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                   selectedOrgType === "all"
-                    ? "bg-zinc-900 text-white shadow-xs"
-                    : "bg-zinc-100 hover:bg-zinc-200/80 text-zinc-700 border border-zinc-200"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "bg-slate-100 hover:bg-slate-200/80 text-slate-700 border border-slate-200"
                 }`}
               >
-                <span>🌐 {lang === "sv" ? "Alla efterlysningar" : "All Postings"}</span>
-                <span className={`px-1.5 py-0.2 text-[10px] rounded-full ${selectedOrgType === "all" ? "bg-zinc-800 text-zinc-200" : "bg-zinc-200 text-zinc-700"}`}>
+                <span>🌐 All Postings</span>
+                <span className={`px-1.5 py-0.2 text-[10px] rounded-full ${selectedOrgType === "all" ? "bg-slate-800 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
                   {counts.all}
                 </span>
               </button>
@@ -295,12 +295,12 @@ function MarketContent() {
                 onClick={() => setSelectedOrgType("club")}
                 className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                   selectedOrgType === "club"
-                    ? "bg-zinc-900 text-white shadow-xs"
-                    : "bg-zinc-100 hover:bg-zinc-200/80 text-zinc-700 border border-zinc-200"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "bg-slate-100 hover:bg-slate-200/80 text-slate-700 border border-slate-200"
                 }`}
               >
-                <span>🏟️ {lang === "sv" ? "Klubblag" : "Club Teams"}</span>
-                <span className={`px-1.5 py-0.2 text-[10px] rounded-full ${selectedOrgType === "club" ? "bg-zinc-800 text-zinc-200" : "bg-zinc-200 text-zinc-700"}`}>
+                <span>🏟️ Club Teams</span>
+                <span className={`px-1.5 py-0.2 text-[10px] rounded-full ${selectedOrgType === "club" ? "bg-slate-800 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
                   {counts.clubs}
                 </span>
               </button>
@@ -310,12 +310,12 @@ function MarketContent() {
                 onClick={() => setSelectedOrgType("national_team")}
                 className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                   selectedOrgType === "national_team"
-                    ? "bg-zinc-900 text-white shadow-xs"
-                    : "bg-zinc-100 hover:bg-zinc-200/80 text-zinc-700 border border-zinc-200"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "bg-slate-100 hover:bg-slate-200/80 text-slate-700 border border-slate-200"
                 }`}
               >
-                <span>🌍 {lang === "sv" ? "Landslagsefterlysningar (National Team Hub)" : "National Team Hub"}</span>
-                <span className={`px-1.5 py-0.2 text-[10px] rounded-full ${selectedOrgType === "national_team" ? "bg-zinc-800 text-zinc-200" : "bg-zinc-200 text-zinc-700"}`}>
+                <span>🌍 National Team Hub</span>
+                <span className={`px-1.5 py-0.2 text-[10px] rounded-full ${selectedOrgType === "national_team" ? "bg-slate-800 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
                   {counts.nationalTeams}
                 </span>
               </button>
@@ -334,27 +334,23 @@ function MarketContent() {
                   onClick={() => setShowFilters((prev) => !prev)}
                   className={`flex-1 flex items-center justify-between px-4 py-2.5 rounded-xl border text-xs font-bold transition-all shadow-xs cursor-pointer ${
                     showFilters || activeFilterCount > 0
-                      ? "bg-zinc-900 text-white border-zinc-900"
-                      : "bg-white text-zinc-900 border-zinc-200 hover:bg-zinc-50"
+                      ? "bg-slate-900 text-white border-slate-900"
+                      : "bg-white text-slate-900 border-slate-200 hover:bg-slate-50"
                   }`}
                   aria-expanded={showFilters}
                   aria-controls="mobile-club-filters"
                 >
                   <div className="flex items-center gap-2">
-                    <span>
-                      {showFilters
-                        ? (lang === "sv" ? "Dölj filter ✕" : "Hide filters ✕")
-                        : (lang === "sv" ? "Filtrera annonser ⚙️" : "Filter postings ⚙️")}
-                    </span>
+                    <span>{showFilters ? "Hide filters ✕" : "Filter postings ⚙️"}</span>
                     {activeFilterCount > 0 && (
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-400 text-zinc-950 text-[11px] font-black">
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-400 text-slate-950 text-[11px] font-black">
                         {activeFilterCount}
                       </span>
                     )}
                   </div>
 
-                  <span className={`text-[11px] font-normal ${showFilters || activeFilterCount > 0 ? "text-zinc-300" : "text-zinc-500"}`}>
-                    {filteredClubAds.length} {lang === "sv" ? "träffar" : "matches"}
+                  <span className={`text-[11px] font-normal ${showFilters || activeFilterCount > 0 ? "text-slate-300" : "text-slate-500"}`}>
+                    {filteredClubAds.length} matches
                   </span>
                 </button>
 
@@ -362,10 +358,10 @@ function MarketContent() {
                   <button
                     type="button"
                     onClick={handleResetFilters}
-                    className="px-3 py-2.5 bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-700 hover:text-zinc-950 text-xs font-semibold rounded-xl shadow-xs cursor-pointer transition-colors whitespace-nowrap"
+                    className="px-3 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 hover:text-slate-950 text-xs font-semibold rounded-xl shadow-xs cursor-pointer transition-colors whitespace-nowrap"
                     title={t.marketPage.clearFilters}
                   >
-                    {lang === "sv" ? "Rensa ✕" : "Clear ✕"}
+                    Clear ✕
                   </button>
                 )}
               </div>
@@ -399,7 +395,7 @@ function MarketContent() {
             </div>
 
             <div className="flex flex-col lg:flex-row gap-8 items-start">
-              {/* Desktop Left Column: Filter Sidebar Panel (Always open & sticky beside ad cards) */}
+              {/* Desktop Left Column: Filter Sidebar Panel */}
               <aside className="hidden lg:block w-80 shrink-0 sticky top-24">
                 <ClubAdFilters
                   selectedOrgType={selectedOrgType}
@@ -426,8 +422,8 @@ function MarketContent() {
               {/* Right Column: Club Postings List */}
               <div className="flex-1 w-full min-w-0">
                 {/* Result header */}
-                <div className="flex items-center justify-between mb-5 text-xs text-zinc-500">
-                  <span className="font-semibold text-zinc-800 flex items-center gap-2">
+                <div className="flex items-center justify-between mb-5 text-xs text-slate-500">
+                  <span className="font-semibold text-slate-800 flex items-center gap-2">
                     <span>
                       {filteredClubAds.length} {t.marketPage.matchesFound}
                     </span>
@@ -442,9 +438,9 @@ function MarketContent() {
 
                 {/* Loading State */}
                 {loadingDb && (
-                  <div className="bg-white border border-zinc-200 rounded-xl p-12 text-center text-xs text-zinc-500">
-                    <div className="w-6 h-6 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                    <span>{lang === "sv" ? "Laddar efterlysningar..." : "Loading postings..."}</span>
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-12 text-center text-xs text-slate-500 shadow-sm">
+                    <div className="w-6 h-6 border-2 border-slate-900 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                    <span>Loading postings...</span>
                   </div>
                 )}
 
@@ -491,7 +487,7 @@ function MarketContent() {
                                 )}
                                 {!isNationalTeam && (
                                   <span className="px-2.5 py-0.5 text-xs font-semibold rounded bg-sky-50 text-sky-700 border border-sky-200">
-                                    {ad.divisionName[lang]}
+                                    {ad.divisionName[lang] || ad.divisionName.en}
                                   </span>
                                 )}
                               </div>
@@ -519,7 +515,7 @@ function MarketContent() {
                                 {positionsToRender.map((pos) => (
                                   <span
                                     key={pos}
-                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-900 text-white text-xs font-semibold shadow-2xs"
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-900 text-white text-xs font-semibold shadow-xs"
                                   >
                                     <span>{pos === "goalkeeper" ? "🧤" : pos === "defender" ? "🛡️" : pos === "halv" ? "⚡" : pos === "midfielder" ? "🎯" : "🏒"}</span>
                                     <span>{positionLabels[pos] || pos}</span>
@@ -528,11 +524,11 @@ function MarketContent() {
                               </div>
                             </div>
 
-                            {/* FIB Eligibility Requirements Tags */}
+                            {/* Eligibility Requirements Tags */}
                             {isNationalTeam && ad.eligibilityRequirements && ad.eligibilityRequirements.length > 0 && (
                               <div className="mb-3 p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs">
                                 <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
-                                  {lang === "sv" ? "Behörighetskrav (Eligibility)" : "Eligibility Requirements"}:
+                                  Eligibility Requirements:
                                 </div>
                                 <div className="flex flex-wrap gap-1.5">
                                   {ad.eligibilityRequirements.map((req, i) => (
@@ -549,15 +545,15 @@ function MarketContent() {
                             )}
 
                             {/* Optional Roles Description */}
-                            {ad.rolesDescription && ad.rolesDescription[lang] && (
+                            {ad.rolesDescription && (ad.rolesDescription[lang] || ad.rolesDescription.en) && (
                               <div className="mb-3 text-sm font-medium text-slate-700 bg-slate-50/80 p-3 rounded-lg border border-slate-200/70 italic break-words">
-                                &ldquo;{ad.rolesDescription[lang]}&rdquo;
+                                &ldquo;{ad.rolesDescription[lang] || ad.rolesDescription.en}&rdquo;
                               </div>
                             )}
 
                             {/* Main Description */}
                             <p className="text-base text-slate-600 leading-relaxed mb-4 break-words">
-                              {ad.description[lang]}
+                              {ad.description[lang] || ad.description.en}
                             </p>
 
                             {/* Spoken Languages in Team */}
@@ -586,7 +582,7 @@ function MarketContent() {
                                 {t.marketPage.offeredPackageTitle}
                               </div>
                               <div className="flex flex-wrap gap-1.5">
-                                {ad.perks[lang].map((perk, i) => (
+                                {(ad.perks[lang] || ad.perks.en || []).map((perk, i) => (
                                   <span
                                     key={i}
                                     className="px-2.5 py-1 rounded bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium"
@@ -620,7 +616,7 @@ function MarketContent() {
                                   type: "club",
                                 })
                               }
-                              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded-xl transition-colors cursor-pointer shrink-0 shadow-xs"
+                              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded-lg transition-colors cursor-pointer shrink-0 shadow-sm"
                             >
                               {t.marketPage.applyBtn} →
                             </button>
@@ -633,30 +629,26 @@ function MarketContent() {
 
                 {/* Empty State */}
                 {!loadingDb && filteredClubAds.length === 0 && (
-                  <div className="bg-white border border-zinc-200 rounded-xl p-12 text-center">
-                    <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center mx-auto mb-4 text-zinc-400 text-xl font-bold">
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-12 text-center shadow-sm">
+                    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4 text-slate-400 text-xl font-bold">
                       ∅
                     </div>
-                    <h3 className="text-base font-bold text-zinc-900 mb-1">
-                      {lang === "sv"
-                        ? "Inga aktiva efterlysningar matchar dina filter"
-                        : "No active postings match your filters"}
+                    <h3 className="text-base font-bold text-slate-900 mb-1">
+                      No active postings match your filters
                     </h3>
-                    <p className="text-xs text-zinc-500 max-w-sm mx-auto mb-6">
-                      {lang === "sv"
-                        ? "Testa att nollställa dina sökkriterier eller lägg upp en efterlysning för ditt lag."
-                        : "Try resetting your search criteria or create a posting for your team."}
+                    <p className="text-sm text-slate-500 max-w-sm mx-auto mb-6">
+                      Try resetting your search criteria or create a posting for your team.
                     </p>
                     <div className="flex items-center justify-center gap-3">
                       <button
                         onClick={handleResetFilters}
-                        className="px-4 py-2 text-xs font-semibold text-zinc-900 bg-zinc-100 hover:bg-zinc-200 rounded-lg transition-colors cursor-pointer"
+                        className="px-4 py-2 text-xs font-semibold text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
                       >
                         {t.search.resetBtn}
                       </button>
                       <Link
                         href="/post-ad"
-                        className="px-4 py-2 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded-lg transition-colors"
+                        className="px-4 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors"
                       >
                         {t.marketPage.postOpportunityBtn}
                       </Link>
@@ -688,8 +680,8 @@ export default function MarketPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-zinc-50 flex items-center justify-center text-xs text-zinc-400">
-          Laddar efterlysningar...
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center text-xs text-slate-400">
+          Loading postings...
         </div>
       }
     >

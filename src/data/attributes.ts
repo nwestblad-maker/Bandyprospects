@@ -176,31 +176,34 @@ export interface BandyTrait {
   name: string;
   icon: string;
   category?: "offense" | "defense" | "physical" | "mental" | "goalkeeper";
+  swedishAlias?: string;
 }
 
 export const BANDY_TRAITS: BandyTrait[] = [
-  { name: "Hörnskytt", icon: "🎯", category: "offense" },
-  { name: "Skridskostark", icon: "⚡", category: "physical" },
-  { name: "Spelförståelse", icon: "🧠", category: "mental" },
-  { name: "Duellstark", icon: "💪", category: "physical" },
-  { name: "Bollskicklig", icon: "🏒", category: "offense" },
-  { name: "Playmaker", icon: "👑", category: "offense" },
-  { name: "Defensivt ankare", icon: "⚓", category: "defense" },
-  { name: "Genombrottsstark", icon: "🚀", category: "offense" },
-  { name: "Målfarlig", icon: "🔥", category: "offense" },
-  { name: "Passningsskicklig", icon: "🎯", category: "offense" },
-  { name: "Brytningssäker", icon: "🛡️", category: "defense" },
-  { name: "Snabba reflexer", icon: "🧤", category: "goalkeeper" },
-  { name: "Vinkelsäker", icon: "📐", category: "goalkeeper" },
-  { name: "Utkastsäker", icon: "🎯", category: "goalkeeper" },
-  { name: "Ledare / Pådrivare", icon: "🗣️", category: "mental" },
-  { name: "Löpstark / Uthållig", icon: "🏃", category: "physical" },
-  { name: "Snabb acceleration", icon: "⚡", category: "physical" },
+  { name: "Corner Specialist", icon: "🎯", category: "offense", swedishAlias: "Hörnskytt" },
+  { name: "Skating Speed & Power", icon: "⚡", category: "physical", swedishAlias: "Skridskostark" },
+  { name: "Vision & Game IQ", icon: "🧠", category: "mental", swedishAlias: "Spelförståelse" },
+  { name: "Strong in Duels", icon: "💪", category: "physical", swedishAlias: "Duellstark" },
+  { name: "Ball Control & Dribbling", icon: "🏒", category: "offense", swedishAlias: "Bollskicklig" },
+  { name: "Playmaker", icon: "👑", category: "offense", swedishAlias: "Playmaker" },
+  { name: "Defensive Anchor", icon: "⚓", category: "defense", swedishAlias: "Defensivt ankare" },
+  { name: "Breakthrough Runner", icon: "🚀", category: "offense", swedishAlias: "Genombrottsstark" },
+  { name: "Clinical Finisher", icon: "🔥", category: "offense", swedishAlias: "Målfarlig" },
+  { name: "Passing Specialist", icon: "🎯", category: "offense", swedishAlias: "Passningsskicklig" },
+  { name: "Interceptions & Tackling", icon: "🛡️", category: "defense", swedishAlias: "Brytningssäker" },
+  { name: "Quick Reflexes", icon: "🧤", category: "goalkeeper", swedishAlias: "Snabba reflexer" },
+  { name: "Angle Coverage", icon: "📐", category: "goalkeeper", swedishAlias: "Vinkelsäker" },
+  { name: "Throw-out Precision", icon: "🎯", category: "goalkeeper", swedishAlias: "Utkastsäker" },
+  { name: "Leader & Organizer", icon: "🗣️", category: "mental", swedishAlias: "Ledare / Pådrivare" },
+  { name: "High Stamina / Workrate", icon: "🏃", category: "physical", swedishAlias: "Löpstark / Uthållig" },
+  { name: "Rapid Acceleration", icon: "⚡", category: "physical", swedishAlias: "Snabb acceleration" },
 ];
 
 export function getTraitIcon(traitName: string): string {
   const clean = traitName.replace(/^[^\wåäöÅÄÖ]+\s*/, "").trim().toLowerCase();
-  const found = BANDY_TRAITS.find((t) => t.name.toLowerCase() === clean);
+  const found = BANDY_TRAITS.find(
+    (t) => t.name.toLowerCase() === clean || t.swedishAlias?.toLowerCase() === clean
+  );
   return found?.icon || "✨";
 }
 

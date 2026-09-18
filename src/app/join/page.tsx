@@ -7,22 +7,17 @@ import { Footer } from "@/components/Footer";
 import { CountrySelect } from "@/components/CountrySelect";
 import { LeagueSelect } from "@/components/LeagueSelect";
 import { TargetCountriesPicker } from "@/components/TargetCountriesPicker";
-import { CountryMultiSelect } from "@/components/CountryMultiSelect";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { GdprConsentCheckbox } from "@/components/GdprConsentCheckbox";
 import { SpokenLanguagesPicker } from "@/components/SpokenLanguagesPicker";
 import { ContactPrivacySettings } from "@/components/ContactPrivacySettings";
 import { BandyTraitsPicker } from "@/components/BandyTraitsPicker";
 import { CareerHistoryEditor } from "@/components/CareerHistoryEditor";
-import { useLanguage } from "@/context/LanguageContext";
 import { supabase } from "@/lib/supabaseClient";
 import { CareerSeason, OccupationPreference, PlayerGrip, PositionCategory } from "@/types";
 import { CUSTOM_OTHER_LEAGUE_VALUE, getLeaguesForCountry, getLeagueDisplayName } from "@/lib/leagues";
 
 export default function JoinPage() {
-  const { lang, t } = useLanguage();
-  const formT = t.joinPage;
-
   // Form State
   const [formData, setFormData] = useState({
     // Section A: Grundfakta & Fysik
@@ -95,11 +90,7 @@ export default function JoinPage() {
     setErrorMessage(null);
 
     if (!formData.consent) {
-      setErrorMessage(
-        lang === "sv"
-          ? "Vänligen bekräfta samtyckesrutan för att publicera din profil."
-          : "Please confirm the verification consent checkbox."
-      );
+      setErrorMessage("Please confirm the verification consent checkbox to publish your profile.");
       return;
     }
 
@@ -111,7 +102,7 @@ export default function JoinPage() {
       const resolvedLeagueName =
         formData.league === CUSTOM_OTHER_LEAGUE_VALUE
           ? formData.customLeague.trim()
-          : getLeagueDisplayName(formData.league, "sv");
+          : getLeagueDisplayName(formData.league, "en");
 
       const clubWithLeague = resolvedLeagueName
         ? `${formData.currentClub.trim()} (${resolvedLeagueName})`
@@ -182,50 +173,50 @@ export default function JoinPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 flex flex-col font-sans selection:bg-zinc-900 selection:text-zinc-50">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-slate-900 selection:text-white">
       <Header />
 
       <main className="flex-1 py-10 sm:py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-700 text-xs font-semibold uppercase tracking-wider mb-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-zinc-900" />
-              {lang === "sv" ? "Bandyprospects Spelarregistrering" : formT.badge}
+            <div className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md mb-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-900 mr-2" />
+              Bandy Prospects Player Registration
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-950 tracking-tight">
-              {lang === "sv" ? "Skapa din spelarprofil" : formT.title}
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+              Create Your Player Profile
             </h1>
-            <p className="text-sm text-zinc-600 mt-2 max-w-xl mx-auto">
-              {lang === "sv"
-                ? "Fyll i dina bandyfakta, spetsegenskaper och tidigare klubbar för att nå scouter, sportchefer och klubbledare."
-                : formT.subtitle}
+            <p className="text-base text-slate-600 mt-2 max-w-xl mx-auto leading-relaxed">
+              Fill in your bandy credentials, physical attributes, and career history to reach scouts, sporting directors, and club managers.
             </p>
           </div>
 
           {/* Submission Success Confirmation */}
           {isSubmitted ? (
-            <div className="bg-white border border-zinc-200 rounded-2xl p-8 sm:p-12 text-center shadow-sm animate-in fade-in zoom-in-95 duration-200">
-              <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-5 text-2xl font-bold border border-emerald-200">
+            <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-8 sm:p-12 text-center space-y-6 animate-in fade-in zoom-in-95 duration-200">
+              <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl font-bold border border-emerald-200">
                 ✓
               </div>
-              <h2 className="text-2xl font-bold text-zinc-950 mb-2">{formT.successTitle}</h2>
-              <p className="text-sm text-zinc-600 max-w-md mx-auto mb-8 leading-relaxed">
-                {formT.successDesc}
+              <h2 className="text-2xl font-bold text-slate-900">Profile Published Successfully!</h2>
+              <p className="text-base text-slate-600 max-w-md mx-auto leading-relaxed">
+                Your player prospect card is now visible to clubs, scouts, and national team representatives worldwide.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <Link
-                  href={createdPlayerId ? `/players/${createdPlayerId}` : "/players"}
-                  className="w-full sm:w-auto px-6 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs rounded-lg shadow-sm transition-colors text-center cursor-pointer"
-                >
-                  {createdPlayerId ? (lang === "sv" ? "Se din nya profil" : "View Your New Profile") : formT.viewDirectoryBtn}
-                </Link>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                {createdPlayerId && (
+                  <Link
+                    href={`/players/${createdPlayerId}`}
+                    className="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-3 rounded-lg shadow-sm transition-colors text-center cursor-pointer"
+                  >
+                    View Your New Profile →
+                  </Link>
+                )}
                 <Link
                   href="/players"
-                  className="w-full sm:w-auto px-6 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-semibold text-xs rounded-lg border border-zinc-200 transition-colors text-center cursor-pointer"
+                  className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold px-5 py-2.5 rounded-lg transition-colors text-center cursor-pointer"
                 >
-                  {formT.viewDirectoryBtn}
+                  Browse Prospect Directory
                 </Link>
               </div>
             </div>
@@ -234,27 +225,27 @@ export default function JoinPage() {
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Error alert if any */}
               {errorMessage && (
-                <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between">
+                <div className="p-4 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-center justify-between">
                   <span>⚠️ {errorMessage}</span>
                   <button
                     type="button"
                     onClick={() => setErrorMessage(null)}
-                    className="font-bold text-rose-900 hover:underline cursor-pointer"
+                    className="font-bold text-rose-900 hover:underline cursor-pointer ml-2"
                   >
-                    Avfärda
+                    ✕
                   </button>
                 </div>
               )}
 
-              {/* SECTION A: GRUNDFAKTA & FYSIK */}
-              <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs space-y-5">
-                <div className="pb-3 border-b border-zinc-100">
-                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 text-[11px] font-bold uppercase tracking-wider mb-1">
-                    <span>A</span>
+              {/* SECTION A: BASIC DETAILS & BACKGROUND */}
+              <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-6 sm:p-8 space-y-6">
+                <div className="pb-3 border-b border-slate-100">
+                  <div className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md mb-2">
+                    <span className="font-bold mr-1.5">A</span>
                     <span>Basic Details & Background</span>
                   </div>
-                  <h2 className="text-base font-bold text-zinc-950">Personal Information, Origin / Youth Club & Academy</h2>
-                  <p className="text-xs text-zinc-500">
+                  <h2 className="text-xl font-bold text-slate-900">Personal Information, Youth Background & Physical Metrics</h2>
+                  <p className="text-sm text-slate-500 mt-1">
                     Bandy background from origin youth club to sports academy and physical metrics.
                   </p>
                 </div>
@@ -266,37 +257,37 @@ export default function JoinPage() {
                 />
 
                 {/* Namn & Födelseår */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block font-semibold text-zinc-700 mb-1">
-                      {lang === "sv" ? "Förnamn *" : "First Name *"}
+                    <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                      First Name *
                     </label>
                     <input
                       type="text"
                       required
                       value={formData.firstName}
                       onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                      placeholder="t.ex. Erik"
-                      className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
+                      placeholder="e.g. Erik"
+                      className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-zinc-700 mb-1">
-                      {lang === "sv" ? "Efternamn *" : "Last Name *"}
+                    <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                      Last Name *
                     </label>
                     <input
                       type="text"
                       required
                       value={formData.lastName}
                       onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                      placeholder="t.ex. Pettersson"
-                      className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
+                      placeholder="e.g. Pettersson"
+                      className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-zinc-700 mb-1">
+                    <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
                       Birth Year *
                     </label>
                     <input
@@ -307,13 +298,13 @@ export default function JoinPage() {
                       value={formData.birthYear}
                       onChange={(e) => setFormData({ ...formData, birthYear: e.target.value })}
                       placeholder="2003"
-                      className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
+                      className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                     />
                   </div>
                 </div>
 
                 {/* Nationality */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <CountrySelect
                       label="Primary Nationality *"
@@ -333,9 +324,9 @@ export default function JoinPage() {
                 </div>
 
                 {/* Origin / Youth Club & Sports Academy */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-3 border-t border-zinc-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
                   <div className="sm:col-span-2">
-                    <label className="block font-semibold text-zinc-800 mb-1">
+                    <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
                       Origin / Youth Club
                     </label>
                     <input
@@ -343,21 +334,21 @@ export default function JoinPage() {
                       value={formData.youthClub}
                       onChange={(e) => setFormData({ ...formData, youthClub: e.target.value })}
                       placeholder="e.g. Vetlanda BK, Brobergs IF, Edsbyns IF, Bollnäs GIF"
-                      className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900 font-medium"
+                      className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                     />
-                    <p className="text-[11px] text-zinc-400 mt-1">
+                    <p className="text-xs text-slate-500 mt-1">
                       The youth club where you grew up and learned to play bandy.
                     </p>
                   </div>
 
-                  <div>
-                    <label className="block font-semibold text-zinc-800 mb-1">
+                  <div className="sm:col-span-2">
+                    <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
                       Sports Academy / Bandy High School
                     </label>
                     <select
                       value={formData.academyType}
                       onChange={(e) => setFormData({ ...formData, academyType: e.target.value as "NIU" | "international" | "local" | "none" })}
-                      className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900 cursor-pointer font-medium"
+                      className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors cursor-pointer"
                     >
                       <option value="none">None</option>
                       <option value="NIU">NIU Bandy Academy (Sweden)</option>
@@ -368,10 +359,10 @@ export default function JoinPage() {
                 </div>
 
                 {/* Fysik & Fattning */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs pt-3 border-t border-zinc-100">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-slate-100">
                   <div>
-                    <label className="block font-semibold text-zinc-700 mb-1">
-                      {lang === "sv" ? "Längd (cm)" : "Height (cm)"}
+                    <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                      Height (cm)
                     </label>
                     <input
                       type="number"
@@ -379,14 +370,14 @@ export default function JoinPage() {
                       max="220"
                       value={formData.heightCm}
                       onChange={(e) => setFormData({ ...formData, heightCm: e.target.value })}
-                      placeholder="t.ex. 185"
-                      className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
+                      placeholder="e.g. 185"
+                      className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-zinc-700 mb-1">
-                      {lang === "sv" ? "Vikt (kg)" : "Weight (kg)"}
+                    <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                      Weight (kg)
                     </label>
                     <input
                       type="number"
@@ -394,39 +385,39 @@ export default function JoinPage() {
                       max="140"
                       value={formData.weightKg}
                       onChange={(e) => setFormData({ ...formData, weightKg: e.target.value })}
-                      placeholder="t.ex. 82"
-                      className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
+                      placeholder="e.g. 82"
+                      className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-zinc-700 mb-1">
-                      {lang === "sv" ? "Fattning (Klubbhand) *" : "Stick Grip *"}
+                    <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                      Stick Grip *
                     </label>
                     <select
                       value={formData.stickGrip}
                       onChange={(e) => setFormData({ ...formData, stickGrip: e.target.value as PlayerGrip })}
-                      className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-800 focus:outline-none focus:border-zinc-900 cursor-pointer"
+                      className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors cursor-pointer"
                     >
-                      <option value="left">Vänster (L)</option>
-                      <option value="right">Höger (R)</option>
+                      <option value="left">Left (L)</option>
+                      <option value="right">Right (R)</option>
                     </select>
                   </div>
                 </div>
 
                 {/* Nuvarande klubb & Serie */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-3 border-t border-zinc-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
                   <div>
-                    <label className="block font-semibold text-zinc-700 mb-1">
-                      {lang === "sv" ? "Nuvarande klubb / Senaste förening *" : "Current / Latest Club *"}
+                    <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                      Current / Latest Club *
                     </label>
                     <input
                       type="text"
                       required
                       value={formData.currentClub}
                       onChange={(e) => setFormData({ ...formData, currentClub: e.target.value })}
-                      placeholder="t.ex. Sandvikens AIK"
-                      className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
+                      placeholder="e.g. Sandvikens AIK"
+                      className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                     />
                   </div>
 
@@ -437,113 +428,110 @@ export default function JoinPage() {
                       onChange={(l) => setFormData({ ...formData, league: l })}
                       customLeagueName={formData.customLeague}
                       onCustomLeagueNameChange={(c) => setFormData({ ...formData, customLeague: c })}
-                      label={lang === "sv" ? "Nuvarande serie / Liganivå" : "Current League / Division"}
+                      label="Current League / Division"
                       required
                     />
                   </div>
                 </div>
               </div>
 
-              {/* SECTION B: POSITION & SPETSEGENSKAPER */}
-              <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs space-y-5">
-                <div className="pb-3 border-b border-zinc-100">
-                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 text-[11px] font-bold uppercase tracking-wider mb-1">
-                    <span>B</span>
-                    <span>Position & Spetsegenskaper</span>
+              {/* SECTION B: POSITION & CORE TRAITS */}
+              <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-6 sm:p-8 space-y-6">
+                <div className="pb-3 border-b border-slate-100">
+                  <div className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md mb-2">
+                    <span className="font-bold mr-1.5">B</span>
+                    <span>Position & Core Traits</span>
                   </div>
-                  <h2 className="text-base font-bold text-zinc-950">Roll på isen & Specialiteter</h2>
-                  <p className="text-xs text-zinc-500">
-                    Definiera din primära roll, flexibilitet och vad du är vassast på.
+                  <h2 className="text-xl font-bold text-slate-900">On-Ice Role & Specializations</h2>
+                  <p className="text-sm text-slate-500 mt-1">
+                    Define your primary position, versatility, and key attributes on the ice.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-semibold text-zinc-800 mb-1">
-                      {lang === "sv" ? "Primär position *" : "Primary Position *"}
+                    <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                      Primary Position *
                     </label>
                     <select
                       value={formData.position}
                       onChange={(e) => setFormData({ ...formData, position: e.target.value as PositionCategory })}
-                      className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 font-semibold focus:outline-none focus:border-zinc-900 cursor-pointer"
+                      className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors cursor-pointer"
                     >
                       <option value="halv">Halv</option>
-                      <option value="midfielder">Mittfältare</option>
-                      <option value="defender">Försvarare / Back</option>
-                      <option value="forward">Anfallare / Forward</option>
-                      <option value="goalkeeper">Målvakt</option>
+                      <option value="midfielder">Midfielder</option>
+                      <option value="defender">Defender</option>
+                      <option value="forward">Forward</option>
+                      <option value="goalkeeper">Goalkeeper</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-zinc-700 mb-1">
-                      {lang === "sv" ? "Sekundär position (Valfritt)" : "Secondary Position (Optional)"}
+                    <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                      Secondary Position (Optional)
                     </label>
                     <select
                       value={formData.secondaryPosition}
                       onChange={(e) => setFormData({ ...formData, secondaryPosition: e.target.value })}
-                      className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-800 focus:outline-none focus:border-zinc-900 cursor-pointer"
+                      className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors cursor-pointer"
                     >
-                      <option value="">Ingen / Spelar endast primär</option>
+                      <option value="">None / Primary position only</option>
                       <option value="halv">Halv</option>
-                      <option value="midfielder">Mittfältare</option>
-                      <option value="defender">Försvarare / Back</option>
-                      <option value="forward">Anfallare / Forward</option>
-                      <option value="goalkeeper">Målvakt</option>
+                      <option value="midfielder">Midfielder</option>
+                      <option value="defender">Defender</option>
+                      <option value="forward">Forward</option>
+                      <option value="goalkeeper">Goalkeeper</option>
                     </select>
                   </div>
                 </div>
 
                 {/* Spetsegenskaper Multi-Select Tags */}
-                <div className="pt-3 border-t border-zinc-100">
-                  <label className="block font-semibold text-zinc-900 text-xs mb-2">
-                    {lang === "sv" ? "Spetsegenskaper (Klicka för att välja dina främsta styrkor) *" : "Player Traits (Click to select) *"}
+                <div className="pt-3 border-t border-slate-100">
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">
+                    Key Traits & Strengths (Click to select your best attributes) *
                   </label>
                   <BandyTraitsPicker
                     selectedTraits={formData.playerTraits}
                     onChange={(traits) => setFormData({ ...formData, playerTraits: traits })}
-                    lang={lang}
+                    lang="en"
                   />
                 </div>
               </div>
 
-              {/* SECTION C: KONTRAKT & CIVIL PROFIL */}
-              <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs space-y-6">
-                <div className="pb-3 border-b border-zinc-100">
-                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 text-[11px] font-bold uppercase tracking-wider mb-1">
-                    <span>C</span>
-                    <span>Kontrakt & Civil profil</span>
+              {/* SECTION C: CONTRACT & CIVIL PREFERENCES */}
+              <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-6 sm:p-8 space-y-6">
+                <div className="pb-3 border-b border-slate-100">
+                  <div className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md mb-2">
+                    <span className="font-bold mr-1.5">C</span>
+                    <span>Contract & Civil Preferences</span>
                   </div>
-                  <h2 className="text-base font-bold text-zinc-950">Kontraktsstatus, Highlights & Förutsättningar</h2>
-                  <p className="text-xs text-zinc-500">
-                    Gör det tydligt för intresserade klubbar vad din nuvarande avtalssituation och civila önskemål är.
+                  <h2 className="text-xl font-bold text-slate-900">Contract Status, Highlights & Mobility</h2>
+                  <p className="text-sm text-slate-500 mt-1">
+                    Provide clear details about your current contract situation, video tape, and civil career aspirations.
                   </p>
                 </div>
 
                 {/* Kontraktsstatus Select */}
                 <div>
-                  <label className="block font-semibold text-zinc-800 text-xs mb-1">
-                    {lang === "sv" ? "Kontraktsstatus *" : "Contract Status *"}
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">
+                    Contract Status *
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {[
                       {
                         id: "free_agent",
-                        title: lang === "sv" ? "Kontraktslös / Söker klubb" : "Free Agent / Seeking Club",
-                        desc: lang === "sv" ? "Redo för övergång och dialog direkt" : "Ready for immediate transfer talks",
-                        badge: "text-emerald-700",
+                        title: "Free Agent / Seeking Club",
+                        desc: "Ready for immediate transfer discussions",
                       },
                       {
                         id: "expiring_26_27",
-                        title: lang === "sv" ? "Utgående kontrakt 2026/27" : "Expiring Contract 2026/27",
-                        desc: lang === "sv" ? "Under avtal men sonderar terrängen" : "Under contract, planning ahead",
-                        badge: "text-sky-700",
+                        title: "Expiring Contract 2026/27",
+                        desc: "Under contract, exploring future options",
                       },
                       {
                         id: "under_contract_loan",
-                        title: lang === "sv" ? "Under kontrakt (Lån/Samarbete)" : "Under Contract (Seeking Loan)",
-                        desc: lang === "sv" ? "Söker lån eller dubbel licens" : "Looking for dual registration / loan",
-                        badge: "text-amber-700",
+                        title: "Under Contract (Seeking Loan)",
+                        desc: "Looking for dual registration or loan",
                       },
                     ].map((opt) => {
                       const isSelected = formData.contractStatus === opt.id;
@@ -552,17 +540,17 @@ export default function JoinPage() {
                           key={opt.id}
                           type="button"
                           onClick={() => setFormData({ ...formData, contractStatus: opt.id as any })}
-                          className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                          className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
                             isSelected
-                              ? "bg-zinc-900 text-white border-zinc-900 shadow-xs font-semibold"
-                              : "bg-zinc-50 hover:bg-zinc-100 text-zinc-800 border-zinc-200"
+                              ? "bg-slate-900 text-white border-slate-900 shadow-sm font-semibold"
+                              : "bg-white hover:bg-slate-50 text-slate-800 border-slate-200"
                           }`}
                         >
                           <div className="flex items-center justify-between mb-1">
-                            <span className="font-bold text-xs">{opt.title}</span>
+                            <span className="font-bold text-sm">{opt.title}</span>
                             {isSelected && <span>✓</span>}
                           </div>
-                          <p className={`text-[11px] leading-tight ${isSelected ? "text-zinc-300" : "text-zinc-500"}`}>
+                          <p className={`text-xs leading-relaxed ${isSelected ? "text-slate-300" : "text-slate-500"}`}>
                             {opt.desc}
                           </p>
                         </button>
@@ -573,43 +561,42 @@ export default function JoinPage() {
 
                 {/* Video / Highlights URL Field */}
                 <div>
-                  <label className="block font-semibold text-zinc-800 text-xs mb-1 flex items-center gap-1.5">
-                    <span>▶️</span>
-                    <span>{lang === "sv" ? "Video / Highlights (YouTube eller Vimeo länk)" : "Video / Highlights (YouTube or Vimeo URL)"}</span>
+                  <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                    ▶️ Game Tape / Highlights (YouTube or Vimeo link)
                   </label>
                   <input
                     type="url"
                     value={formData.videoUrl}
                     onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value, youtube_url: e.target.value })}
-                    placeholder="https://www.youtube.com/watch?v=... eller https://vimeo.com/..."
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 text-xs font-medium"
+                    placeholder="https://www.youtube.com/watch?v=... or https://vimeo.com/..."
+                    className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                   />
-                  <p className="text-[11px] text-zinc-400 mt-1">
-                    Spelarprofiler med video får upp till 4x fler förfrågningar från elitklubbar och scouter.
+                  <p className="text-xs text-slate-500 mt-1">
+                    Player profiles with video highlights receive up to 4x more inquiries from elite clubs and scouts.
                   </p>
                 </div>
 
                 {/* Contract Type / Package Preference */}
-                <div className="pt-3 border-t border-zinc-100">
-                  <label className="block font-bold text-zinc-800 text-xs mb-2">
-                    {lang === "sv" ? "Önskad avtalsnivå / Ersättningsform:" : "Preferred Agreement Level:"}
+                <div className="pt-3 border-t border-slate-100">
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">
+                    Preferred Agreement Level:
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {[
                       {
                         id: "semi_pro",
-                        title: lang === "sv" ? "Semiprofessionell" : "Semi-Professional",
-                        desc: lang === "sv" ? "Spelarersättning + jobb/studier" : "Club salary + civil career/studies",
+                        title: "Semi-Professional",
+                        desc: "Club salary + civil career / studies",
                       },
                       {
                         id: "full_time",
-                        title: lang === "sv" ? "Heltidsproffs" : "Full-Time Pro",
-                        desc: lang === "sv" ? "Heltidsavtal och elitfokus" : "Full-time professional salary",
+                        title: "Full-Time Pro",
+                        desc: "Full-time professional salary & elite focus",
                       },
                       {
                         id: "amateur",
-                        title: lang === "sv" ? "Amatör / Utveckling" : "Amateur / Development",
-                        desc: lang === "sv" ? "Hjälp med boende & jobbmatchning" : "Placement with housing & job help",
+                        title: "Amateur / Development",
+                        desc: "Club placement with housing & employment help",
                       },
                     ].map((opt) => {
                       const isSelected = formData.contractType === opt.id;
@@ -618,17 +605,17 @@ export default function JoinPage() {
                           key={opt.id}
                           type="button"
                           onClick={() => setFormData({ ...formData, contractType: opt.id })}
-                          className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                          className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
                             isSelected
-                              ? "bg-zinc-900 text-white border-zinc-900 shadow-xs font-semibold"
-                              : "bg-zinc-50 hover:bg-zinc-100 text-zinc-800 border-zinc-200"
+                              ? "bg-slate-900 text-white border-slate-900 shadow-sm font-semibold"
+                              : "bg-white hover:bg-slate-50 text-slate-800 border-slate-200"
                           }`}
                         >
                           <div className="flex items-center justify-between mb-1">
-                            <span className="font-bold text-xs">{opt.title}</span>
-                            {isSelected && <span className="text-xs">✓</span>}
+                            <span className="font-bold text-sm">{opt.title}</span>
+                            {isSelected && <span>✓</span>}
                           </div>
-                          <p className={`text-[11px] leading-tight ${isSelected ? "text-zinc-300" : "text-zinc-500"}`}>
+                          <p className={`text-xs leading-relaxed ${isSelected ? "text-slate-300" : "text-slate-500"}`}>
                             {opt.desc}
                           </p>
                         </button>
@@ -638,35 +625,35 @@ export default function JoinPage() {
                 </div>
 
                 {/* Checkboxes for Occupation Preferences */}
-                <div className="space-y-2 pt-2 border-t border-zinc-100">
-                  <span className="block font-bold text-zinc-800 text-xs">
-                    {lang === "sv" ? "Civila önskemål (Kombinera idrott med):" : "Civil preferences (Combine with):"}
+                <div className="space-y-2 pt-2 border-t border-slate-100">
+                  <span className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                    Civil preferences (Combine bandy with):
                   </span>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {[
-                      { id: "studies", icon: "🎓", label: formT.optStudies },
-                      { id: "fulltime_job", icon: "💼", label: formT.optFulltimeJob },
-                      { id: "parttime_job", icon: "🕒", label: formT.optParttimeJob },
-                      { id: "housing", icon: "🏠", label: formT.optHousing },
-                      { id: "sports_only", icon: "🏒", label: formT.optSportsOnly },
+                      { id: "studies", icon: "🎓", label: "University / Academic Studies" },
+                      { id: "fulltime_job", icon: "💼", label: "Full-Time Employment" },
+                      { id: "parttime_job", icon: "🕒", label: "Part-Time / Flexible Job" },
+                      { id: "housing", icon: "🏠", label: "Club Housing Assistance" },
+                      { id: "sports_only", icon: "🏒", label: "Sports Only / Pro Contract" },
                     ].map((item) => (
                       <label
                         key={item.id}
                         onClick={() => handleToggleOccupation(item.id as OccupationPreference)}
-                        className={`flex items-start gap-2.5 p-2.5 rounded-xl border text-xs cursor-pointer transition-colors ${
+                        className={`flex items-start gap-2.5 p-3 rounded-lg border text-sm cursor-pointer transition-colors ${
                           formData.occupationPreferences.includes(item.id as OccupationPreference)
-                            ? "bg-zinc-900/5 border-zinc-900 text-zinc-950 font-semibold"
-                            : "bg-zinc-50 hover:bg-zinc-100/70 border-zinc-200 text-zinc-700"
+                            ? "bg-slate-50 border-slate-900 text-slate-950 font-semibold"
+                            : "bg-white hover:bg-slate-50 border-slate-200 text-slate-700"
                         }`}
                       >
                         <input
                           type="checkbox"
                           checked={formData.occupationPreferences.includes(item.id as OccupationPreference)}
                           onChange={() => {}}
-                          className="mt-0.5 rounded border-zinc-300 text-zinc-900"
+                          className="mt-0.5 rounded border-slate-300 text-slate-900"
                         />
-                        <span className="flex items-center gap-1.5">
+                        <span className="flex items-center gap-2">
                           <span>{item.icon}</span>
                           <span>{item.label}</span>
                         </span>
@@ -676,9 +663,9 @@ export default function JoinPage() {
                 </div>
 
                 {/* Geographic Mobility (Target Countries) */}
-                <div className="pt-3 border-t border-zinc-100">
-                  <label className="block font-bold text-zinc-800 text-xs mb-2">
-                    {formT.targetCountriesTitle}
+                <div className="pt-3 border-t border-slate-100">
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">
+                    Target Countries & International Mobility
                   </label>
                   <TargetCountriesPicker
                     selectedCodes={formData.targetCountries}
@@ -687,65 +674,61 @@ export default function JoinPage() {
                 </div>
 
                 {/* Spoken Languages */}
-                <div className="pt-3 border-t border-zinc-100">
+                <div className="pt-3 border-t border-slate-100">
                   <SpokenLanguagesPicker
                     selectedLanguages={formData.spokenLanguages}
                     onChange={(langs) => setFormData({ ...formData, spokenLanguages: langs })}
-                    label={formT.spokenLanguagesTitle}
-                    subtitle={formT.spokenLanguagesSubtitle}
+                    label="Languages Spoken"
+                    subtitle="Select all languages you speak comfortably for international scout communication."
                   />
                 </div>
 
                 {/* Presentation Text */}
-                <div className="pt-3 border-t border-zinc-100 text-xs">
-                  <label className="block font-semibold text-zinc-700 mb-1">
-                    {lang === "sv" ? "Spelarens presentation & Ambitioner" : formT.bioHistory}
+                <div className="pt-3 border-t border-slate-100">
+                  <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                    Player Statement & Ambitions
                   </label>
                   <textarea
                     rows={4}
                     value={formData.bioHistory}
                     onChange={(e) => setFormData({ ...formData, bioHistory: e.target.value })}
-                    placeholder={
-                      lang === "sv"
-                        ? "Beskriv din spelstil, dina ambitioner och vad du söker hos en ny klubb..."
-                        : formT.bioPlaceholder
-                    }
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900"
+                    placeholder="Describe your playing style, career goals, and what you are looking for in a prospective club..."
+                    className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                   />
                 </div>
 
                 {/* Social Links (Optional) */}
-                <div className="pt-3 border-t border-zinc-100">
-                  <span className="block font-semibold text-zinc-700 text-xs mb-2">
-                    Sociala medier (Valfritt)
+                <div className="pt-3 border-t border-slate-100">
+                  <span className="text-sm font-semibold text-slate-700 mb-2 block">
+                    Social Media Channels (Optional)
                   </span>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-[11px] text-zinc-500 mb-1">📸 Instagram</label>
+                      <label className="text-xs font-semibold text-slate-600 mb-1 block">📸 Instagram</label>
                       <input
                         type="url"
                         placeholder="https://instagram.com/..."
-                        className="w-full p-2 border rounded-lg border-zinc-200 bg-zinc-50 text-xs"
+                        className="w-full text-sm text-slate-900 bg-white border border-slate-300 rounded-lg px-3 py-2 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                         value={formData.instagram_url}
                         onChange={(e) => setFormData({ ...formData, instagram_url: e.target.value })}
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] text-zinc-500 mb-1">▶️ YouTube kanal</label>
+                      <label className="text-xs font-semibold text-slate-600 mb-1 block">▶️ YouTube Channel</label>
                       <input
                         type="url"
                         placeholder="https://youtube.com/..."
-                        className="w-full p-2 border rounded-lg border-zinc-200 bg-zinc-50 text-xs"
+                        className="w-full text-sm text-slate-900 bg-white border border-slate-300 rounded-lg px-3 py-2 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                         value={formData.youtube_url}
                         onChange={(e) => setFormData({ ...formData, youtube_url: e.target.value })}
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] text-zinc-500 mb-1">🎵 TikTok</label>
+                      <label className="text-xs font-semibold text-slate-600 mb-1 block">🎵 TikTok</label>
                       <input
                         type="url"
                         placeholder="https://tiktok.com/@..."
-                        className="w-full p-2 border rounded-lg border-zinc-200 bg-zinc-50 text-xs"
+                        className="w-full text-sm text-slate-900 bg-white border border-slate-300 rounded-lg px-3 py-2 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                         value={formData.tiktok_url}
                         onChange={(e) => setFormData({ ...formData, tiktok_url: e.target.value })}
                       />
@@ -754,29 +737,29 @@ export default function JoinPage() {
                 </div>
 
                 {/* Contact Information & Privacy */}
-                <div className="pt-4 border-t border-zinc-100 space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div className="pt-4 border-t border-slate-100 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block font-semibold text-zinc-700 mb-1">{formT.email} *</label>
+                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Email Address *</label>
                       <input
                         type="email"
                         required
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        placeholder="namn@example.com"
-                        className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
+                        placeholder="name@example.com"
+                        className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                       />
                     </div>
 
                     <div>
-                      <label className="block font-semibold text-zinc-700 mb-1">{formT.phone} *</label>
+                      <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Phone Number *</label>
                       <input
                         type="tel"
                         required
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         placeholder="+46 70 123 45 67"
-                        className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
+                        className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                       />
                     </div>
                   </div>
@@ -793,28 +776,28 @@ export default function JoinPage() {
                 </div>
               </div>
 
-              {/* SECTION D: TIDIGARE KLUBBAR & SÄSONGER */}
-              <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs space-y-5">
-                <div className="pb-3 border-b border-zinc-100">
-                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 text-[11px] font-bold uppercase tracking-wider mb-1">
-                    <span>D</span>
-                    <span>Tidigare klubbar & Säsonger</span>
+              {/* SECTION D: CAREER HISTORY & PAST CLUBS */}
+              <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-6 sm:p-8 space-y-6">
+                <div className="pb-3 border-b border-slate-100">
+                  <div className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md mb-2">
+                    <span className="font-bold mr-1.5">D</span>
+                    <span>Career History</span>
                   </div>
-                  <h2 className="text-base font-bold text-zinc-950">Karriärhistorik</h2>
-                  <p className="text-xs text-zinc-500">
-                    Lägg till tidigare säsonger och klubbar du representerat. Visas i en tydlig karriärtabell på din profil.
+                  <h2 className="text-xl font-bold text-slate-900">Past Clubs & Seasons</h2>
+                  <p className="text-sm text-slate-500 mt-1">
+                    Add previous seasons and clubs you have represented. Displayed in your profile career table.
                   </p>
                 </div>
 
                 <CareerHistoryEditor
                   careerHistory={formData.careerHistory}
                   onChange={(history) => setFormData({ ...formData, careerHistory: history })}
-                  lang={lang}
+                  lang="en"
                 />
               </div>
 
               {/* GDPR Samtycke */}
-              <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs">
+              <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-6 sm:p-8">
                 <GdprConsentCheckbox
                   checked={formData.consent}
                   onChange={(checked) => setFormData({ ...formData, consent: checked })}
@@ -825,23 +808,23 @@ export default function JoinPage() {
               <div className="flex items-center justify-end gap-3 pt-2">
                 <Link
                   href="/players"
-                  className="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-950 transition-colors"
+                  className="px-4 py-2.5 text-slate-600 hover:text-slate-900 font-medium text-sm rounded-lg transition-colors"
                 >
-                  Avbryt
+                  Cancel
                 </Link>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-8 py-3 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center gap-2 cursor-pointer"
+                  className="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-8 py-3 rounded-lg shadow-sm transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <>
-                      <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Sparar profil...</span>
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Saving Profile...</span>
                     </>
                   ) : (
                     <>
-                      <span>Publicera spelarprofil</span>
+                      <span>Publish Player Profile</span>
                       <span>→</span>
                     </>
                   )}

@@ -235,11 +235,11 @@ function MessagesContent() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-zinc-50 flex flex-col font-sans">
+      <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
         <Header />
         <main className="flex-1 flex items-center justify-center p-8">
-          <div className="text-center text-xs text-zinc-500">
-            <div className="w-7 h-7 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="text-center text-xs text-slate-500">
+            <div className="w-7 h-7 border-2 border-slate-900 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
             <span>Loading messages...</span>
           </div>
         </main>
@@ -249,28 +249,28 @@ function MessagesContent() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col font-sans text-zinc-900">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900">
       <Header />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 tracking-tight flex items-center gap-2.5">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight flex items-center gap-2.5">
               <span>Messages</span>
               {conversations.length > 0 && (
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-700">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-700">
                   {conversations.length}
                 </span>
               )}
             </h1>
-            <p className="text-xs sm:text-sm text-zinc-500 mt-0.5">
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
               Direct and private messaging between players and verified clubs.
             </p>
           </div>
 
           <button
             onClick={fetchConversations}
-            className="px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:text-zinc-950 bg-white border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-colors cursor-pointer shadow-2xs flex items-center gap-1.5"
+            className="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-950 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer shadow-xs flex items-center gap-1.5"
             title="Refresh conversations"
           >
             <span>🔄</span>
@@ -279,39 +279,39 @@ function MessagesContent() {
         </div>
 
         {/* Messaging Container */}
-        <div className="bg-white border border-zinc-200 rounded-2xl shadow-xs overflow-hidden flex flex-col md:flex-row min-h-[620px] max-h-[780px]">
+        <div className="bg-white border border-slate-200/80 rounded-xl shadow-sm overflow-hidden flex flex-col md:flex-row min-h-[620px] max-h-[780px]">
           {/* LEFT COLUMN: Conversation Threads List */}
-          <div className={`w-full md:w-80 lg:w-96 border-r border-zinc-200 flex flex-col bg-zinc-50/50 ${selectedConversationId ? "hidden md:flex" : "flex"}`}>
+          <div className={`w-full md:w-80 lg:w-96 border-r border-slate-200 flex flex-col bg-slate-50/50 ${selectedConversationId ? "hidden md:flex" : "flex"}`}>
             {/* Search Box */}
-            <div className="p-3.5 border-b border-zinc-200 bg-white">
+            <div className="p-3.5 border-b border-slate-200 bg-white">
               <input
                 type="text"
                 value={searchFilter}
                 onChange={(e) => setSearchFilter(e.target.value)}
                 placeholder="Search conversations..."
-                className="w-full px-3 py-1.5 text-xs bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:border-zinc-900 focus:bg-white"
+                className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-slate-900 focus:bg-white"
               />
             </div>
 
             {/* Threads List */}
-            <div className="flex-1 overflow-y-auto divide-y divide-zinc-100">
+            <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
               {loadingConversations ? (
-                <div className="p-10 text-center text-xs text-zinc-400">
-                  <div className="w-5 h-5 border-2 border-zinc-400 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                <div className="p-10 text-center text-xs text-slate-400">
+                  <div className="w-5 h-5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                   <span>Loading conversations...</span>
                 </div>
               ) : filteredConversations.length === 0 ? (
                 <div className="p-8 text-center">
-                  <div className="w-12 h-12 rounded-full bg-zinc-100 text-zinc-400 flex items-center justify-center mx-auto mb-3 text-xl">
+                  <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3 text-xl">
                     ✉️
                   </div>
-                  <h3 className="text-sm font-bold text-zinc-900 mb-1">No messages yet</h3>
-                  <p className="text-xs text-zinc-500 leading-relaxed max-w-xs mx-auto mb-4">
+                  <h3 className="text-sm font-bold text-slate-900 mb-1">No messages yet</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed max-w-xs mx-auto mb-4">
                     No messages yet. Messages from players or clubs will appear here.
                   </p>
                   <Link
                     href="/players"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer"
                   >
                     <span>Browse Players →</span>
                   </Link>
@@ -325,12 +325,12 @@ function MessagesContent() {
                       onClick={() => setSelectedConversationId(conv.id)}
                       className={`w-full text-left p-3.5 transition-colors flex items-start gap-3 cursor-pointer ${
                         isSelected
-                          ? "bg-white border-l-4 border-zinc-900 shadow-2xs"
-                          : "hover:bg-zinc-100/70"
+                          ? "bg-white border-l-4 border-slate-900 shadow-xs"
+                          : "hover:bg-slate-100/70"
                       }`}
                     >
                       {/* Avatar */}
-                      <div className="w-10 h-10 rounded-full bg-zinc-900 text-white font-bold text-xs flex items-center justify-center shrink-0 overflow-hidden border border-zinc-200">
+                      <div className="w-10 h-10 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center shrink-0 overflow-hidden border border-slate-200">
                         {conv.partner.avatar ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -346,15 +346,15 @@ function MessagesContent() {
                       {/* Info & Last snippet */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-1 mb-0.5">
-                          <span className="text-xs font-bold text-zinc-950 truncate">
+                          <span className="text-xs font-bold text-slate-950 truncate">
                             {conv.partner.name}
                           </span>
-                          <span className="text-[10px] text-zinc-400 shrink-0 font-medium">
+                          <span className="text-[10px] text-slate-400 shrink-0 font-medium">
                             {formatTimestamp(conv.lastMessageAt)}
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 mb-1 truncate">
+                        <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mb-1 truncate">
                           <span>{conv.partner.role}</span>
                           {conv.partner.club && (
                             <>
@@ -367,7 +367,7 @@ function MessagesContent() {
                           )}
                         </div>
 
-                        <p className={`text-xs truncate ${conv.unreadCount > 0 ? "font-bold text-zinc-950" : "text-zinc-500"}`}>
+                        <p className={`text-xs truncate ${conv.unreadCount > 0 ? "font-bold text-slate-950" : "text-slate-500"}`}>
                           {conv.lastMessage.isMine ? "You: " : ""}
                           {conv.lastMessage.text || conv.subject}
                         </p>
@@ -375,7 +375,7 @@ function MessagesContent() {
 
                       {/* Unread count badge */}
                       {conv.unreadCount > 0 && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-zinc-900 text-white shrink-0 self-center">
+                        <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-slate-900 text-white shrink-0 self-center">
                           {conv.unreadCount}
                         </span>
                       )}
@@ -391,18 +391,18 @@ function MessagesContent() {
             {selectedConversation ? (
               <>
                 {/* Thread Header */}
-                <div className="p-4 border-b border-zinc-200 flex items-center justify-between bg-white shrink-0">
+                <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-white shrink-0">
                   <div className="flex items-center gap-3 min-w-0">
                     {/* Back button on mobile */}
                     <button
                       onClick={() => setSelectedConversationId(null)}
-                      className="md:hidden p-1.5 rounded-lg border border-zinc-200 text-zinc-600 hover:text-zinc-950"
+                      className="md:hidden p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-950"
                       aria-label="Back to conversations list"
                     >
                       ←
                     </button>
 
-                    <div className="w-9 h-9 rounded-full bg-zinc-900 text-white font-bold text-xs flex items-center justify-center shrink-0 overflow-hidden border border-zinc-200">
+                    <div className="w-9 h-9 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center shrink-0 overflow-hidden border border-slate-200">
                       {selectedConversation.partner.avatar ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -417,14 +417,14 @@ function MessagesContent() {
 
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-zinc-950 truncate">
+                        <span className="text-sm font-bold text-slate-950 truncate">
                           {selectedConversation.partner.name}
                         </span>
                         {selectedConversation.partner.isVerified && (
                           <VerifiedClubBadge size="xs" />
                         )}
                       </div>
-                      <div className="text-[11px] text-zinc-500 truncate flex items-center gap-1.5">
+                      <div className="text-[11px] text-slate-500 truncate flex items-center gap-1.5">
                         <span>{selectedConversation.partner.role}</span>
                         {selectedConversation.partner.club && (
                           <>
@@ -440,7 +440,7 @@ function MessagesContent() {
                   {selectedConversation.partner.id && (
                     <Link
                       href={`/players/${selectedConversation.partner.id}`}
-                      className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-lg border border-zinc-200 transition-colors"
+                      className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-200 transition-colors"
                     >
                       <span>View Profile →</span>
                     </Link>
@@ -448,14 +448,14 @@ function MessagesContent() {
                 </div>
 
                 {/* Messages Bubbles Stream */}
-                <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-3 bg-zinc-50/40">
+                <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-3 bg-slate-50/40">
                   {loadingMessages ? (
-                    <div className="p-8 text-center text-xs text-zinc-400">
-                      <div className="w-5 h-5 border-2 border-zinc-400 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    <div className="p-8 text-center text-xs text-slate-400">
+                      <div className="w-5 h-5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                       <span>Loading thread...</span>
                     </div>
                   ) : messages.length === 0 ? (
-                    <div className="p-8 text-center text-xs text-zinc-500">
+                    <div className="p-8 text-center text-xs text-slate-500">
                       No messages yet in this conversation. Write the first message below!
                     </div>
                   ) : (
@@ -467,19 +467,19 @@ function MessagesContent() {
                           className={`flex flex-col ${isMine ? "items-end" : "items-start"}`}
                         >
                           <div className="flex items-center gap-1.5 mb-1 px-1">
-                            <span className="text-[10px] font-semibold text-zinc-500">
+                            <span className="text-[10px] font-semibold text-slate-500">
                               {isMine ? "You" : msg.sender_name}
                             </span>
-                            <span className="text-[10px] text-zinc-400">
+                            <span className="text-[10px] text-slate-400">
                               {formatTimestamp(msg.created_at)}
                             </span>
                           </div>
 
                           <div
-                            className={`max-w-[85%] sm:max-w-[70%] p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed whitespace-pre-wrap shadow-2xs ${
+                            className={`max-w-[85%] sm:max-w-[70%] p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed whitespace-pre-wrap shadow-xs ${
                               isMine
-                                ? "bg-zinc-900 text-white rounded-tr-xs"
-                                : "bg-white text-zinc-900 border border-zinc-200 rounded-tl-xs"
+                                ? "bg-slate-900 text-white rounded-tr-xs"
+                                : "bg-white text-slate-900 border border-slate-200 rounded-tl-xs"
                             }`}
                           >
                             {msg.body}
@@ -492,7 +492,7 @@ function MessagesContent() {
                 </div>
 
                 {/* Message Reply Input Form */}
-                <div className="p-3 sm:p-4 border-t border-zinc-200 bg-white">
+                <div className="p-3 sm:p-4 border-t border-slate-200 bg-white">
                   {sendError && (
                     <div className="p-2 mb-2 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg">
                       {sendError}
@@ -511,12 +511,12 @@ function MessagesContent() {
                         }
                       }}
                       placeholder="Type your message... (Press Enter to send)"
-                      className="flex-1 p-2.5 text-xs sm:text-sm border border-zinc-200 rounded-xl bg-zinc-50 focus:bg-white focus:outline-none focus:border-zinc-900 resize-none"
+                      className="flex-1 p-2.5 text-xs sm:text-sm border border-slate-200 rounded-lg bg-slate-50 focus:bg-white focus:outline-none focus:border-slate-900 resize-none"
                     />
                     <button
                       type="submit"
                       disabled={sending || !replyText.trim()}
-                      className="px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs transition-colors disabled:opacity-50 cursor-pointer shrink-0"
+                      className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm rounded-lg shadow-sm transition-colors disabled:opacity-50 cursor-pointer shrink-0"
                     >
                       {sending ? "Sending..." : "Send Message"}
                     </button>
@@ -526,18 +526,18 @@ function MessagesContent() {
             ) : (
               /* Empty state when no conversation is selected */
               <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-                <div className="w-16 h-16 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-400 flex items-center justify-center text-2xl mb-4 shadow-2xs">
+                <div className="w-16 h-16 rounded-full bg-slate-100 border border-slate-200 text-slate-400 flex items-center justify-center text-2xl mb-4 shadow-xs">
                   💬
                 </div>
-                <h3 className="text-base font-bold text-zinc-950 mb-1">
+                <h3 className="text-base font-bold text-slate-950 mb-1">
                   Select a conversation to view messages
                 </h3>
-                <p className="text-xs text-zinc-500 max-w-sm leading-relaxed mb-6">
+                <p className="text-xs text-slate-500 max-w-sm leading-relaxed mb-6">
                   Choose a thread from the list on the left to view the message history, or initiate a contact inquiry from a player profile.
                 </p>
                 <Link
                   href="/players"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold rounded-lg shadow-xs transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer"
                 >
                   <span>Explore Players →</span>
                 </Link>
@@ -556,8 +556,8 @@ export default function MessagesPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-zinc-50 flex items-center justify-center">
-          <div className="w-7 h-7 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin" />
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+          <div className="w-7 h-7 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >

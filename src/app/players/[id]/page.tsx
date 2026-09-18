@@ -59,12 +59,12 @@ export default function PlayerDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-50 text-zinc-900 flex flex-col font-sans">
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
         <Header />
         <main className="flex-1 flex items-center justify-center py-20">
-          <div className="text-center text-xs text-zinc-500">
-            <div className="w-8 h-8 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <span>Laddar spelarprofil...</span>
+          <div className="text-center text-sm text-slate-500">
+            <div className="w-8 h-8 border-2 border-slate-900 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <span>Loading player profile...</span>
           </div>
         </main>
         <Footer />
@@ -74,22 +74,20 @@ export default function PlayerDetailPage() {
 
   if (notFound || !player) {
     return (
-      <div className="min-h-screen bg-zinc-50 text-zinc-900 flex flex-col font-sans">
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
         <Header />
         <main className="flex-1 flex items-center justify-center py-20 px-4">
-          <div className="bg-white border border-zinc-200 rounded-xl p-10 max-w-md w-full text-center shadow-xs">
+          <div className="bg-white border border-slate-200/80 rounded-xl p-10 max-w-md w-full text-center shadow-sm">
             <div className="text-3xl mb-3">🔍</div>
-            <h2 className="text-lg font-bold text-zinc-900 mb-1">
-              {lang === "sv" ? "Spelaren kunde inte hittas" : "Player not found"}
+            <h2 className="text-xl font-bold text-slate-900 mb-1">
+              Player not found
             </h2>
-            <p className="text-xs text-zinc-500 mb-6">
-              {lang === "sv"
-                ? "Profilen finns inte eller har tagits bort."
-                : "The player profile does not exist or has been removed."}
+            <p className="text-sm text-slate-500 mb-6">
+              The player profile does not exist or has been removed.
             </p>
             <Link
               href="/players"
-              className="inline-flex items-center px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold rounded-lg transition-colors"
+              className="inline-flex items-center px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
             >
               ← {t.playerDetailPage.backToPlayers}
             </Link>
@@ -108,31 +106,31 @@ export default function PlayerDetailPage() {
     const status = player.contractStatus;
     if (status === "free_agent") {
       return (
-        <span className="px-3 py-1 rounded-md bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold inline-flex items-center gap-1.5 shadow-2xs">
+        <span className="px-3 py-1 rounded-md bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold inline-flex items-center gap-1.5 shadow-xs">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>{lang === "sv" ? "Kontraktslös / Söker klubb" : "Free Agent / Seeking Club"}</span>
+          <span>Free Agent / Seeking Club</span>
         </span>
       );
     }
     if (status === "expiring_26_27") {
       return (
-        <span className="px-3 py-1 rounded-md bg-sky-50 border border-sky-300 text-sky-800 text-xs font-bold inline-flex items-center gap-1.5 shadow-2xs">
+        <span className="px-3 py-1 rounded-md bg-sky-50 border border-sky-300 text-sky-800 text-xs font-bold inline-flex items-center gap-1.5 shadow-xs">
           <span>⏳</span>
-          <span>{lang === "sv" ? "Utgående kontrakt 2026/27" : "Expiring Contract 2026/27"}</span>
+          <span>Expiring Contract 2026/27</span>
         </span>
       );
     }
     if (status === "under_contract_loan") {
       return (
-        <span className="px-3 py-1 rounded-md bg-amber-50 border border-amber-300 text-amber-900 text-xs font-bold inline-flex items-center gap-1.5 shadow-2xs">
+        <span className="px-3 py-1 rounded-md bg-amber-50 border border-amber-300 text-amber-900 text-xs font-bold inline-flex items-center gap-1.5 shadow-xs">
           <span>🤝</span>
-          <span>{lang === "sv" ? "Under kontrakt (Söker lån/samarbete)" : "Under Contract (Seeking Loan)"}</span>
+          <span>Under Contract (Seeking Loan)</span>
         </span>
       );
     }
     return (
-      <span className="px-3 py-1 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-800 text-xs font-semibold shadow-2xs">
-        {player.statusLabel[lang]}
+      <span className="px-3 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-800 text-xs font-semibold shadow-xs">
+        {player.statusLabel[lang] || player.statusLabel.en}
       </span>
     );
   };
@@ -151,10 +149,10 @@ export default function PlayerDetailPage() {
 
   const traits = player.playerTraits && player.playerTraits.length > 0
     ? player.playerTraits
-    : (player.skills[lang] || []);
+    : (player.skills[lang] || player.skills.en || []);
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 flex flex-col font-sans selection:bg-zinc-900 selection:text-zinc-50">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-slate-900 selection:text-slate-50">
       <Header />
 
       <main className="flex-1 py-10 sm:py-14">
@@ -163,18 +161,18 @@ export default function PlayerDetailPage() {
           <div className="mb-6">
             <Link
               href="/players"
-              className="text-xs font-semibold text-zinc-600 hover:text-zinc-950 flex items-center gap-1 transition-colors cursor-pointer"
+              className="text-xs font-semibold text-slate-600 hover:text-slate-950 flex items-center gap-1 transition-colors cursor-pointer"
             >
               ← {t.playerDetailPage.backToPlayers}
             </Link>
           </div>
 
           {/* 1. SPORTS-DRIVEN HEADER / HERO CARD */}
-          <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-8 mb-8 shadow-xs">
+          <div className="bg-white border border-slate-200/80 rounded-xl p-6 sm:p-8 mb-8 shadow-sm">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               {/* Left: Avatar & Identity */}
               <div className="flex items-start sm:items-center gap-5">
-                <div className="w-18 h-18 sm:w-22 sm:h-22 rounded-2xl bg-zinc-900 text-white font-black text-2xl sm:text-3xl flex items-center justify-center shadow-xs overflow-hidden shrink-0 border border-zinc-200 relative">
+                <div className="w-18 h-18 sm:w-22 sm:h-22 rounded-xl bg-slate-900 text-white font-black text-2xl sm:text-3xl flex items-center justify-center shadow-sm overflow-hidden shrink-0 border border-slate-200 relative">
                   {player.photoUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={player.photoUrl} alt={player.name} className="w-full h-full object-cover" />
@@ -185,13 +183,13 @@ export default function PlayerDetailPage() {
 
                 <div>
                   <div className="flex items-center gap-2.5 flex-wrap">
-                    <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 tracking-tight">
+                    <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">
                       {player.name}
                     </h1>
                     {player.verified && (
                       <span
                         title={t.playerDetailPage.verifiedPlayer}
-                        className="text-zinc-900 inline-flex items-center"
+                        className="text-slate-900 inline-flex items-center"
                       >
                         <svg className="w-5 h-5 fill-current" viewBox="0 0 20 20">
                           <path
@@ -205,23 +203,23 @@ export default function PlayerDetailPage() {
                   </div>
 
                   {/* Position & Grip */}
-                  <div className="text-xs sm:text-sm text-zinc-600 flex items-center gap-2 mt-1.5 flex-wrap">
-                    <span className="font-bold text-zinc-950 text-sm">
-                      {player.positionName[lang]}
+                  <div className="text-xs sm:text-sm text-slate-600 flex items-center gap-2 mt-1.5 flex-wrap">
+                    <span className="font-bold text-slate-950 text-sm">
+                      {player.positionName[lang] || player.positionName.en}
                     </span>
                     {player.secondaryPositionName && (
-                      <span className="text-xs text-zinc-500 font-medium">
-                        (Sekundär: {player.secondaryPositionName[lang]})
+                      <span className="text-xs text-slate-500 font-medium">
+                        (Secondary: {player.secondaryPositionName[lang] || player.secondaryPositionName.en})
                       </span>
                     )}
                     <span>•</span>
-                    <span className="text-xs font-semibold text-zinc-700">
-                      {player.gripName[lang]}
+                    <span className="text-xs font-semibold text-slate-700">
+                      {player.gripName[lang] || player.gripName.en}
                     </span>
                     <span>•</span>
-                    <span className="text-xs text-zinc-500 flex items-center gap-1">
+                    <span className="text-xs text-slate-500 flex items-center gap-1">
                       <span>{player.countryFlag}</span>
-                      <span>{player.countryName[lang]}</span>
+                      <span>{player.countryName[lang] || player.countryName.en}</span>
                     </span>
                   </div>
 
@@ -230,14 +228,14 @@ export default function PlayerDetailPage() {
                     {getContractBadge()}
 
                     {youthAndAcademyText && (
-                      <span className="px-3 py-1 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-900 text-xs font-semibold inline-flex items-center gap-1.5 shadow-2xs">
+                      <span className="px-3 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-900 text-xs font-semibold inline-flex items-center gap-1.5 shadow-xs">
                         <span>🌱</span>
                         <span>{youthAndAcademyText}</span>
                       </span>
                     )}
 
-                    <span className="px-2.5 py-1 rounded-md bg-zinc-50 border border-zinc-200 text-zinc-600 text-xs font-medium">
-                      Nuvarande: <strong className="text-zinc-900">{player.previousClub}</strong>
+                    <span className="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 text-slate-600 text-xs font-medium">
+                      Current Club: <strong className="text-slate-900">{player.previousClub}</strong>
                     </span>
                   </div>
                 </div>
@@ -256,7 +254,7 @@ export default function PlayerDetailPage() {
                     const el = document.getElementById("contact-card");
                     el?.scrollIntoView({ behavior: "smooth" });
                   }}
-                  className="px-6 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors text-center cursor-pointer flex items-center justify-center gap-2"
+                  className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-lg shadow-sm transition-colors text-center cursor-pointer flex items-center justify-center gap-2"
                 >
                   <span>✉️</span>
                   <span>{t.playerDetailPage.sendInquiryBtn}</span>
@@ -267,71 +265,71 @@ export default function PlayerDetailPage() {
 
           {/* 2. FAST FACTS GRID (QUICK BIO) */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
-            <div className="bg-white border border-zinc-200 rounded-xl p-3.5 shadow-2xs">
-              <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider mb-1">
+            <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider mb-1">
                 Age / Birth Year
               </span>
-              <span className="text-sm font-extrabold text-zinc-950 block">
+              <span className="text-sm font-extrabold text-slate-950 block">
                 {player.age} yrs
               </span>
-              <span className="text-[11px] text-zinc-500">
+              <span className="text-[11px] text-slate-500">
                 b. {new Date().getFullYear() - player.age}
               </span>
             </div>
 
-            <div className="bg-white border border-zinc-200 rounded-xl p-3.5 shadow-2xs">
-              <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider mb-1">
+            <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider mb-1">
                 Height & Weight
               </span>
-              <span className="text-sm font-extrabold text-zinc-950 block">
+              <span className="text-sm font-extrabold text-slate-950 block">
                 {player.heightWeight}
               </span>
-              <span className="text-[11px] text-zinc-500">Physics</span>
+              <span className="text-[11px] text-slate-500">Physics</span>
             </div>
 
-            <div className="bg-white border border-zinc-200 rounded-xl p-3.5 shadow-2xs">
-              <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider mb-1">
+            <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider mb-1">
                 Shoots (Left/Right)
               </span>
-              <span className="text-sm font-extrabold text-zinc-950 block">
-                {player.gripName[lang]}
+              <span className="text-sm font-extrabold text-slate-950 block">
+                {player.gripName[lang] || player.gripName.en}
               </span>
-              <span className="text-[11px] text-zinc-500">Grip</span>
+              <span className="text-[11px] text-slate-500">Grip</span>
             </div>
 
-            <div className="bg-white border border-zinc-200 rounded-xl p-3.5 shadow-2xs">
-              <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider mb-1">
+            <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider mb-1">
                 Origin / Youth Club
               </span>
-              <span className="text-sm font-extrabold text-zinc-950 truncate block" title={player.youthClub?.trim() || "Not specified"}>
+              <span className="text-sm font-extrabold text-slate-950 truncate block" title={player.youthClub?.trim() || "Not specified"}>
                 {player.youthClub?.trim() || "Not specified"}
               </span>
-              <span className="text-[11px] text-zinc-500">
+              <span className="text-[11px] text-slate-500">
                 {player.youthClub?.trim() ? "Youth Roots" : "—"}
               </span>
             </div>
 
-            <div className="bg-white border border-zinc-200 rounded-xl p-3.5 shadow-2xs">
-              <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider mb-1">
+            <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider mb-1">
                 Sports Academy / Bandy High School
               </span>
-              <span className="text-sm font-extrabold text-zinc-950 block truncate" title={player.academyType && player.academyType !== "none" && player.academyType !== "Inget av dessa" ? player.academyType : "None"}>
+              <span className="text-sm font-extrabold text-slate-950 block truncate" title={player.academyType && player.academyType !== "none" && player.academyType !== "Inget av dessa" ? player.academyType : "None"}>
                 {player.academyType && player.academyType !== "none" && player.academyType !== "Inget av dessa" ? player.academyType : "None"}
               </span>
-              <span className="text-[11px] text-zinc-500 truncate block">
+              <span className="text-[11px] text-slate-500 truncate block">
                 {player.academyType && player.academyType !== "none" && player.academyType !== "Inget av dessa" ? "Academy Program" : "—"}
               </span>
             </div>
 
-            <div className="bg-white border border-zinc-200 rounded-xl p-3.5 shadow-2xs">
-              <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider mb-1">
+            <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider mb-1">
                 Nationality
               </span>
-              <span className="text-sm font-extrabold text-zinc-950 flex items-center gap-1.5 block">
+              <span className="text-sm font-extrabold text-slate-950 flex items-center gap-1.5 block">
                 <span>{player.countryFlag}</span>
-                <span>{player.countryName[lang]}</span>
+                <span>{player.countryName[lang] || player.countryName.en}</span>
               </span>
-              <span className="text-[11px] text-zinc-500">
+              <span className="text-[11px] text-slate-500">
                 {player.countryCode}
               </span>
             </div>
@@ -339,15 +337,15 @@ export default function PlayerDetailPage() {
 
           {/* TWO COLUMNS CONTENT LAYOUT */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column (2/3): Spelstil, Presentation, Karriärtabell, Video & Civilt */}
+            {/* Left Column (2/3): Playing Style, Presentation, Career, Video & Civil */}
             <div className="lg:col-span-2 space-y-8">
-              {/* SECTION: SPELSTIL & SPETSEGENSKAPER */}
+              {/* SECTION: PLAYING STYLE & CORE ATTRIBUTES */}
               {traits.length > 0 && (
-                <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs">
+                <div className="bg-white border border-slate-200/80 rounded-xl p-6 sm:p-7 shadow-sm">
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-base">⚡</span>
-                    <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950">
-                      Spelstil & Spetsegenskaper
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-slate-950">
+                      Playing Style & Core Attributes
                     </h2>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -356,7 +354,7 @@ export default function PlayerDetailPage() {
                       return (
                         <div
                           key={idx}
-                          className="px-3.5 py-2 rounded-xl bg-zinc-50 hover:bg-zinc-100/70 border border-zinc-200 text-zinc-900 text-xs font-semibold flex items-center gap-2 shadow-2xs transition-colors"
+                          className="px-3.5 py-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-900 text-xs font-semibold flex items-center gap-2 shadow-xs transition-colors"
                         >
                           <span>{icon}</span>
                           <span>{trait}</span>
@@ -367,33 +365,33 @@ export default function PlayerDetailPage() {
                 </div>
               )}
 
-              {/* SECTION: SPELARENS PRESENTATION */}
-              {player.bio[lang] ? (
-                <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs">
+              {/* SECTION: PLAYER STATEMENT & AMBITION */}
+              {player.bio[lang] || player.bio.en ? (
+                <div className="bg-white border border-slate-200/80 rounded-xl p-6 sm:p-7 shadow-sm">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-base">📝</span>
-                    <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950">
-                      Spelarens presentation & Ambition
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-slate-950">
+                      Player Statement & Ambition
                     </h2>
                   </div>
-                  <p className="text-xs sm:text-sm text-zinc-800 leading-relaxed whitespace-pre-line font-normal">
-                    {player.bio[lang]}
+                  <p className="text-xs sm:text-sm text-slate-800 leading-relaxed whitespace-pre-line font-normal">
+                    {player.bio[lang] || player.bio.en}
                   </p>
                 </div>
               ) : null}
 
-              {/* SECTION: KARRIÄRTABELL (SÄSONGER & KLUBBAR) */}
-              <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs">
+              {/* SECTION: CAREER HISTORY */}
+              <div className="bg-white border border-slate-200/80 rounded-xl p-6 sm:p-7 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <span className="text-base">🏒</span>
-                    <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950">
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-slate-950">
                       Career History & Previous Clubs
                     </h2>
                   </div>
                   {player.youthClub && (
-                    <span className="text-xs text-zinc-500 font-medium">
-                      Origin / Youth Club: <strong className="text-zinc-800">{player.youthClub}</strong>
+                    <span className="text-xs text-slate-500 font-medium">
+                      Origin / Youth Club: <strong className="text-slate-800">{player.youthClub}</strong>
                     </span>
                   )}
                 </div>
@@ -402,28 +400,28 @@ export default function PlayerDetailPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
                       <thead>
-                        <tr className="border-b border-zinc-200 text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+                        <tr className="border-b border-slate-200 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
                           <th className="py-2.5 px-3">Period / Seasons</th>
                           <th className="py-2.5 px-3">Club / Team</th>
                           <th className="py-2.5 px-3">Level / League</th>
                           <th className="py-2.5 px-3">Role / Notes (Optional)</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-zinc-100">
+                      <tbody className="divide-y divide-slate-100">
                         {player.careerHistory.map((item, i) => (
-                          <tr key={i} className="hover:bg-zinc-50/70 transition-colors">
-                            <td className="py-2.5 px-3 font-bold text-zinc-950 whitespace-nowrap">
+                          <tr key={i} className="hover:bg-slate-50 transition-colors">
+                            <td className="py-2.5 px-3 font-bold text-slate-950 whitespace-nowrap">
                               {formatCareerPeriod(item, lang)}
                             </td>
-                            <td className="py-2.5 px-3 font-semibold text-zinc-900">
+                            <td className="py-2.5 px-3 font-semibold text-slate-900">
                               {item.club}
                             </td>
-                            <td className="py-2.5 px-3 text-zinc-600">
-                              <span className="px-2 py-0.5 rounded bg-zinc-100 text-zinc-800 text-[11px] font-medium border border-zinc-200">
+                            <td className="py-2.5 px-3 text-slate-600">
+                              <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 text-[11px] font-medium border border-slate-200">
                                 {item.league}
                               </span>
                             </td>
-                            <td className="py-2.5 px-3 text-zinc-600 italic">
+                            <td className="py-2.5 px-3 text-slate-600 italic">
                               {item.note || item.role || "—"}
                             </td>
                           </tr>
@@ -432,8 +430,8 @@ export default function PlayerDetailPage() {
                     </table>
                   </div>
                 ) : (
-                  <div className="p-6 rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 text-center">
-                    <p className="text-xs text-zinc-500">
+                  <div className="p-6 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 text-center">
+                    <p className="text-xs text-slate-500">
                       No career history provided yet.
                     </p>
                   </div>
@@ -449,11 +447,11 @@ export default function PlayerDetailPage() {
                 />
               )}
 
-              {/* SECTION: CIVILA FÖRUTSÄTTNINGAR & INTEGRATION */}
-              <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs">
+              {/* SECTION: CIVIL SETUP */}
+              <div className="bg-white border border-slate-200/80 rounded-xl p-6 sm:p-7 shadow-sm">
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-base">💼</span>
-                  <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950">
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-slate-950">
                     {t.playerDetailPage.civilSetupTitle}
                   </h2>
                 </div>
@@ -465,7 +463,7 @@ export default function PlayerDetailPage() {
                       return (
                         <div
                           key={pref}
-                          className="p-3 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-800 text-xs font-medium flex items-center gap-2"
+                          className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 text-xs font-medium flex items-center gap-2"
                         >
                           <span className="text-emerald-600 font-bold text-sm">✓</span>
                           <span>{label}</span>
@@ -474,23 +472,23 @@ export default function PlayerDetailPage() {
                     })}
                   </div>
                 ) : (
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-slate-500">
                     {t.occupationPreferences.all}
                   </p>
                 )}
               </div>
 
-              {/* SECTION: GEOGRAFISK MOBILITET */}
-              <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs">
+              {/* SECTION: TARGET COUNTRIES / MOBILITY */}
+              <div className="bg-white border border-slate-200/80 rounded-xl p-6 sm:p-7 shadow-sm">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-base">🌍</span>
-                  <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950">
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-slate-950">
                     {t.playerDetailPage.targetCountriesTitle}
                   </h2>
                 </div>
 
                 {isWorldwide ? (
-                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 font-semibold mb-3">
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-900 font-semibold mb-3">
                     {t.playerDetailPage.openWorldwideBadge}
                   </div>
                 ) : null}
@@ -502,27 +500,27 @@ export default function PlayerDetailPage() {
                       return (
                         <div
                           key={code}
-                          className="px-3 py-1.5 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-900 text-xs font-semibold flex items-center gap-2"
+                          className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold flex items-center gap-2"
                         >
                           <span className="text-base">{c?.flag || "🏳️"}</span>
-                          <span>{c ? c.names[lang] : code}</span>
+                          <span>{c ? (c.names[lang] || c.names.en) : code}</span>
                         </div>
                       );
                     })
                   ) : (
-                    <div className="text-xs text-zinc-500">
-                      {player.countryFlag} {player.countryName[lang]}
+                    <div className="text-xs text-slate-500">
+                      {player.countryFlag} {player.countryName[lang] || player.countryName.en}
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* SECTION: SPRÅK & SOCIALA MEDIER */}
-              <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs space-y-4">
+              {/* SECTION: LANGUAGES & SOCIAL MEDIA */}
+              <div className="bg-white border border-slate-200/80 rounded-xl p-6 sm:p-7 shadow-sm space-y-4">
                 <div className="flex items-center gap-2">
                   <span className="text-base">🗣️</span>
-                  <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950">
-                    Språk & Sociala medier
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-slate-950">
+                    Languages & Social Media
                   </h2>
                 </div>
 
@@ -531,14 +529,14 @@ export default function PlayerDetailPage() {
                     player.spokenLanguages.map((code) => (
                       <div
                         key={code}
-                        className="px-3 py-1.5 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-900 text-xs font-semibold flex items-center gap-2"
+                        className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-semibold flex items-center gap-2"
                       >
                         <span>{getLanguageFlag(code)}</span>
                         <span>{getLanguageName(code, lang)}</span>
                       </div>
                     ))
                   ) : (
-                    <span className="text-xs text-zinc-500">Svenska, Engelska</span>
+                    <span className="text-xs text-slate-500">Swedish, English</span>
                   )}
                 </div>
 
@@ -553,58 +551,58 @@ export default function PlayerDetailPage() {
             {/* Right Column (1/3): Quick Overview & Gated Contact Card */}
             <div className="space-y-6">
               {/* Quick Specs Card */}
-              <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-xs">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-950 mb-4 pb-3 border-b border-zinc-100">
+              <div className="bg-white border border-slate-200/80 rounded-xl p-6 shadow-sm">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-950 mb-4 pb-3 border-b border-slate-100">
                   {t.playerDetailPage.overviewTitle}
                 </h3>
                 <dl className="space-y-3 text-xs">
                   <div className="flex justify-between">
-                    <dt className="text-zinc-500">Position:</dt>
-                    <dd className="font-semibold text-zinc-900">{player.positionName[lang]}</dd>
+                    <dt className="text-slate-500">Position:</dt>
+                    <dd className="font-semibold text-slate-900">{player.positionName[lang] || player.positionName.en}</dd>
                   </div>
                   {player.secondaryPositionName && (
                     <div className="flex justify-between">
-                      <dt className="text-zinc-500">Secondary Position:</dt>
-                      <dd className="font-semibold text-zinc-900">{player.secondaryPositionName[lang]}</dd>
+                      <dt className="text-slate-500">Secondary Position:</dt>
+                      <dd className="font-semibold text-slate-900">{player.secondaryPositionName[lang] || player.secondaryPositionName.en}</dd>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <dt className="text-zinc-500">Shoots (Left/Right):</dt>
-                    <dd className="font-semibold text-zinc-900">{player.gripName[lang]}</dd>
+                    <dt className="text-slate-500">Shoots (Left/Right):</dt>
+                    <dd className="font-semibold text-slate-900">{player.gripName[lang] || player.gripName.en}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-zinc-500">Measurements:</dt>
-                    <dd className="font-semibold text-zinc-900">{player.heightWeight}</dd>
+                    <dt className="text-slate-500">Measurements:</dt>
+                    <dd className="font-semibold text-slate-900">{player.heightWeight}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-zinc-500">Origin / Youth Club:</dt>
-                    <dd className="font-semibold text-zinc-900">{player.youthClub?.trim() || "Not specified"}</dd>
+                    <dt className="text-slate-500">Origin / Youth Club:</dt>
+                    <dd className="font-semibold text-slate-900">{player.youthClub?.trim() || "Not specified"}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-zinc-500">Sports Academy / Bandy High School:</dt>
-                    <dd className="font-semibold text-zinc-900">
+                    <dt className="text-slate-500">Sports Academy / Bandy High School:</dt>
+                    <dd className="font-semibold text-slate-900">
                       {player.academyType && player.academyType !== "none" && player.academyType !== "Inget av dessa"
                         ? player.academyType
                         : "None"}
                     </dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-zinc-500">Current Club:</dt>
-                    <dd className="font-semibold text-zinc-900 truncate max-w-[150px]" title={player.previousClub}>
+                    <dt className="text-slate-500">Current Club:</dt>
+                    <dd className="font-semibold text-slate-900 truncate max-w-[150px]" title={player.previousClub}>
                       {player.previousClub}
                     </dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-zinc-500">Current Status:</dt>
-                    <dd className="font-semibold text-zinc-900">
-                      {player.contractStatusLabel?.[lang] || player.statusLabel[lang]}
+                    <dt className="text-slate-500">Current Status:</dt>
+                    <dd className="font-semibold text-slate-900">
+                      {player.contractStatusLabel?.[lang] || player.contractStatusLabel?.en || player.statusLabel[lang] || player.statusLabel.en}
                     </dd>
                   </div>
                   {(player.packagePreference || player.packagePreferenceLabel) && (
                     <div className="flex justify-between">
-                      <dt className="text-zinc-500">Package Wish:</dt>
-                      <dd className="font-semibold text-zinc-900">
-                        {formatWish(player.packagePreference) || player.packagePreferenceLabel?.[lang]}
+                      <dt className="text-slate-500">Package Wish:</dt>
+                      <dd className="font-semibold text-slate-900">
+                        {formatWish(player.packagePreference) || player.packagePreferenceLabel?.[lang] || player.packagePreferenceLabel?.en}
                       </dd>
                     </div>
                   )}
@@ -617,7 +615,7 @@ export default function PlayerDetailPage() {
                   contactName={player.name}
                   contactEmail={player.email}
                   contactPhone={player.phone}
-                  contactRole={lang === "sv" ? "Spelare" : "Player"}
+                  contactRole="Player"
                   showPhone={player.showPhone}
                   showEmail={player.showEmail}
                   contactPreference={player.contactPreference}

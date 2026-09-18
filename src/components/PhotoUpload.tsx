@@ -35,19 +35,13 @@ export function PhotoUpload({
 
     // Validate size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setErrorMessage(
-        lang === "sv"
-          ? "Bilden är för stor. Max tillåten storlek är 5 MB."
-          : "File is too large. Maximum allowed size is 5 MB."
-      );
+      setErrorMessage("File is too large. Maximum allowed size is 5 MB.");
       return;
     }
 
     // Validate type
     if (!file.type.startsWith("image/")) {
-      setErrorMessage(
-        lang === "sv" ? "Vänligen välj en giltig bildfil (JPG, PNG, WEBP)." : "Please select a valid image file."
-      );
+      setErrorMessage("Please select a valid image file (JPG, PNG, WEBP).");
       return;
     }
 
@@ -122,8 +116,8 @@ export function PhotoUpload({
     <div className="space-y-3 text-xs">
       {(label || subtitle) && (
         <div>
-          {label && <label className="block font-semibold text-zinc-800 text-xs">{label}</label>}
-          {subtitle && <p className="text-[11px] text-zinc-500 mt-0.5">{subtitle}</p>}
+          {label && <label className="block font-semibold text-slate-800 text-xs">{label}</label>}
+          {subtitle && <p className="text-[11px] text-slate-500 mt-0.5">{subtitle}</p>}
         </div>
       )}
 
@@ -140,10 +134,10 @@ export function PhotoUpload({
         </div>
       )}
 
-      <div className="flex items-center gap-4 p-4 bg-zinc-50 border border-zinc-200 rounded-xl">
+      <div className="flex items-center gap-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
         {/* Avatar Display */}
         <div className="relative shrink-0">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-zinc-900 text-white font-bold text-xl flex items-center justify-center overflow-hidden border border-zinc-300 shadow-xs relative">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-slate-900 text-white font-bold text-xl flex items-center justify-center overflow-hidden border border-slate-300 shadow-xs relative">
             {photoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -181,21 +175,15 @@ export function PhotoUpload({
               type="button"
               disabled={isUploading}
               onClick={() => fileInputRef.current?.click()}
-              className="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white font-semibold text-xs rounded-lg transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
+              className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-semibold text-xs rounded-lg transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
             >
               <span>📷</span>
               <span>
                 {isUploading
-                  ? lang === "sv"
-                    ? "Laddar upp..."
-                    : "Uploading..."
+                  ? "Uploading..."
                   : photoUrl
-                  ? lang === "sv"
-                    ? "Byt profilbild"
-                    : "Change Photo"
-                  : lang === "sv"
-                    ? "Ladda upp profilbild"
-                    : "Upload Photo"}
+                  ? "Change Photo"
+                  : "Upload Photo"}
               </span>
             </button>
 
@@ -203,31 +191,25 @@ export function PhotoUpload({
               <button
                 type="button"
                 onClick={handleRemove}
-                className="px-2.5 py-1.5 bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 font-semibold text-xs rounded-lg border border-zinc-200 hover:border-rose-200 transition-colors cursor-pointer"
+                className="px-2.5 py-1.5 bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 font-semibold text-xs rounded-lg border border-slate-200 hover:border-rose-200 transition-colors cursor-pointer"
               >
-                {lang === "sv" ? "Ta bort" : "Remove"}
+                Remove
               </button>
             )}
 
             <button
               type="button"
               onClick={() => setShowUrlInput((prev) => !prev)}
-              className="px-2.5 py-1.5 text-zinc-500 hover:text-zinc-900 font-medium text-xs underline cursor-pointer"
+              className="px-2.5 py-1.5 text-slate-500 hover:text-slate-900 font-medium text-xs underline cursor-pointer"
             >
               {showUrlInput
-                ? lang === "sv"
-                  ? "Dölj URL"
-                  : "Hide URL"
-                : lang === "sv"
-                ? "Eller ange bildlänk (URL)"
+                ? "Hide URL"
                 : "Or image URL"}
             </button>
           </div>
 
-          <p className="text-[11px] text-zinc-500 leading-tight">
-            {lang === "sv"
-              ? "Rekommenderat: Fyrkantigt porträtt (JPG/PNG), max 5 MB. Visas på ditt spelarkort."
-              : "Recommended: Square headshot (JPG/PNG), max 5 MB. Displayed on player directory cards."}
+          <p className="text-[11px] text-slate-500 leading-tight">
+            Recommended: Square headshot (JPG/PNG), max 5 MB. Displayed on player directory cards.
           </p>
 
           {showUrlInput && (
@@ -237,14 +219,14 @@ export function PhotoUpload({
                 value={manualUrl}
                 onChange={(e) => setManualUrl(e.target.value)}
                 placeholder="https://images.example.com/avatar.jpg"
-                className="flex-1 px-2.5 py-1.5 bg-white border border-zinc-200 rounded-lg text-xs text-zinc-900 focus:outline-none focus:border-zinc-900"
+                className="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-slate-900"
               />
               <button
                 type="button"
                 onClick={handleManualUrlSubmit}
-                className="px-3 py-1.5 bg-zinc-900 text-white font-semibold text-xs rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer"
+                className="px-3 py-1.5 bg-slate-900 text-white font-semibold text-xs rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
               >
-                {lang === "sv" ? "Använd" : "Apply"}
+                Apply
               </button>
             </div>
           )}

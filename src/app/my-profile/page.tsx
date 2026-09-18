@@ -6,20 +6,17 @@ import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CountrySelect } from "@/components/CountrySelect";
-import { LeagueSelect } from "@/components/LeagueSelect";
 import { TargetCountriesPicker } from "@/components/TargetCountriesPicker";
-import { CountryMultiSelect } from "@/components/CountryMultiSelect";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { DeleteProfileButton } from "@/components/DeleteProfileButton";
 import { SpokenLanguagesPicker } from "@/components/SpokenLanguagesPicker";
 import { ContactPrivacySettings } from "@/components/ContactPrivacySettings";
 import { BandyTraitsPicker } from "@/components/BandyTraitsPicker";
 import { CareerHistoryEditor } from "@/components/CareerHistoryEditor";
-import { useLanguage } from "@/context/LanguageContext";
 import { supabase } from "@/lib/supabaseClient";
-import { CareerSeason, OccupationPreference, PlayerGrip, PlayerStatus, PositionCategory } from "@/types";
+import { CareerSeason, OccupationPreference, PlayerGrip, PositionCategory } from "@/types";
 import { parseCareerHistory } from "@/lib/dataMappers";
-import { CUSTOM_OTHER_LEAGUE_VALUE, getLeaguesForCountry, getLeagueDisplayName } from "@/lib/leagues";
+import { CUSTOM_OTHER_LEAGUE_VALUE, getLeagueDisplayName } from "@/lib/leagues";
 
 interface DbPlayer {
   id: string;
@@ -65,7 +62,6 @@ interface DbPlayer {
 
 export default function MyProfilePage() {
   const router = useRouter();
-  const { lang, t } = useLanguage();
 
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -74,7 +70,7 @@ export default function MyProfilePage() {
 
   // Form State
   const [formData, setFormData] = useState({
-    // Section A: Grundfakta & Fysik
+    // Section A: Core details
     firstName: "",
     lastName: "",
     birthYear: "2002",
@@ -89,12 +85,12 @@ export default function MyProfilePage() {
     league: "se_elitserien_herr",
     customLeague: "",
 
-    // Section B: Position & Spetsegenskaper
+    // Section B: Position & Strengths
     position: "halv" as PositionCategory,
     secondaryPosition: "" as string,
-    playerTraits: ["Skridskostark", "Spelförståelse"] as string[],
+    playerTraits: ["Corner Specialist", "Vision & Game IQ"] as string[],
 
-    // Section C: Kontrakt & Civil profil
+    // Section C: Contract & Mobility
     contractStatus: "free_agent" as "free_agent" | "expiring_26_27" | "under_contract_loan",
     videoUrl: "",
     contractType: "semi_pro",
@@ -113,7 +109,7 @@ export default function MyProfilePage() {
     showEmail: true,
     contactPreference: "all" as "all" | "form_only",
 
-    // Section D: Tidigare klubbar & Säsonger
+    // Section D: Career History
     careerHistory: [] as CareerSeason[],
   });
 
@@ -178,7 +174,7 @@ export default function MyProfilePage() {
               if (Array.isArray(res)) parsedOcc = res;
               else parsedOcc = p.occupation_preference.split(",").map((s) => s.trim()) as OccupationPreference[];
             } catch {
-              parsedOcc = p.occupation_preference.split(",").map((s) => s.trim()) as OccupationPreference[];
+              parsedOcc = ["housing", "studies"];
             }
           }
 
@@ -191,7 +187,7 @@ export default function MyProfilePage() {
               if (Array.isArray(res)) parsedLangs = res;
               else parsedLangs = p.spoken_languages.split(",").map((s) => s.trim());
             } catch {
-              parsedLangs = p.spoken_languages.split(",").map((s) => s.trim());
+              parsedLangs = ["sv", "en"];
             }
           }
 
@@ -205,46 +201,41 @@ export default function MyProfilePage() {
               if (Array.isArray(res)) parsedTraits = res;
               else parsedTraits = rawTraits.split(",").map((s) => s.trim());
             } catch {
-              parsedTraits = rawTraits.split(",").map((s) => s.trim());
+              parsedTraits = ["Corner Specialist", "Vision & Game IQ"];
             }
           }
 
           let parsedCitizenships: string[] = [];
-          const rawCit = p.secondary_citizenship || p.secondary_citizenships;
-          if (Array.isArray(rawCit)) {
-            parsedCitizenships = rawCit;
-          } else if (typeof rawCit === "string") {
+          const rawCitizenships = p.secondary_citizenship || p.secondary_citizenships;
+          if (Array.isArray(rawCitizenships)) {
+            parsedCitizenships = rawCitizenships;
+          } else if (typeof rawCitizenships === "string") {
             try {
-              const res = JSON.parse(rawCit);
+              const res = JSON.parse(rawCitizenships);
               if (Array.isArray(res)) parsedCitizenships = res;
-              else parsedCitizenships = rawCit.split(",").map((s) => s.trim().toUpperCase());
+              else parsedCitizenships = rawCitizenships.split(",").map((s) => s.trim());
             } catch {
-              parsedCitizenships = rawCit.split(",").map((s) => s.trim().toUpperCase());
+              parsedCitizenships = [];
             }
           }
 
           const parsedCareer = parseCareerHistory(p.career_history);
 
-          // Contract status mapping
           let cStatus: "free_agent" | "expiring_26_27" | "under_contract_loan" = "free_agent";
-          const rawStatus = (p.contract_status || p.status || "").toLowerCase();
-          if (rawStatus.includes("expiring") || rawStatus.includes("utgående")) {
-            cStatus = "expiring_26_27";
-          } else if (rawStatus.includes("loan") || rawStatus.includes("lån") || rawStatus.includes("under_contract")) {
-            cStatus = "under_contract_loan";
-          }
+          if (p.contract_status === "expiring_26_27") cStatus = "expiring_26_27";
+          else if (p.contract_status === "under_contract_loan") cStatus = "under_contract_loan";
+          else if (p.status === "seeking_26_27") cStatus = "expiring_26_27";
 
           let acad: "NIU" | "international" | "local" | "none" = "none";
-          const rawAcad = (p.academy_type || "").trim();
-          if (rawAcad.toUpperCase() === "NIU" || rawAcad.toUpperCase() === "RIG" || rawAcad.toLowerCase().includes("niu")) acad = "NIU";
-          else if (rawAcad.toLowerCase() === "international" || rawAcad.toLowerCase().includes("sports academy")) acad = "international";
-          else if (rawAcad.toLowerCase() === "local" || rawAcad.toLowerCase().includes("lokalt")) acad = "local";
+          if (p.academy_type === "NIU") acad = "NIU";
+          else if (p.academy_type === "international") acad = "international";
+          else if (p.academy_type === "local") acad = "local";
 
           setFormData({
             firstName: p.first_name || "",
             lastName: p.last_name || "",
-            birthYear: p.birth_year ? String(p.birth_year) : "2002",
-            nationality: (p.nationality || "SE").toUpperCase(),
+            birthYear: String(p.birth_year || 2002),
+            nationality: p.nationality || "SE",
             photoUrl: p.photo_url || "",
             youthClub: p.youth_club || "",
             academyType: acad,
@@ -331,7 +322,7 @@ export default function MyProfilePage() {
     setSaveSuccess(false);
 
     if (!profileId) {
-      setErrorMessage("Ingen profil kopplad att spara till.");
+      setErrorMessage("No linked profile found to save to.");
       return;
     }
 
@@ -341,7 +332,7 @@ export default function MyProfilePage() {
       const resolvedLeague =
         formData.league === CUSTOM_OTHER_LEAGUE_VALUE
           ? formData.customLeague.trim()
-          : getLeagueDisplayName(formData.league, "sv");
+          : getLeagueDisplayName(formData.league, "en");
 
       let clubFormatted = formData.currentClub.trim();
       if (resolvedLeague && !clubFormatted.includes(resolvedLeague)) {
@@ -416,12 +407,12 @@ export default function MyProfilePage() {
 
   if (loadingAuth) {
     return (
-      <div className="min-h-screen bg-zinc-50 text-zinc-900 flex flex-col font-sans">
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
         <Header />
         <main className="flex-1 flex items-center justify-center py-20">
-          <div className="text-center text-xs text-zinc-500">
-            <div className="w-8 h-8 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <span>Laddar din profil...</span>
+          <div className="text-center text-sm text-slate-500">
+            <div className="w-8 h-8 border-2 border-slate-900 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <span>Loading your profile...</span>
           </div>
         </main>
         <Footer />
@@ -430,72 +421,72 @@ export default function MyProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 flex flex-col font-sans selection:bg-zinc-900 selection:text-zinc-50">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-slate-900 selection:text-white">
       <Header />
 
       <main className="flex-1 py-10 sm:py-14">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Top Control Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 bg-white border border-zinc-200 rounded-2xl p-5 sm:p-6 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 bg-white rounded-xl border border-slate-200/80 shadow-sm p-6">
             <div>
-              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-700 text-[11px] font-semibold uppercase tracking-wider mb-2">
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-semibold uppercase tracking-wider mb-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 <span>Signed in as {userEmail}</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
                 {formData.firstName || "Player"} {formData.lastName}
               </h1>
-              <p className="text-xs text-zinc-500 mt-0.5">
-                Manage your player profile, origin club, sports academy, and career history.
+              <p className="text-sm text-slate-500 mt-1">
+                Manage your player prospect card, physical attributes, and career history.
               </p>
             </div>
 
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2.5 flex-wrap">
               {profileId && (
                 <>
                   <Link
                     href={`/players/${profileId}`}
                     target="_blank"
-                    className="px-3.5 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-900 text-xs font-semibold border border-zinc-200 transition-colors"
+                    className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold px-4 py-2 rounded-lg text-sm transition-colors cursor-pointer"
                   >
-                    👁️ {lang === "sv" ? "Visa offentlig profil" : "View Public Profile"} ↗
+                    View Public Profile ↗
                   </Link>
                   <DeleteProfileButton recordId={profileId} table="players" redirectPath="/join" />
                 </>
               )}
               <button
                 onClick={handleSignOut}
-                className="px-3 py-2 rounded-lg text-rose-600 hover:bg-rose-50 text-xs font-semibold transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-lg text-rose-600 hover:bg-rose-50 text-sm font-semibold transition-colors cursor-pointer"
               >
-                {lang === "sv" ? "Logga ut" : "Log out"}
+                Sign Out
               </button>
             </div>
           </div>
 
           {/* Success / Error Alerts */}
           {saveSuccess && (
-            <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center justify-between animate-in fade-in duration-150">
+            <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm flex items-center justify-between animate-in fade-in duration-150">
               <span className="font-semibold">
-                ✓ {lang === "sv" ? "Ändringarna har sparats! Din profil är uppdaterad." : "Changes saved! Your profile is updated."}
+                ✓ Changes saved! Your profile has been updated.
               </span>
               {profileId && (
                 <Link
                   href={`/players/${profileId}`}
-                  className="font-bold underline text-emerald-950"
+                  className="font-bold underline text-emerald-950 ml-2"
                 >
-                  {lang === "sv" ? "Se profilen live →" : "View live →"}
+                  View live profile →
                 </Link>
               )}
             </div>
           )}
 
           {errorMessage && (
-            <div className="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between">
+            <div className="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-center justify-between">
               <span>⚠️ {errorMessage}</span>
               <button
                 type="button"
                 onClick={() => setErrorMessage(null)}
-                className="font-bold text-rose-900 hover:underline cursor-pointer"
+                className="font-bold text-rose-900 hover:underline cursor-pointer ml-2"
               >
                 ✕
               </button>
@@ -503,41 +494,41 @@ export default function MyProfilePage() {
           )}
 
           {/* QUICK CONTRACT STATUS TOGGLE */}
-          <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs mb-8">
-            <div className="pb-3 border-b border-zinc-100 mb-4">
-              <h2 className="text-base font-bold text-zinc-950 flex items-center gap-2">
+          <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-6 sm:p-8 mb-8 space-y-4">
+            <div className="pb-3 border-b border-slate-100">
+              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                 <span>🔄</span>
-                <span>{lang === "sv" ? "Snabbval: Kontraktsstatus" : "Quick Status"}</span>
+                <span>Quick Availability Toggle</span>
               </h2>
-              <p className="text-xs text-zinc-500">
-                Klicka för att direkt uppdatera din status i klubbarnas sökvy.
+              <p className="text-sm text-slate-500 mt-1">
+                Click to immediately update your transfer availability in club directory searches.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
-                { id: "free_agent", title: "Kontraktslös / Söker klubb", desc: "Öppen för dialog direkt", icon: "🔓" },
-                { id: "expiring_26_27", title: "Utgående kontrakt 2026/27", desc: "Sonderar terrängen", icon: "⏳" },
-                { id: "under_contract_loan", title: "Under kontrakt (Lån/Samarbete)", desc: "Söker lån/samarbetsavtal", icon: "🤝" },
+                { id: "free_agent", title: "Free Agent / Seeking Club", desc: "Ready for immediate transfer discussions", icon: "🔓" },
+                { id: "expiring_26_27", title: "Expiring Contract 2026/27", desc: "Under contract, exploring options", icon: "⏳" },
+                { id: "under_contract_loan", title: "Under Contract (Seeking Loan)", desc: "Seeking loan or dual registration", icon: "🤝" },
               ].map((opt) => (
                 <button
                   key={opt.id}
                   type="button"
                   onClick={() => handleQuickStatusChange(opt.id as any)}
-                  className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
                     formData.contractStatus === opt.id
-                      ? "border-zinc-900 bg-zinc-900 text-white shadow-xs font-semibold"
-                      : "border-zinc-200 bg-zinc-50 hover:bg-zinc-100 text-zinc-700"
+                      ? "border-slate-900 bg-slate-900 text-white shadow-sm font-semibold"
+                      : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-bold flex items-center gap-1.5">
+                    <span className="font-bold text-sm flex items-center gap-1.5">
                       <span>{opt.icon}</span>
                       <span>{opt.title}</span>
                     </span>
                     {formData.contractStatus === opt.id && <span className="text-xs">✓</span>}
                   </div>
-                  <p className={`text-[11px] ${formData.contractStatus === opt.id ? "text-zinc-300" : "text-zinc-500"}`}>
+                  <p className={`text-xs leading-relaxed ${formData.contractStatus === opt.id ? "text-slate-300" : "text-slate-500"}`}>
                     {opt.desc}
                   </p>
                 </button>
@@ -548,15 +539,15 @@ export default function MyProfilePage() {
           {/* MAIN EDIT FORM */}
           <form onSubmit={handleSaveProfile} className="space-y-8">
             {/* SECTION A: CORE DETAILS & PHYSICAL METRICS */}
-            <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs space-y-5">
-              <div className="pb-3 border-b border-zinc-100">
-                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 text-[11px] font-bold uppercase tracking-wider mb-1">
-                  <span>A</span>
-                  <span>Core Details & Physical Metrics</span>
+            <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-6 sm:p-8 space-y-6">
+              <div className="pb-3 border-b border-slate-100">
+                <div className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md mb-2">
+                  <span className="font-bold mr-1.5">A</span>
+                  <span>Basic Details & Background</span>
                 </div>
-                <h2 className="text-base font-bold text-zinc-950">Personal Details, Origin / Youth Club & Academy</h2>
-                <p className="text-xs text-zinc-500">
-                  Origin club, sports academy, physical metrics, and club affiliation.
+                <h2 className="text-xl font-bold text-slate-900">Personal Information, Youth Background & Physical Metrics</h2>
+                <p className="text-sm text-slate-500 mt-1">
+                  Origin club, sports academy, physical metrics, and current club affiliation.
                 </p>
               </div>
 
@@ -566,31 +557,31 @@ export default function MyProfilePage() {
                 onUploadSuccess={(url) => setFormData({ ...formData, photoUrl: url })}
               />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">First Name *</label>
+                  <label className="text-sm font-semibold text-slate-700 mb-1.5 block">First Name *</label>
                   <input
                     type="text"
                     required
                     value={formData.firstName}
                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
+                    className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">Last Name *</label>
+                  <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Last Name *</label>
                   <input
                     type="text"
                     required
                     value={formData.lastName}
                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
+                    className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">Birth Year *</label>
+                  <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Birth Year *</label>
                   <input
                     type="number"
                     required
@@ -598,13 +589,13 @@ export default function MyProfilePage() {
                     max="2015"
                     value={formData.birthYear}
                     onChange={(e) => setFormData({ ...formData, birthYear: e.target.value })}
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
+                    className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                   />
                 </div>
 
                 <div>
                   <CountrySelect
-                    label="Nationality"
+                    label="Primary Nationality *"
                     required
                     value={formData.nationality}
                     onChange={(code) => setFormData({ ...formData, nationality: code })}
@@ -613,28 +604,28 @@ export default function MyProfilePage() {
               </div>
 
               {/* Origin / Youth Club & Sports Academy */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-3 border-t border-zinc-100">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
                 <div className="sm:col-span-2">
-                  <label className="block font-semibold text-zinc-800 mb-1">
-                    Origin / Youth Club (where you started playing bandy) *
+                  <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                    Origin / Youth Club (where you started playing bandy)
                   </label>
                   <input
                     type="text"
                     value={formData.youthClub}
                     onChange={(e) => setFormData({ ...formData, youthClub: e.target.value })}
                     placeholder="e.g. Vetlanda BK, Brobergs IF, Edsbyns IF"
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900 font-medium"
+                    className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                   />
                 </div>
 
-                <div>
-                  <label className="block font-semibold text-zinc-800 mb-1">
+                <div className="sm:col-span-2">
+                  <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
                     Sports Academy / Bandy High School
                   </label>
                   <select
                     value={formData.academyType}
                     onChange={(e) => setFormData({ ...formData, academyType: e.target.value as "NIU" | "international" | "local" | "none" })}
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900 cursor-pointer font-medium"
+                    className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors cursor-pointer"
                   >
                     <option value="none">None</option>
                     <option value="NIU">NIU Bandy Academy (Sweden)</option>
@@ -645,9 +636,9 @@ export default function MyProfilePage() {
               </div>
 
               {/* Physics & Stick Grip */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs pt-3 border-t border-zinc-100">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-slate-100">
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">Height (cm)</label>
+                  <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Height (cm)</label>
                   <input
                     type="number"
                     min="140"
@@ -655,12 +646,12 @@ export default function MyProfilePage() {
                     value={formData.heightCm}
                     onChange={(e) => setFormData({ ...formData, heightCm: e.target.value })}
                     placeholder="185"
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
+                    className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">Weight (kg)</label>
+                  <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Weight (kg)</label>
                   <input
                     type="number"
                     min="40"
@@ -668,16 +659,16 @@ export default function MyProfilePage() {
                     value={formData.weightKg}
                     onChange={(e) => setFormData({ ...formData, weightKg: e.target.value })}
                     placeholder="82"
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
+                    className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">Shoots (Left/Right) *</label>
+                  <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Stick Grip *</label>
                   <select
                     value={formData.stickGrip}
                     onChange={(e) => setFormData({ ...formData, stickGrip: e.target.value as PlayerGrip })}
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-800 focus:outline-none focus:border-zinc-900 cursor-pointer"
+                    className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors cursor-pointer"
                   >
                     <option value="left">Left (L)</option>
                     <option value="right">Right (R)</option>
@@ -686,112 +677,111 @@ export default function MyProfilePage() {
               </div>
 
               {/* Current Club */}
-              <div className="pt-3 border-t border-zinc-100">
-                <label className="block font-semibold text-zinc-700 text-xs mb-1">Current Club *</label>
+              <div className="pt-3 border-t border-slate-100">
+                <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Current Club *</label>
                 <input
                   type="text"
                   required
                   value={formData.currentClub}
                   onChange={(e) => setFormData({ ...formData, currentClub: e.target.value })}
                   placeholder="e.g. Sandvikens AIK, Villa Lidköping, Edsbyns IF"
-                  className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 text-xs focus:outline-none focus:border-zinc-900"
+                  className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                 />
               </div>
             </div>
 
             {/* SECTION B: POSITION & KEY ATTRIBUTES */}
-            <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs space-y-5">
-              <div className="pb-3 border-b border-zinc-100">
-                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 text-[11px] font-bold uppercase tracking-wider mb-1">
-                  <span>B</span>
-                  <span>Position & Key Attributes</span>
+            <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-6 sm:p-8 space-y-6">
+              <div className="pb-3 border-b border-slate-100">
+                <div className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md mb-2">
+                  <span className="font-bold mr-1.5">B</span>
+                  <span>Position & Core Traits</span>
                 </div>
-                <h2 className="text-base font-bold text-zinc-950">On-ice Role & Key Strengths</h2>
-                <p className="text-xs text-zinc-500">
+                <h2 className="text-xl font-bold text-slate-900">On-Ice Role & Key Strengths</h2>
+                <p className="text-sm text-slate-500 mt-1">
                   Primary position, secondary versatility, and your key player strengths.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-semibold text-zinc-800 mb-1">Primary Position *</label>
+                  <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Primary Position *</label>
                   <select
                     value={formData.position}
                     onChange={(e) => setFormData({ ...formData, position: e.target.value as PositionCategory })}
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 font-semibold focus:outline-none focus:border-zinc-900 cursor-pointer"
+                    className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors cursor-pointer"
                   >
-                    <option value="halv">Halv / Wingback</option>
+                    <option value="halv">Halv</option>
                     <option value="midfielder">Midfielder</option>
                     <option value="defender">Defender</option>
-                    <option value="forward">Forward / Striker</option>
+                    <option value="forward">Forward</option>
                     <option value="goalkeeper">Goalkeeper</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">Secondary Position (Optional)</label>
+                  <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Secondary Position (Optional)</label>
                   <select
                     value={formData.secondaryPosition}
                     onChange={(e) => setFormData({ ...formData, secondaryPosition: e.target.value })}
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-800 focus:outline-none focus:border-zinc-900 cursor-pointer"
+                    className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors cursor-pointer"
                   >
                     <option value="">None / Primary position only</option>
-                    <option value="halv">Halv / Wingback</option>
+                    <option value="halv">Halv</option>
                     <option value="midfielder">Midfielder</option>
                     <option value="defender">Defender</option>
-                    <option value="forward">Forward / Striker</option>
+                    <option value="forward">Forward</option>
                     <option value="goalkeeper">Goalkeeper</option>
                   </select>
                 </div>
               </div>
 
               {/* Spetsegenskaper */}
-              <div className="pt-3 border-t border-zinc-100">
-                <label className="block font-semibold text-zinc-900 text-xs mb-2">
-                  Key Attributes (Select your core strengths)
+              <div className="pt-3 border-t border-slate-100">
+                <label className="text-sm font-semibold text-slate-700 mb-2 block">
+                  Key Attributes (Select your core strengths) *
                 </label>
                 <BandyTraitsPicker
                   selectedTraits={formData.playerTraits}
                   onChange={(traits) => setFormData({ ...formData, playerTraits: traits })}
-                  lang={lang}
+                  lang="en"
                 />
               </div>
             </div>
 
             {/* SECTION C: CONTRACT & OFF-ICE PROFILE */}
-            <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs space-y-6">
-              <div className="pb-3 border-b border-zinc-100">
-                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 text-[11px] font-bold uppercase tracking-wider mb-1">
-                  <span>C</span>
-                  <span>Contract & Off-Ice Profile</span>
+            <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-6 sm:p-8 space-y-6">
+              <div className="pb-3 border-b border-slate-100">
+                <div className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md mb-2">
+                  <span className="font-bold mr-1.5">C</span>
+                  <span>Contract & Off-Ice Preferences</span>
                 </div>
-                <h2 className="text-base font-bold text-zinc-950">Contract Status, Video & Off-Ice Preferences</h2>
-                <p className="text-xs text-zinc-500">
+                <h2 className="text-xl font-bold text-slate-900">Contract Status, Video & Off-Ice Preferences</h2>
+                <p className="text-sm text-slate-500 mt-1">
                   Define your contract availability, highlight video link, and dual-career preferences.
                 </p>
               </div>
 
               {/* Video URL */}
               <div>
-                <label className="block font-semibold text-zinc-800 text-xs mb-1 flex items-center gap-1.5">
-                  <span>▶️</span>
-                  <span>Video / Highlights (YouTube or Vimeo link)</span>
+                <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                  ▶️ Video / Highlights (YouTube or Vimeo link)
                 </label>
                 <input
                   type="url"
                   value={formData.videoUrl}
                   onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value, youtube_url: e.target.value })}
                   placeholder="https://www.youtube.com/watch?v=... or https://vimeo.com/..."
-                  className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 text-xs font-medium"
+                  className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                 />
               </div>
 
               {/* Contract Type */}
-              <div className="pt-2 border-t border-zinc-100">
-                <label className="block font-bold text-zinc-800 text-xs mb-2">
-                  Desired Contract Level:
+              <div className="pt-2 border-t border-slate-100">
+                <label className="text-sm font-semibold text-slate-700 mb-2 block">
+                  Desired Agreement Level:
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
                     { id: "semi_pro", title: "Semi-Professional", desc: "Player compensation + work/studies" },
                     { id: "full_time", title: "Full-time Pro", desc: "Full-time contract & elite focus" },
@@ -801,17 +791,17 @@ export default function MyProfilePage() {
                       key={opt.id}
                       type="button"
                       onClick={() => setFormData({ ...formData, contractType: opt.id })}
-                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                      className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
                         formData.contractType === opt.id
-                          ? "bg-zinc-900 text-white border-zinc-900 shadow-xs font-semibold"
-                          : "bg-zinc-50 hover:bg-zinc-100 text-zinc-800 border-zinc-200"
+                          ? "bg-slate-900 text-white border-slate-900 shadow-sm font-semibold"
+                          : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-bold text-xs">{opt.title}</span>
+                        <span className="font-bold text-sm">{opt.title}</span>
                         {formData.contractType === opt.id && <span className="text-xs">✓</span>}
                       </div>
-                      <p className={`text-[11px] ${formData.contractType === opt.id ? "text-zinc-300" : "text-zinc-500"}`}>
+                      <p className={`text-xs leading-relaxed ${formData.contractType === opt.id ? "text-slate-300" : "text-slate-500"}`}>
                         {opt.desc}
                       </p>
                     </button>
@@ -820,34 +810,34 @@ export default function MyProfilePage() {
               </div>
 
               {/* Occupation Preferences */}
-              <div className="space-y-2 pt-2 border-t border-zinc-100">
-                <span className="block font-bold text-zinc-800 text-xs">
+              <div className="space-y-2 pt-2 border-t border-slate-100">
+                <span className="text-sm font-semibold text-slate-700 mb-1.5 block">
                   Off-Ice Preferences (Combine bandy with):
                 </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {[
-                    { id: "studies", icon: "🎓", label: "University / College studies" },
-                    { id: "fulltime_job", icon: "💼", label: "Civilian full-time job alongside bandy" },
-                    { id: "parttime_job", icon: "🕒", label: "Flexible part-time work" },
-                    { id: "housing", icon: "🏠", label: "Apartment / Housing assistance" },
-                    { id: "sports_only", icon: "🏒", label: "Sports only / Direct compensation" },
+                    { id: "studies", icon: "🎓", label: "University / Academic Studies" },
+                    { id: "fulltime_job", icon: "💼", label: "Civilian Full-Time Employment" },
+                    { id: "parttime_job", icon: "🕒", label: "Flexible Part-Time Work" },
+                    { id: "housing", icon: "🏠", label: "Apartment / Housing Assistance" },
+                    { id: "sports_only", icon: "🏒", label: "Sports Only / Pro Contract" },
                   ].map((item) => (
                     <label
                       key={item.id}
                       onClick={() => handleToggleOccupation(item.id as OccupationPreference)}
-                      className={`flex items-start gap-2.5 p-2.5 rounded-xl border text-xs cursor-pointer transition-colors ${
+                      className={`flex items-start gap-2.5 p-3 rounded-lg border text-sm cursor-pointer transition-colors ${
                         formData.occupationPreferences.includes(item.id as OccupationPreference)
-                          ? "bg-zinc-900/5 border-zinc-900 text-zinc-950 font-semibold"
-                          : "bg-zinc-50 hover:bg-zinc-100/70 border-zinc-200 text-zinc-700"
+                          ? "bg-slate-50 border-slate-900 text-slate-950 font-semibold"
+                          : "bg-white hover:bg-slate-50 border-slate-200 text-slate-700"
                       }`}
                     >
                       <input
                         type="checkbox"
                         checked={formData.occupationPreferences.includes(item.id as OccupationPreference)}
                         onChange={() => {}}
-                        className="mt-0.5 rounded border-zinc-300 text-zinc-900"
+                        className="mt-0.5 rounded border-slate-300 text-slate-900"
                       />
-                      <span className="flex items-center gap-1.5">
+                      <span className="flex items-center gap-2">
                         <span>{item.icon}</span>
                         <span>{item.label}</span>
                       </span>
@@ -857,8 +847,8 @@ export default function MyProfilePage() {
               </div>
 
               {/* Target Countries */}
-              <div className="pt-3 border-t border-zinc-100">
-                <label className="block font-bold text-zinc-800 text-xs mb-2">
+              <div className="pt-3 border-t border-slate-100">
+                <label className="text-sm font-semibold text-slate-700 mb-2 block">
                   Open to clubs in the following countries:
                 </label>
                 <TargetCountriesPicker
@@ -868,16 +858,18 @@ export default function MyProfilePage() {
               </div>
 
               {/* Spoken Languages */}
-              <div className="pt-3 border-t border-zinc-100">
+              <div className="pt-3 border-t border-slate-100">
                 <SpokenLanguagesPicker
                   selectedLanguages={formData.spokenLanguages}
                   onChange={(langs) => setFormData({ ...formData, spokenLanguages: langs })}
+                  label="Spoken Languages"
+                  subtitle="Languages you speak comfortably for scout and club discussions."
                 />
               </div>
 
               {/* Bio */}
-              <div className="pt-3 border-t border-zinc-100 text-xs">
-                <label className="block font-semibold text-zinc-700 mb-1">
+              <div className="pt-3 border-t border-slate-100">
+                <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
                   Player Presentation & Ambitions
                 </label>
                 <textarea
@@ -885,21 +877,21 @@ export default function MyProfilePage() {
                   value={formData.bio}
                   onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                   placeholder="Describe your playing style, career ambitions, and what you are looking for in a new club..."
-                  className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
+                  className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                 />
               </div>
 
               {/* Contact Information & Privacy */}
-              <div className="pt-4 border-t border-zinc-100 space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="pt-4 border-t border-slate-100 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-semibold text-zinc-700 mb-1">Phone</label>
+                    <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Phone Number</label>
                     <input
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       placeholder="+46 70 123 45 67"
-                      className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:outline-none focus:border-zinc-900"
+                      className="w-full text-base text-slate-900 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 shadow-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors"
                     />
                   </div>
                 </div>
@@ -917,14 +909,14 @@ export default function MyProfilePage() {
             </div>
 
             {/* SECTION D: CAREER HISTORY & PREVIOUS CLUBS */}
-            <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs space-y-5">
-              <div className="pb-3 border-b border-zinc-100">
-                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 text-[11px] font-bold uppercase tracking-wider mb-1">
-                  <span>D</span>
+            <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-6 sm:p-8 space-y-6">
+              <div className="pb-3 border-b border-slate-100">
+                <div className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md mb-2">
+                  <span className="font-bold mr-1.5">D</span>
                   <span>Career History & Previous Clubs</span>
                 </div>
-                <h2 className="text-base font-bold text-zinc-950">Career History</h2>
-                <p className="text-xs text-zinc-500">
+                <h2 className="text-xl font-bold text-slate-900">Career History</h2>
+                <p className="text-sm text-slate-500 mt-1">
                   Add previous seasons, clubs, leagues, and roles you have represented.
                 </p>
               </div>
@@ -932,7 +924,7 @@ export default function MyProfilePage() {
               <CareerHistoryEditor
                 careerHistory={formData.careerHistory}
                 onChange={(history) => setFormData({ ...formData, careerHistory: history })}
-                lang={lang}
+                lang="en"
               />
             </div>
 
@@ -941,12 +933,12 @@ export default function MyProfilePage() {
               <button
                 type="submit"
                 disabled={isSaving}
-                className="px-8 py-3 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center gap-2 cursor-pointer"
+                className="bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-semibold px-8 py-3 rounded-lg shadow-sm transition-colors flex items-center gap-2 cursor-pointer"
               >
                 {isSaving ? (
                   <>
-                    <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Saving changes...</span>
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Saving Changes...</span>
                   </>
                 ) : (
                   <>

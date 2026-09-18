@@ -47,21 +47,7 @@ export function BookmarkButton({
     lg: "px-3.5 py-2 text-xs gap-1.5",
   };
 
-  const labelText = saved
-    ? lang === "sv"
-      ? "Sparad i shortlist"
-      : lang === "fi"
-      ? "Tallennettu listalle"
-      : lang === "no"
-      ? "Lagret i shortlist"
-      : "Shortlisted"
-    : lang === "sv"
-    ? "Spara till shortlist"
-    : lang === "fi"
-    ? "Tallenna listalle"
-    : lang === "no"
-    ? "Lagre i shortlist"
-    : "Save to shortlist";
+  const labelText = saved ? "Shortlisted" : "Save to shortlist";
 
   return (
     <div className="relative inline-block">
@@ -75,7 +61,7 @@ export function BookmarkButton({
         } ${
           saved
             ? "bg-amber-50 border-amber-300 text-amber-600 hover:bg-amber-100 shadow-2xs"
-            : "bg-white/90 hover:bg-white border-zinc-200 text-zinc-400 hover:text-zinc-800 shadow-2xs backdrop-blur-xs"
+            : "bg-white/90 hover:bg-white border-slate-200 text-slate-400 hover:text-slate-800 shadow-2xs backdrop-blur-xs"
         } ${animating ? "scale-115" : "scale-100"} ${className}`}
       >
         <svg
@@ -89,7 +75,7 @@ export function BookmarkButton({
         </svg>
 
         {showLabel && (
-          <span className={`font-semibold ${saved ? "text-amber-900" : "text-zinc-700"}`}>
+          <span className={`font-semibold ${saved ? "text-amber-900" : "text-slate-700"}`}>
             {labelText}
           </span>
         )}
@@ -98,31 +84,29 @@ export function BookmarkButton({
       {/* Auth Prompt Dropdown if user is unauthenticated */}
       {showAuthModal && (
         <div
-          className="absolute right-0 top-full mt-2 w-64 p-3 bg-zinc-900 text-white rounded-xl shadow-xl z-50 text-xs animate-in fade-in zoom-in-95 duration-150"
+          className="absolute right-0 top-full mt-2 w-64 p-3 bg-slate-900 text-white rounded-xl shadow-xl z-50 text-xs animate-in fade-in zoom-in-95 duration-150"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-start justify-between gap-2 mb-1.5">
-            <span className="font-bold text-zinc-100 flex items-center gap-1.5">
+            <span className="font-bold text-slate-100 flex items-center gap-1.5">
               <span>⭐</span>
-              <span>{lang === "sv" ? "Spara i shortlist" : "Save to shortlist"}</span>
+              <span>Save to shortlist</span>
             </span>
             <button
               onClick={() => setShowAuthModal(false)}
-              className="text-zinc-400 hover:text-white font-bold p-0.5"
+              className="text-slate-400 hover:text-white font-bold p-0.5"
             >
               ✕
             </button>
           </div>
-          <p className="text-zinc-300 text-[11px] leading-relaxed mb-3">
-            {lang === "sv"
-              ? "Logga in med din e-post för att spara spelare till din personliga lista och skriva interna anteckningar."
-              : "Sign in to save players to your personal shortlist and keep scout notes."}
+          <p className="text-slate-300 text-[11px] leading-relaxed mb-3">
+            Sign in to save players to your personal shortlist and keep scout notes.
           </p>
           <Link
             href="/login"
-            className="block w-full py-1.5 text-center bg-white text-zinc-950 font-bold rounded-lg hover:bg-zinc-100 transition-colors"
+            className="block w-full py-1.5 text-center bg-white text-slate-950 font-bold rounded-lg hover:bg-slate-100 transition-colors"
           >
-            {lang === "sv" ? "Logga in här →" : "Sign in here →"}
+            Sign in here →
           </Link>
         </div>
       )}

@@ -39,28 +39,28 @@ export function parseVideoUrl(rawUrl?: string | null): { type: 'youtube' | 'vime
   return { type: 'invalid' };
 }
 
-export function VideoEmbed({ url, title = 'Player Highlights', lang = 'sv' }: VideoEmbedProps) {
+export function VideoEmbed({ url, title = 'Player Highlights', lang = 'en' }: VideoEmbedProps) {
   if (!url) return null;
 
   const parsed = parseVideoUrl(url);
 
   if (parsed.type === 'youtube' || parsed.type === 'vimeo') {
     return (
-      <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden shadow-xs">
-        <div className="p-4 border-b border-zinc-100 flex items-center justify-between">
+      <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-sm">
+        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-950">
-              {lang === 'sv' ? 'Matchklipp & Highlights' : 'Game Tape & Highlights'}
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+              Game Tape & Highlights
             </h3>
           </div>
           <a
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs font-semibold text-zinc-600 hover:text-zinc-950 flex items-center gap-1 transition-colors"
+            className="text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1 transition-colors"
           >
-            <span>{lang === 'sv' ? 'Öppna extern länk' : 'Open link'}</span>
+            <span>Open in new tab</span>
             <span>↗</span>
           </a>
         </div>
@@ -79,25 +79,25 @@ export function VideoEmbed({ url, title = 'Player Highlights', lang = 'sv' }: Vi
 
   if (parsed.type === 'direct') {
     return (
-      <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-xs flex items-center justify-between">
+      <div className="bg-white border border-slate-200/80 rounded-xl p-5 shadow-sm flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 border border-red-200 flex items-center justify-center font-bold text-base shrink-0">
             ▶
           </div>
           <div>
-            <h4 className="text-sm font-bold text-zinc-950">
-              {lang === 'sv' ? 'Se spelarens videoklipp' : 'Watch Player Highlights'}
+            <h4 className="text-sm font-bold text-slate-900">
+              Watch Player Highlights
             </h4>
-            <span className="text-xs text-zinc-500 truncate max-w-sm block">{url}</span>
+            <span className="text-xs text-slate-500 truncate max-w-sm block">{url}</span>
           </div>
         </div>
         <a
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer shrink-0"
+          className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer shrink-0"
         >
-          {lang === 'sv' ? 'Öppna video' : 'Watch video'} ↗
+          Watch video ↗
         </a>
       </div>
     );

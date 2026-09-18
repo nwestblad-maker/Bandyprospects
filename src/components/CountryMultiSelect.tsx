@@ -6,7 +6,7 @@ import { COUNTRIES } from '@/lib/formatters';
 export default function CountryMultiSelect({
   selectedCountries = [],
   onChange,
-  label = 'Medborgarskap / Pass (Välj alla som gäller)',
+  label = 'Citizenship / Passport (Select all that apply)',
 }: {
   selectedCountries: string[];
   onChange: (countries: string[]) => void;
@@ -23,7 +23,7 @@ export default function CountryMultiSelect({
   return (
     <div className="space-y-3">
       {label && (
-        <label className="block text-sm font-semibold text-slate-800">
+        <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
           {label}
         </label>
       )}
