@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
+import { resolveEmailFromIdentifier } from '@/lib/authHelpers';
 
 const AUTH_SYNC_CHANNEL = 'bp_auth_sync_channel';
 const AUTH_SYNC_STORAGE_KEY = 'bp_auth_sync_timestamp';
@@ -49,10 +50,14 @@ export default function GatedContactCard({
   targetType?: 'player' | 'club' | null;
 }) {
   const [user, setUser] = useState<User | null>(null);
-  const [authEmail, setAuthEmail] = useState('');
+  const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot_password' | 'magic_link'>('login');
+  const [authIdentifier, setAuthIdentifier] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sentLink, setSentLink] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   // Privacy evaluation
   const isFormOnly = contactPreference === 'form_only' || (showPhone === false && showEmail === false);
@@ -181,11 +186,123 @@ export default function GatedContactCard({
     }
   }, [isFormOnly]);
 
-  const handleSendMagicLink = async (e: React.FormEvent) => {
+  const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!authEmail) return;
+    const cleanIdentifier = authIdentifier.trim();
+    if (!cleanIdentifier || !authPassword) {
+      setErrorMsg('Vänligen ange användarnamn/e-post och lösenord.');
+      return;
+    }
     setLoading(true);
     setErrorMsg('');
+    setSuccessMsg('');
+
+    try {
+      const resolvedEmail = await resolveEmailFromIdentifier(cleanIdentifier);
+      if (!resolvedEmail.includes('@')) {
+        throw new Error('Kunde inte hitta ett konto för det användarnamnet. Vänligen ange din e-postadress.');
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: resolvedEmail,
+        password: authPassword,
+      });
+
+      if (error) throw error;
+      if (data?.user) {
+        setUser(data.user);
+        broadcastAuthSuccess(data.user.email);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Inloggningen misslyckades. Kontrollera dina uppgifter.';
+      setErrorMsg(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanEmail = authIdentifier.trim().toLowerCase();
+    if (!cleanEmail.includes('@')) {
+      setErrorMsg('Vänligen ange en giltig e-postadress.');
+      return;
+    }
+    if (!authPassword || authPassword.length < 6) {
+      setErrorMsg('Lösenordet måste bestå av minst 6 tecken.');
+      return;
+    }
+    setLoading(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    try {
+      const returnUrl = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/';
+      const redirectUrl = typeof window !== 'undefined'
+        ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnUrl)}`
+        : undefined;
+
+      const { data, error } = await supabase.auth.signUp({
+        email: cleanEmail,
+        password: authPassword,
+        options: { emailRedirectTo: redirectUrl },
+      });
+
+      if (error) throw error;
+      if (data?.session?.user) {
+        setUser(data.session.user);
+        broadcastAuthSuccess(data.session.user.email);
+      } else {
+        setSuccessMsg(`Konto skapat! En bekräftelselänk har skickats till ${cleanEmail}.`);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Registreringen misslyckades.';
+      setErrorMsg(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanEmail = authIdentifier.trim().toLowerCase();
+    if (!cleanEmail.includes('@')) {
+      setErrorMsg('Vänligen fyll i din e-postadress för återställning.');
+      return;
+    }
+    setLoading(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    try {
+      const returnUrl = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/';
+      const redirectUrl = typeof window !== 'undefined'
+        ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnUrl)}`
+        : undefined;
+
+      const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+        redirectTo: redirectUrl,
+      });
+      if (error) throw error;
+      setSuccessMsg(`Återställningslänk skickad till ${cleanEmail}! Kontrollera din inkorg.`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Kunde inte skicka återställningslänk.';
+      setErrorMsg(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSendMagicLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanEmail = authIdentifier.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      setErrorMsg('Vänligen ange en giltig e-postadress.');
+      return;
+    }
+    setLoading(true);
+    setErrorMsg('');
+    setSuccessMsg('');
 
     const returnUrl = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/';
     const redirectUrl = typeof window !== 'undefined'
@@ -193,7 +310,7 @@ export default function GatedContactCard({
       : undefined;
 
     const { error } = await supabase.auth.signInWithOtp({
-      email: authEmail.trim(),
+      email: cleanEmail,
       options: { emailRedirectTo: redirectUrl },
     });
 
@@ -406,68 +523,311 @@ export default function GatedContactCard({
   }
 
   return (
-    <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 mt-4 text-center">
+    <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 sm:p-6 mt-4 text-left shadow-2xs">
       <div className="max-w-md mx-auto">
-        <div className="text-2xl mb-2">🔒</div>
-        <h4 className="text-base font-bold text-slate-900">Kontaktuppgifter skyddade</h4>
-        <p className="text-xs text-slate-600 mb-4">
-          För att skydda spelare och ledare mot spam krävs inloggning med e-post för att visa kontaktuppgifter.
-        </p>
-        {sentLink ? (
-          <div className="bg-emerald-50/80 border border-emerald-300/80 rounded-xl p-5 text-center shadow-2xs space-y-3">
-            <div className="w-10 h-10 mx-auto bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center text-lg shadow-2xs">
-              ✉️
-            </div>
+        <div className="text-center mb-4">
+          <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-zinc-100 flex items-center justify-center text-lg border border-zinc-200 shadow-2xs">
+            🔒
+          </div>
+          <h4 className="text-sm sm:text-base font-bold text-slate-900">
+            {authMode === 'register'
+              ? 'Skapa konto för kontakt'
+              : authMode === 'forgot_password'
+              ? 'Återställ lösenord'
+              : authMode === 'magic_link'
+              ? 'Logga in med engångslänk'
+              : 'Logga in för att visa kontaktuppgifter'}
+          </h4>
+          <p className="text-xs text-slate-600 mt-1">
+            {authMode === 'register'
+              ? 'Registrera dig med e-post och lösenord för att kontakta klubbar och spelare.'
+              : authMode === 'forgot_password'
+              ? 'Ange din e-postadress så skickar vi en länk för att återställa lösenordet.'
+              : authMode === 'magic_link'
+              ? 'Fyll i din e-postadress så skickar vi en direktinloggningslänk.'
+              : 'Ange ditt användarnamn/e-post och lösenord för att låsa upp kontaktuppgifter direkt.'}
+          </p>
+        </div>
+
+        {/* Feedback alerts */}
+        {errorMsg && (
+          <div className="mb-3 p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between">
+            <span>⚠️ {errorMsg}</span>
+            <button
+              type="button"
+              onClick={() => setErrorMsg('')}
+              className="font-bold text-rose-900 ml-2 hover:underline cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="mb-3 p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between">
+            <span>✓ {successMsg}</span>
+            <button
+              type="button"
+              onClick={() => setSuccessMsg('')}
+              className="font-bold text-emerald-900 ml-2 hover:underline cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* PRIMARY FORM: LOGIN WITH PASSWORD */}
+        {authMode === 'login' && (
+          <form onSubmit={handlePasswordLogin} className="space-y-3">
             <div>
-              <p className="text-sm font-bold text-slate-900 leading-snug">
-                Länk skickad till <span className="text-emerald-800 font-extrabold break-all">{authEmail}</span>! Klicka på länken i din inkorg.
-              </p>
-              <p className="text-xs text-slate-600 mt-1">
-                När du har klickat på länken i ditt mail låses kontaktuppgifterna upp automatiskt här.
-              </p>
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                E-post / Användarnamn
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="namn@exempel.se eller användarnamn"
+                value={authIdentifier}
+                onChange={(e) => setAuthIdentifier(e.target.value)}
+                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white focus:outline-none focus:border-slate-900 shadow-2xs"
+              />
             </div>
 
-            <div className="inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-emerald-300 text-xs font-semibold text-emerald-800 shadow-2xs">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-              </span>
-              <span>Väntar på verifiering...</span>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[11px] font-semibold text-slate-700">
+                  Lösenord
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode('forgot_password');
+                    setErrorMsg('');
+                    setSuccessMsg('');
+                  }}
+                  className="text-[11px] font-semibold text-slate-500 hover:text-slate-900 underline cursor-pointer"
+                >
+                  Glömt lösenord?
+                </button>
+              </div>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  placeholder="••••••••"
+                  value={authPassword}
+                  onChange={(e) => setAuthPassword(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white focus:outline-none focus:border-slate-900 shadow-2xs pr-9"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-xs"
+                >
+                  {showPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
             </div>
 
-            <div className="pt-2 border-t border-emerald-200/60">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-2.5 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-800 disabled:opacity-50 cursor-pointer transition-colors shadow-xs mt-1 flex items-center justify-center gap-2"
+            >
+              {loading && <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+              <span>{loading ? 'Loggar in...' : 'Logga in & visa kontakt →'}</span>
+            </button>
+
+            <div className="pt-2 border-t border-slate-200/80 flex items-center justify-between text-[11px] text-slate-500">
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('register');
+                  setErrorMsg('');
+                  setSuccessMsg('');
+                }}
+                className="font-semibold text-slate-900 hover:underline cursor-pointer"
+              >
+                Inget konto? Registrera dig
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('magic_link');
+                  setErrorMsg('');
+                  setSuccessMsg('');
+                }}
+                className="hover:text-slate-800 underline cursor-pointer"
+              >
+                Engångslänk istället
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* REGISTER MODE */}
+        {authMode === 'register' && (
+          <form onSubmit={handleRegister} className="space-y-3">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                E-postadress
+              </label>
+              <input
+                type="email"
+                required
+                placeholder="namn@exempel.se"
+                value={authIdentifier}
+                onChange={(e) => setAuthIdentifier(e.target.value)}
+                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white focus:outline-none focus:border-slate-900 shadow-2xs"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                Välj lösenord (minst 6 tecken)
+              </label>
+              <input
+                type="password"
+                required
+                placeholder="••••••••"
+                value={authPassword}
+                onChange={(e) => setAuthPassword(e.target.value)}
+                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white focus:outline-none focus:border-slate-900 shadow-2xs"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-2.5 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-800 disabled:opacity-50 cursor-pointer transition-colors shadow-xs mt-1 flex items-center justify-center gap-2"
+            >
+              {loading && <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+              <span>{loading ? 'Skapar konto...' : 'Skapa konto & visa kontakt →'}</span>
+            </button>
+
+            <div className="pt-2 border-t border-slate-200/80 text-center text-[11px]">
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('login');
+                  setErrorMsg('');
+                  setSuccessMsg('');
+                }}
+                className="text-slate-600 hover:text-slate-900 underline font-semibold cursor-pointer"
+              >
+                Har du redan ett konto? Logga in
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* FORGOT PASSWORD MODE */}
+        {authMode === 'forgot_password' && (
+          <form onSubmit={handleForgotPassword} className="space-y-3">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                E-postadress för återställning
+              </label>
+              <input
+                type="email"
+                required
+                placeholder="namn@exempel.se"
+                value={authIdentifier.includes('@') ? authIdentifier : ''}
+                onChange={(e) => setAuthIdentifier(e.target.value)}
+                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white focus:outline-none focus:border-slate-900 shadow-2xs"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-2.5 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-800 disabled:opacity-50 cursor-pointer transition-colors shadow-xs mt-1 flex items-center justify-center gap-2"
+            >
+              {loading && <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+              <span>{loading ? 'Skickar...' : 'Skicka återställningslänk →'}</span>
+            </button>
+
+            <div className="pt-2 border-t border-slate-200/80 text-center text-[11px]">
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('login');
+                  setErrorMsg('');
+                  setSuccessMsg('');
+                }}
+                className="text-slate-600 hover:text-slate-900 underline font-semibold cursor-pointer"
+              >
+                ← Tillbaka till inloggning
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* MAGIC LINK MODE */}
+        {authMode === 'magic_link' && (
+          sentLink ? (
+            <div className="bg-emerald-50/80 border border-emerald-300/80 rounded-xl p-4 text-center shadow-2xs space-y-2.5">
+              <div className="w-9 h-9 mx-auto bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center text-base shadow-2xs">
+                ✉️
+              </div>
+              <p className="text-xs font-bold text-slate-900">
+                Engångslänk skickad till <span className="text-emerald-800 font-extrabold break-all">{authIdentifier}</span>!
+              </p>
+              <p className="text-[11px] text-slate-600">
+                Klicka på länken i din inkorg för att låsa upp kontaktuppgifterna automatiskt.
+              </p>
               <button
                 type="button"
                 onClick={() => {
                   setSentLink(false);
-                  setErrorMsg('');
+                  setAuthMode('login');
                 }}
-                className="text-[11px] text-slate-500 hover:text-slate-800 underline cursor-pointer transition-colors"
+                className="text-[11px] text-slate-500 hover:text-slate-800 underline cursor-pointer"
               >
-                Angav du fel adress? Klicka här för att byta e-post
+                Tillbaka till lösenordsinloggning
               </button>
             </div>
-          </div>
-        ) : (
-          <form onSubmit={handleSendMagicLink} className="flex flex-col sm:flex-row gap-2">
-            <input
-              type="email"
-              required
-              placeholder="Fyll i din e-postadress..."
-              value={authEmail}
-              onChange={(e) => setAuthEmail(e.target.value)}
-              className="flex-1 px-3.5 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:border-slate-900"
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 disabled:opacity-50 cursor-pointer"
-            >
-              {loading ? 'Skickar...' : 'Visa kontakt'}
-            </button>
-          </form>
+          ) : (
+            <form onSubmit={handleSendMagicLink} className="space-y-3">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  E-postadress
+                </label>
+                <input
+                  type="email"
+                  required
+                  placeholder="namn@exempel.se"
+                  value={authIdentifier.includes('@') ? authIdentifier : ''}
+                  onChange={(e) => setAuthIdentifier(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white focus:outline-none focus:border-slate-900 shadow-2xs"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-2.5 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-800 disabled:opacity-50 cursor-pointer transition-colors shadow-xs mt-1 flex items-center justify-center gap-2"
+              >
+                {loading && <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                <span>{loading ? 'Skickar länk...' : 'Skicka engångslänk →'}</span>
+              </button>
+
+              <div className="pt-2 border-t border-slate-200/80 text-center text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode('login');
+                    setErrorMsg('');
+                    setSuccessMsg('');
+                  }}
+                  className="text-slate-600 hover:text-slate-900 underline font-semibold cursor-pointer"
+                >
+                  ← Tillbaka till lösenordsinloggning
+                </button>
+              </div>
+            </form>
+          )
         )}
-        {errorMsg && <p className="text-xs text-red-600 mt-2">{errorMsg}</p>}
       </div>
     </div>
   );

@@ -26,19 +26,17 @@ export default function ContactPrivacySettings({
       <div>
         <h3 className="text-sm font-bold text-zinc-950 uppercase tracking-wider flex items-center gap-2">
           <span>🛡️</span>
-          <span>Integritet & Kontaktinställningar</span>
+          <span>PRIVACY & CONTACT SETTINGS</span>
         </h3>
         <p className="text-zinc-500 text-xs mt-0.5">
-          {entityType === 'club'
-            ? 'Bestäm hur klubbens kontaktuppgifter exponeras för inloggade spelare och scouter.'
-            : 'Bestäm hur dina kontaktuppgifter exponeras för inloggade scouter och klubbledare.'}
+          Decide how your contact details are displayed to verified scouts and club officials.
         </p>
       </div>
 
       {/* Radio: contact_preference */}
       <div className="space-y-2">
         <label className="block font-semibold text-zinc-800 text-xs">
-          Hur vill du bli kontaktad?
+          How do you prefer to be contacted?
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label
@@ -58,10 +56,10 @@ export default function ContactPrivacySettings({
             />
             <div>
               <span className="font-bold text-zinc-900 block">
-                Både direktuppgifter och kontaktformulär
+                Both direct contact details and messaging form
               </span>
               <span className="text-[11px] text-zinc-500 mt-0.5 block leading-relaxed">
-                Visar dina valda kontaktuppgifter (e-post/telefon) samt ett direktmeddelandeformulär.
+                Displays your chosen contact details (email/phone) along with an on-site direct message form.
               </span>
             </div>
           </label>
@@ -83,10 +81,10 @@ export default function ContactPrivacySettings({
             />
             <div>
               <span className="font-bold text-zinc-900 block">
-                Endast via kontaktformuläret på sajten
+                Only via on-site messaging form
               </span>
               <span className="text-[11px] text-zinc-500 mt-0.5 block leading-relaxed">
-                Dölj dina direkta uppgifter. Meddelanden vidarebefordras säkert till din e-post.
+                Hides your direct contact info. Messages are securely routed through the platform inbox.
               </span>
             </div>
           </label>
@@ -97,7 +95,7 @@ export default function ContactPrivacySettings({
       {contactPreference === 'all' ? (
         <div className="bg-zinc-50 border border-zinc-200/90 rounded-xl p-3.5 space-y-2.5">
           <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-600 block">
-            Synliga uppgifter för verifierade användare:
+            VISIBLE INFO FOR VERIFIED USERS:
           </span>
 
           <label className="flex items-center gap-2.5 cursor-pointer text-zinc-800">
@@ -107,7 +105,7 @@ export default function ContactPrivacySettings({
               onChange={(e) => setShowEmail(e.target.checked)}
               className="w-4 h-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 cursor-pointer"
             />
-            <span className="font-medium">Visa min e-postadress för verifierade användare</span>
+            <span className="font-medium">Show my email address to verified users</span>
           </label>
 
           <label className="flex items-center gap-2.5 cursor-pointer text-zinc-800">
@@ -117,14 +115,14 @@ export default function ContactPrivacySettings({
               onChange={(e) => setShowPhone(e.target.checked)}
               className="w-4 h-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 cursor-pointer"
             />
-            <span className="font-medium">Visa mitt telefonnummer för verifierade användare</span>
+            <span className="font-medium">Show my phone number to verified users</span>
           </label>
         </div>
       ) : (
         <div className="p-3 bg-zinc-100 border border-zinc-200 text-zinc-700 rounded-xl text-xs flex items-center gap-2">
           <span>🔒</span>
           <span>
-            Dina direkta uppgifter är dolda. Kontaktkortet visar permanent formuläret för direktmeddelanden.
+            Hides your direct contact info. Messages are securely routed through the platform inbox.
           </span>
         </div>
       )}
