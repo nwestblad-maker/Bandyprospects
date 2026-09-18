@@ -150,427 +150,304 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
 
       {/* Main Navbar */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 sm:h-18">
-            {/* Logo */}
-            <div className="flex items-center gap-10">
-              <Link href="/" className="flex items-center gap-2.5 group">
-                <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-sm tracking-tight group-hover:bg-slate-800 transition-colors">
-                  BP
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-base sm:text-lg font-bold tracking-tight text-slate-950">Bandyprospects</span>
-                </div>
-              </Link>
-
-              {/* Desktop Nav Links */}
-              <nav className="hidden md:flex items-center gap-8 text-base font-medium text-slate-700">
-                <Link
-                  href="/players"
-                  className={`text-base font-medium text-slate-700 hover:text-slate-900 transition-colors ${
-                    pathname?.startsWith("/players") ? "text-slate-950 font-bold" : ""
-                  }`}
-                >
-                  Players
-                </Link>
-                <Link
-                  href="/market"
-                  className={`text-base font-medium text-slate-700 hover:text-slate-900 transition-colors ${
-                    pathname === "/market" ? "text-slate-950 font-bold" : ""
-                  }`}
-                >
-                  Club Listings
-                </Link>
-                <Link
-                  href="/statistik"
-                  className={`text-base font-medium text-slate-700 hover:text-slate-900 transition-colors ${
-                    pathname?.startsWith("/statistik") || pathname?.startsWith("/stats") ? "text-slate-950 font-bold" : ""
-                  }`}
-                >
-                  Insights
-                </Link>
-                <Link
-                  href="/#how-it-works"
-                  className="text-base font-medium text-slate-700 hover:text-slate-900 transition-colors"
-                >
-                  How it Works
-                </Link>
-                <Link
-                  href="/#about"
-                  className="text-base font-medium text-slate-700 hover:text-slate-900 transition-colors"
-                >
-                  About
-                </Link>
-              </nav>
-            </div>
-
-            {/* Desktop Actions & Role */}
-            <div className="flex items-center gap-2.5">
-              {/* User Authentication Status / Links */}
-              {user ? (
-                <div className="hidden sm:flex items-center gap-2">
-                  {/* Role Indicator Badge */}
-                  {profileInfo?.role === "player" && (
-                    <div
-                      className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-emerald-950 bg-emerald-50 rounded-md border border-emerald-200"
-                      title={profileInfo.name}
-                    >
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                      <span className="truncate max-w-[200px]">
-                        Signed in as: <strong>{profileInfo.name}</strong> (Player)
-                      </span>
-                    </div>
-                  )}
-
-                  {profileInfo?.role === "club" && (
-                    <div
-                      className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-blue-950 bg-blue-50 rounded-md border border-blue-200"
-                      title={profileInfo.name}
-                    >
-                      <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
-                      <span className="truncate max-w-[200px]">
-                        Signed in as: <strong>{profileInfo.name}</strong> (Club)
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Messages Link */}
-                  <Link
-                    href="/messages"
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border transition-colors ${
-                      pathname?.startsWith("/messages")
-                        ? "bg-slate-900 text-white border-slate-900"
-                        : "bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200"
-                    }`}
-                  >
-                    <span>✉️</span>
-                    <span>Messages</span>
-                  </Link>
-
-                  {/* Shortlist Link */}
-                  <Link
-                    href="/shortlist"
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border transition-colors ${
-                      pathname === "/shortlist"
-                        ? "bg-amber-100 text-amber-950 border-amber-300 font-bold"
-                        : "bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200"
-                    }`}
-                  >
-                    <span>⭐</span>
-                    <span>Shortlist</span>
-                    {shortlistCount > 0 && (
-                      <span className="px-1.5 py-0.2 rounded-full bg-slate-900 text-white text-[10px] font-bold">
-                        {shortlistCount}
-                      </span>
-                    )}
-                  </Link>
-
-                  {/* PLAYER: Show "My Profile", DO NOT show "+ Post Club Listing" */}
-                  {profileInfo?.role === "player" && (
-                    <Link
-                      href="/my-profile"
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border transition-colors ${
-                        pathname === "/my-profile"
-                          ? "bg-slate-900 text-white border-slate-900"
-                          : "bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200"
-                      }`}
-                    >
-                      <span>👤</span>
-                      <span>My Profile</span>
-                    </Link>
-                  )}
-
-                  {/* CLUB: Show "My Listings" and "+ Post Club Listing", DO NOT show "Join as Player" */}
-                  {profileInfo?.role === "club" && (
-                    <>
-                      <Link
-                        href={profileInfo.name ? `/market?search=${encodeURIComponent(profileInfo.name)}` : "/market"}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border transition-colors ${
-                          pathname === "/market"
-                            ? "bg-slate-900 text-white border-slate-900"
-                            : "bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200"
-                        }`}
-                      >
-                        <span>📋</span>
-                        <span>My Listings</span>
-                      </Link>
-                      <Link
-                        href="/post-ad"
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-md shadow-xs transition-colors cursor-pointer"
-                      >
-                        <span>💼</span>
-                        <span>+ Post Club Listing</span>
-                      </Link>
-                    </>
-                  )}
-
-                  {/* Fallback if user profile is pending / not yet created */}
-                  {hasProfile === false && (
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href="/join"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-md border border-slate-200 transition-colors"
-                      >
-                        <span>⛸️</span>
-                        <span>Join as Player</span>
-                      </Link>
-                      <Link
-                        href="/post-ad"
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-md shadow-xs transition-colors cursor-pointer"
-                      >
-                        <span>💼</span>
-                        <span>+ Post Club Listing</span>
-                      </Link>
-                    </div>
-                  )}
-
-                  <button
-                    onClick={handleSignOut}
-                    className="px-2.5 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors cursor-pointer ml-1"
-                  >
-                    Sign Out
-                  </button>
-                </div>
-              ) : (
-                /* PUBLIC / LOGGED-OUT STATE */
-                <div className="hidden sm:flex items-center gap-3">
-                  <Link
-                    href="/login"
-                    className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                      pathname === "/login" ? "text-slate-950 font-bold" : "text-slate-700 hover:text-slate-900"
-                    }`}
-                  >
-                    Sign In
-                  </Link>
-                  {/* Button 1 (Player target): light/neutral button with skater icon */}
-                  <Link
-                    href="/join"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-200 shadow-2xs transition-colors"
-                  >
-                    <span>⛸️</span>
-                    <span>Join as Player</span>
-                  </Link>
-                  {/* Button 2 (Club target): distinct primary/accent button with club/briefcase icon */}
-                  <Link
-                    href="/post-ad"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-colors cursor-pointer"
-                  >
-                    <span>💼</span>
-                    <span>+ Post Club Listing</span>
-                  </Link>
-                </div>
-              )}
-
-              {/* Mobile hamburger */}
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-1.5 text-slate-600 hover:text-slate-900 rounded-md border border-slate-200"
-                aria-label="Toggle navigation menu"
-              >
-                {mobileMenuOpen ? (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                )}
-              </button>
-            </div>
+        <div className="flex items-center justify-between h-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Zone 1 (Left - Brand) */}
+          <div className="flex items-center flex-shrink-0">
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-sm tracking-tight group-hover:bg-slate-800 transition-colors">
+                BP
+              </div>
+              <span className="text-base sm:text-lg font-bold tracking-tight text-slate-950">
+                Bandyprospects
+              </span>
+            </Link>
           </div>
 
-          {/* Mobile Drawer */}
-          {mobileMenuOpen && (
-            <div className="md:hidden py-3 border-t border-slate-200 space-y-1">
-              {/* Role badge if logged in */}
-              {user && (
-                <div className="pb-2 mb-2 border-b border-slate-100">
-                  {profileInfo?.role === "player" ? (
-                    <div className="px-3 py-1.5 text-xs font-semibold text-emerald-950 bg-emerald-50 rounded-md border border-emerald-200 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                      <span className="truncate">Signed in as: {profileInfo.name} (Player)</span>
-                    </div>
-                  ) : profileInfo?.role === "club" ? (
-                    <div className="px-3 py-1.5 text-xs font-semibold text-blue-950 bg-blue-50 rounded-md border border-blue-200 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
-                      <span className="truncate">Signed in as: {profileInfo.name} (Club)</span>
-                    </div>
-                  ) : (
-                    <div className="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-50 rounded-md border border-slate-200 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                      <span className="truncate">{user.email}</span>
-                    </div>
-                  )}
-                </div>
-              )}
+          {/* Zone 2 (Center - Navigation Links) */}
+          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+            <Link
+              href="/players"
+              className={`whitespace-nowrap transition-colors ${
+                pathname?.startsWith("/players")
+                  ? "text-slate-950 font-bold"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Players
+            </Link>
+            <Link
+              href="/market"
+              className={`whitespace-nowrap transition-colors ${
+                pathname === "/market"
+                  ? "text-slate-950 font-bold"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Club Listings
+            </Link>
+            <Link
+              href="/statistik"
+              className={`whitespace-nowrap transition-colors ${
+                pathname?.startsWith("/statistik") || pathname?.startsWith("/stats")
+                  ? "text-slate-950 font-bold"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Insights
+            </Link>
+            <Link
+              href="/#how-it-works"
+              className="text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors"
+            >
+              How it Works
+            </Link>
+            <Link
+              href="/#about"
+              className="text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors"
+            >
+              About
+            </Link>
+          </nav>
 
-              <Link
-                href="/players"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md"
-              >
-                Players
-              </Link>
-              <Link
-                href="/market"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md"
-              >
-                Club Listings
-              </Link>
-              <Link
-                href="/statistik"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md"
-              >
-                Insights
-              </Link>
-              <Link
-                href="/#how-it-works"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md"
-              >
-                How it Works
-              </Link>
-              <Link
-                href="/#about"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md"
-              >
-                About
-              </Link>
+          {/* Zone 3 (Right - User Actions) */}
+          <div className="flex items-center space-x-3 flex-shrink-0">
+            {user ? (
+              <div className="hidden md:flex items-center space-x-3">
+                {/* Messages (Subtle icon/pill button) */}
+                <Link
+                  href="/messages"
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${
+                    pathname?.startsWith("/messages")
+                      ? "bg-slate-100 text-slate-950 font-semibold"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                  }`}
+                >
+                  <span>✉️</span>
+                  <span>Messages</span>
+                </Link>
 
-              {user ? (
-                <div className="pt-2 border-t border-slate-100 space-y-1">
-                  {/* Role Indicator Badge */}
-                  {profileInfo?.role === "player" && (
-                    <div className="px-3 py-1.5 text-xs font-semibold text-emerald-950 bg-emerald-50 rounded-md border border-emerald-200">
-                      Signed in as: <strong>{profileInfo.name}</strong> (Player)
-                    </div>
+                {/* Shortlist (Subtle icon/pill button) */}
+                <Link
+                  href="/shortlist"
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${
+                    pathname === "/shortlist"
+                      ? "bg-slate-100 text-slate-950 font-semibold"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                  }`}
+                >
+                  <span>⭐</span>
+                  <span>Shortlist</span>
+                  {shortlistCount > 0 && (
+                    <span className="px-1.5 py-0.2 rounded-full bg-slate-200 text-slate-800 text-xs font-bold">
+                      {shortlistCount}
+                    </span>
                   )}
-                  {profileInfo?.role === "club" && (
-                    <div className="px-3 py-1.5 text-xs font-semibold text-blue-950 bg-blue-50 rounded-md border border-blue-200">
-                      Signed in as: <strong>{profileInfo.name}</strong> (Club)
-                    </div>
-                  )}
+                </Link>
 
+                {/* Conditional Action Button */}
+                {profileInfo?.role === "club" ? (
                   <Link
-                    href="/messages"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-slate-900 bg-slate-100 rounded-md"
+                    href="/post-ad"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-colors whitespace-nowrap cursor-pointer"
                   >
-                    <span>✉️</span>
-                    <span>Messages</span>
+                    <span>💼</span>
+                    <span>+ Post Listing</span>
                   </Link>
-
+                ) : (
                   <Link
-                    href="/shortlist"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-between px-3 py-2 text-sm font-bold text-amber-950 bg-amber-50 rounded-md border border-amber-200"
+                    href="/my-profile"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-200 shadow-xs transition-colors whitespace-nowrap cursor-pointer"
                   >
-                    <span>⭐ My Shortlist</span>
-                    {shortlistCount > 0 && (
-                      <span className="px-2 py-0.5 rounded-full bg-slate-900 text-white text-xs font-bold">
-                        {shortlistCount}
-                      </span>
-                    )}
+                    <span>👤</span>
+                    <span>My Profile</span>
                   </Link>
+                )}
 
-                  {/* PLAYER: Show "My Profile", DO NOT show "+ Post Club Listing" */}
-                  {profileInfo?.role === "player" && (
-                    <Link
-                      href="/my-profile"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="block px-3 py-2 text-sm font-bold text-slate-900 hover:bg-slate-100 rounded-md"
-                    >
-                      👤 My Profile
-                    </Link>
-                  )}
+                {/* Sign Out: clean, single-line text/button */}
+                <button
+                  onClick={handleSignOut}
+                  className="text-sm font-medium text-slate-500 hover:text-slate-900 whitespace-nowrap ml-2 cursor-pointer"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              /* Logged-out state: show "Sign In" and a single primary "Get Started" / "Join" button */
+              <div className="hidden md:flex items-center space-x-3">
+                <Link
+                  href="/login"
+                  className="text-sm font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors px-2 py-1"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/join"
+                  className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-colors whitespace-nowrap cursor-pointer"
+                >
+                  Get Started
+                </Link>
+              </div>
+            )}
 
-                  {/* CLUB: Show "My Listings" & "+ Post Club Listing", DO NOT show "Join as Player" */}
-                  {profileInfo?.role === "club" && (
-                    <div className="space-y-1.5 pt-1">
-                      <Link
-                        href={profileInfo.name ? `/market?search=${encodeURIComponent(profileInfo.name)}` : "/market"}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block px-3 py-2 text-sm font-bold text-slate-900 hover:bg-slate-100 rounded-md"
-                      >
-                        📋 My Listings
-                      </Link>
-                      <Link
-                        href="/post-ad"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block px-3 py-2 text-center text-xs font-semibold rounded-lg bg-slate-900 text-white shadow-xs"
-                      >
-                        💼 + Post Club Listing
-                      </Link>
-                    </div>
-                  )}
-
-                  {/* Fallback if user profile is pending / not yet created */}
-                  {hasProfile === false && (
-                    <div className="grid grid-cols-2 gap-2 pt-1">
-                      <Link
-                        href="/join"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-slate-100 text-slate-800 border border-slate-200"
-                      >
-                        ⛸️ Join as Player
-                      </Link>
-                      <Link
-                        href="/post-ad"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-slate-900 text-white shadow-xs"
-                      >
-                        💼 + Post Club Listing
-                      </Link>
-                    </div>
-                  )}
-
-                  <button
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      handleSignOut();
-                    }}
-                    className="w-full text-left px-3 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 rounded-md cursor-pointer pt-2"
-                  >
-                    Sign Out
-                  </button>
-                </div>
+            {/* Mobile Hamburger Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 text-slate-600 hover:text-slate-900 rounded-lg border border-slate-200 cursor-pointer"
+              aria-label="Toggle navigation menu"
+            >
+              {mobileMenuOpen ? (
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               ) : (
-                /* Public / Logged-out Mobile */
-                <div className="pt-2 border-t border-slate-100 space-y-2.5">
-                  <Link
-                    href="/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md text-center"
-                  >
-                    Sign In
-                  </Link>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Link
-                      href="/join"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-slate-100 text-slate-800 border border-slate-200 flex items-center justify-center gap-1.5"
-                    >
-                      <span>⛸️</span>
-                      <span>Join as Player</span>
-                    </Link>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Drawer */}
+        {mobileMenuOpen && (
+          <div className="md:hidden py-3 border-t border-slate-200 px-4 sm:px-6 space-y-1 bg-white">
+            {/* Role indicator if logged in */}
+            {user && (
+              <div className="pb-2 mb-2 border-b border-slate-100">
+                {profileInfo?.role === "player" ? (
+                  <div className="px-3 py-1.5 text-xs font-semibold text-emerald-950 bg-emerald-50 rounded-md border border-emerald-200 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                    <span className="truncate">Signed in as: {profileInfo.name} (Player)</span>
+                  </div>
+                ) : profileInfo?.role === "club" ? (
+                  <div className="px-3 py-1.5 text-xs font-semibold text-blue-950 bg-blue-50 rounded-md border border-blue-200 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                    <span className="truncate">Signed in as: {profileInfo.name} (Club)</span>
+                  </div>
+                ) : (
+                  <div className="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-50 rounded-md border border-slate-200 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                    <span className="truncate">{user.email}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <Link
+              href="/players"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md"
+            >
+              Players
+            </Link>
+            <Link
+              href="/market"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md"
+            >
+              Club Listings
+            </Link>
+            <Link
+              href="/statistik"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md"
+            >
+              Insights
+            </Link>
+            <Link
+              href="/#how-it-works"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md"
+            >
+              How it Works
+            </Link>
+            <Link
+              href="/#about"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md"
+            >
+              About
+            </Link>
+
+            {user ? (
+              <div className="pt-2 border-t border-slate-100 space-y-1">
+                <Link
+                  href="/messages"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 rounded-md"
+                >
+                  <span>✉️</span>
+                  <span>Messages</span>
+                </Link>
+
+                <Link
+                  href="/shortlist"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-between px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 rounded-md"
+                >
+                  <span className="flex items-center gap-2">
+                    <span>⭐</span>
+                    <span>Shortlist</span>
+                  </span>
+                  {shortlistCount > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-slate-900 text-white text-xs font-bold">
+                      {shortlistCount}
+                    </span>
+                  )}
+                </Link>
+
+                {profileInfo?.role === "club" ? (
+                  <div className="pt-1">
                     <Link
                       href="/post-ad"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-slate-900 text-white shadow-xs flex items-center justify-center gap-1.5"
+                      className="block w-full text-center px-4 py-2 text-sm font-semibold rounded-lg bg-slate-900 text-white shadow-sm"
                     >
-                      <span>💼</span>
-                      <span>+ Post Listing</span>
+                      💼 + Post Listing
                     </Link>
                   </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+                ) : (
+                  <div className="pt-1">
+                    <Link
+                      href="/my-profile"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block w-full text-center px-4 py-2 text-sm font-semibold rounded-lg bg-slate-100 text-slate-800 border border-slate-200"
+                    >
+                      👤 My Profile
+                    </Link>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleSignOut();
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm font-medium text-slate-500 hover:text-slate-900 rounded-md cursor-pointer pt-2"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <div className="pt-2 border-t border-slate-100 space-y-2">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md text-center"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/join"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block w-full text-center px-4 py-2 text-sm font-semibold rounded-lg bg-slate-900 text-white shadow-sm"
+                >
+                  Get Started
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
       </header>
     </>
   );
