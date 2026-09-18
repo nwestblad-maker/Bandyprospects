@@ -164,7 +164,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
           </div>
 
           {/* Zone 2 (Center - Navigation Links) */}
-          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+          <nav className="hidden lg:flex items-center space-x-6 text-sm font-medium">
             <Link
               href="/players"
               className={`whitespace-nowrap transition-colors ${
@@ -212,7 +212,8 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
           {/* Zone 3 (Right - User Actions) */}
           <div className="flex items-center space-x-3 flex-shrink-0">
             {user ? (
-              <div className="hidden md:flex items-center space-x-3">
+              /* Logged-In State */
+              <div className="hidden sm:flex items-center space-x-3">
                 {/* Messages (Subtle icon/pill button) */}
                 <Link
                   href="/messages"
@@ -244,11 +245,11 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                   )}
                 </Link>
 
-                {/* Conditional Action Button */}
+                {/* Conditional Action Button: Player vs Club */}
                 {profileInfo?.role === "club" ? (
                   <Link
                     href="/post-ad"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-colors whitespace-nowrap cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition-colors whitespace-nowrap cursor-pointer"
                   >
                     <span>💼</span>
                     <span>+ Post Listing</span>
@@ -256,7 +257,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                 ) : (
                   <Link
                     href="/my-profile"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-200 shadow-xs transition-colors whitespace-nowrap cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition-colors whitespace-nowrap cursor-pointer"
                   >
                     <span>👤</span>
                     <span>My Profile</span>
@@ -272,19 +273,27 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                 </button>
               </div>
             ) : (
-              /* Logged-out state: show "Sign In" and a single primary "Get Started" / "Join" button */
-              <div className="hidden md:flex items-center space-x-3">
+              /* Logged-Out / Public State */
+              <div className="hidden sm:flex items-center space-x-3">
                 <Link
                   href="/login"
-                  className="text-sm font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors px-2 py-1"
+                  className="text-sm font-medium text-slate-700 hover:text-slate-900 whitespace-nowrap transition-colors px-2 py-1"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/join"
-                  className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-colors whitespace-nowrap cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition-colors whitespace-nowrap cursor-pointer"
                 >
-                  Get Started
+                  <span>⛸️</span>
+                  <span>Join as Player</span>
+                </Link>
+                <Link
+                  href="/post-ad"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition-colors whitespace-nowrap cursor-pointer"
+                >
+                  <span>💼</span>
+                  <span>+ Post Club Listing</span>
                 </Link>
               </div>
             )}
@@ -292,7 +301,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
             {/* Mobile Hamburger Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-slate-600 hover:text-slate-900 rounded-lg border border-slate-200 cursor-pointer"
+              className="lg:hidden p-2 text-slate-600 hover:text-slate-900 rounded-lg border border-slate-200 cursor-pointer"
               aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? (
@@ -310,7 +319,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
 
         {/* Mobile Drawer */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-3 border-t border-slate-200 px-4 sm:px-6 space-y-1 bg-white">
+          <div className="lg:hidden py-3 border-t border-slate-200 px-4 sm:px-6 space-y-1 bg-white">
             {/* Role indicator if logged in */}
             {user && (
               <div className="pb-2 mb-2 border-b border-slate-100">
@@ -411,7 +420,7 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                     <Link
                       href="/my-profile"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="block w-full text-center px-4 py-2 text-sm font-semibold rounded-lg bg-slate-100 text-slate-800 border border-slate-200"
+                      className="block w-full text-center px-4 py-2 text-sm font-semibold rounded-lg border border-slate-300 text-slate-800 hover:bg-slate-50"
                     >
                       👤 My Profile
                     </Link>
@@ -437,13 +446,24 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                 >
                   Sign In
                 </Link>
-                <Link
-                  href="/join"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block w-full text-center px-4 py-2 text-sm font-semibold rounded-lg bg-slate-900 text-white shadow-sm"
-                >
-                  Get Started
-                </Link>
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <Link
+                    href="/join"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-center text-xs font-semibold rounded-lg border border-slate-300 text-slate-800 hover:bg-slate-50 transition-colors"
+                  >
+                    <span>⛸️</span>
+                    <span>Join as Player</span>
+                  </Link>
+                  <Link
+                    href="/post-ad"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-center text-xs font-semibold rounded-lg bg-slate-900 text-white hover:bg-slate-800 shadow-sm transition-colors"
+                  >
+                    <span>💼</span>
+                    <span>+ Post Listing</span>
+                  </Link>
+                </div>
               </div>
             )}
           </div>
