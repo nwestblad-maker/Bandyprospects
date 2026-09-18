@@ -265,8 +265,8 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                     )}
                   </Link>
 
-                  {/* My Profile Link */}
-                  {hasProfile === true && (
+                  {/* PLAYER: Show "My Profile", DO NOT show "+ Post Club Listing" */}
+                  {profileInfo?.role === "player" && (
                     <Link
                       href="/my-profile"
                       className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border transition-colors ${
@@ -280,33 +280,60 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                     </Link>
                   )}
 
+                  {/* CLUB: Show "My Listings" and "+ Post Club Listing", DO NOT show "Join as Player" */}
+                  {profileInfo?.role === "club" && (
+                    <>
+                      <Link
+                        href={profileInfo.name ? `/market?search=${encodeURIComponent(profileInfo.name)}` : "/market"}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border transition-colors ${
+                          pathname === "/market"
+                            ? "bg-zinc-900 text-white border-zinc-900"
+                            : "bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border-zinc-200"
+                        }`}
+                      >
+                        <span>📋</span>
+                        <span>My Listings</span>
+                      </Link>
+                      <Link
+                        href="/post-ad"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded-md shadow-xs transition-colors cursor-pointer"
+                      >
+                        <span>💼</span>
+                        <span>+ Post Club Listing</span>
+                      </Link>
+                    </>
+                  )}
+
+                  {/* Fallback if user profile is pending / not yet created */}
                   {hasProfile === false && (
                     <div className="flex items-center gap-2">
-                      <div
-                        className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-zinc-600 bg-zinc-100 rounded-md border border-zinc-200 max-w-[150px]"
-                        title={user.email}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                        <span className="truncate font-medium">{user.email}</span>
-                      </div>
                       <Link
                         href="/join"
-                        className="inline-flex items-center justify-center px-2.5 py-1.5 text-xs font-semibold text-zinc-900 bg-emerald-50 hover:bg-emerald-100 rounded-md border border-emerald-300 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-800 bg-zinc-100 hover:bg-zinc-200 rounded-md border border-zinc-200 transition-colors"
                       >
-                        + Create Profile
+                        <span>⛸️</span>
+                        <span>Join as Player</span>
+                      </Link>
+                      <Link
+                        href="/post-ad"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded-md shadow-xs transition-colors cursor-pointer"
+                      >
+                        <span>💼</span>
+                        <span>+ Post Club Listing</span>
                       </Link>
                     </div>
                   )}
 
                   <button
                     onClick={handleSignOut}
-                    className="px-2.5 py-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer"
+                    className="px-2.5 py-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer ml-1"
                   >
                     Sign Out
                   </button>
                 </div>
               ) : (
-                <div className="hidden sm:flex items-center gap-2">
+                /* PUBLIC / LOGGED-OUT STATE */
+                <div className="hidden sm:flex items-center gap-2.5">
                   <Link
                     href="/login"
                     className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
@@ -315,21 +342,24 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                   >
                     Sign In
                   </Link>
+                  {/* Button 1 (Player target): light/neutral button with skater icon */}
                   <Link
                     href="/join"
-                    className="inline-flex items-center justify-center px-3 py-1.5 text-xs font-semibold text-zinc-800 bg-zinc-100 hover:bg-zinc-200 rounded-md border border-zinc-200 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-800 bg-zinc-100 hover:bg-zinc-200 rounded-md border border-zinc-200 shadow-2xs transition-colors"
                   >
-                    Create Profile
+                    <span>⛸️</span>
+                    <span>Join as Player</span>
+                  </Link>
+                  {/* Button 2 (Club target): distinct primary/accent button with club/briefcase icon */}
+                  <Link
+                    href="/post-ad"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded-md shadow-xs transition-colors cursor-pointer"
+                  >
+                    <span>💼</span>
+                    <span>+ Post Club Listing</span>
                   </Link>
                 </div>
               )}
-
-              <Link
-                href="/post-ad"
-                className="inline-flex items-center justify-center px-3.5 py-1.5 text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 rounded-md shadow-sm transition-colors cursor-pointer"
-              >
-                + Post Ad
-              </Link>
 
               {/* Mobile hamburger */}
               <button
@@ -413,6 +443,18 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
 
               {user ? (
                 <div className="pt-2 border-t border-zinc-100 space-y-1">
+                  {/* Role Indicator Badge */}
+                  {profileInfo?.role === "player" && (
+                    <div className="px-3 py-1.5 text-xs font-semibold text-emerald-950 bg-emerald-50 rounded-md border border-emerald-200">
+                      Signed in as: <strong>{profileInfo.name}</strong> (Player)
+                    </div>
+                  )}
+                  {profileInfo?.role === "club" && (
+                    <div className="px-3 py-1.5 text-xs font-semibold text-blue-950 bg-blue-50 rounded-md border border-blue-200">
+                      Signed in as: <strong>{profileInfo.name}</strong> (Club)
+                    </div>
+                  )}
+
                   <Link
                     href="/messages"
                     onClick={() => setMobileMenuOpen(false)}
@@ -435,7 +477,8 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                     )}
                   </Link>
 
-                  {hasProfile === true ? (
+                  {/* PLAYER: Show "My Profile", DO NOT show "+ Post Club Listing" */}
+                  {profileInfo?.role === "player" && (
                     <Link
                       href="/my-profile"
                       onClick={() => setMobileMenuOpen(false)}
@@ -443,14 +486,44 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                     >
                       👤 My Profile
                     </Link>
-                  ) : (
-                    <div className="space-y-1.5 py-1">
+                  )}
+
+                  {/* CLUB: Show "My Listings" & "+ Post Club Listing", DO NOT show "Join as Player" */}
+                  {profileInfo?.role === "club" && (
+                    <div className="space-y-1.5 pt-1">
+                      <Link
+                        href={profileInfo.name ? `/market?search=${encodeURIComponent(profileInfo.name)}` : "/market"}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block px-3 py-2 text-sm font-bold text-zinc-900 hover:bg-zinc-100 rounded-md"
+                      >
+                        📋 My Listings
+                      </Link>
+                      <Link
+                        href="/post-ad"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block px-3 py-2 text-center text-xs font-semibold rounded-lg bg-zinc-900 text-white shadow-xs"
+                      >
+                        💼 + Post Club Listing
+                      </Link>
+                    </div>
+                  )}
+
+                  {/* Fallback if user profile is pending / not yet created */}
+                  {hasProfile === false && (
+                    <div className="grid grid-cols-2 gap-2 pt-1">
                       <Link
                         href="/join"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="block px-3 py-2 text-sm font-semibold text-emerald-950 bg-emerald-50 hover:bg-emerald-100 rounded-md border border-emerald-200"
+                        className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-zinc-100 text-zinc-800 border border-zinc-200"
                       >
-                        + Create Profile
+                        ⛸️ Join as Player
+                      </Link>
+                      <Link
+                        href="/post-ad"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-zinc-900 text-white shadow-xs"
+                      >
+                        💼 + Post Club Listing
                       </Link>
                     </div>
                   )}
@@ -460,41 +533,41 @@ export function Header({ onOpenContact }: { onOpenContact?: (target: string, typ
                       setMobileMenuOpen(false);
                       handleSignOut();
                     }}
-                    className="w-full text-left px-3 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 rounded-md"
+                    className="w-full text-left px-3 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 rounded-md cursor-pointer pt-2"
                   >
                     Sign Out
                   </button>
                 </div>
               ) : (
-                <div className="pt-2 border-t border-zinc-100">
+                /* Public / Logged-out Mobile */
+                <div className="pt-2 border-t border-zinc-100 space-y-2.5">
                   <Link
                     href="/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 rounded-md"
+                    className="block px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 rounded-md text-center"
                   >
                     Sign In
                   </Link>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link
+                      href="/join"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center justify-center gap-1.5"
+                    >
+                      <span>⛸️</span>
+                      <span>Join as Player</span>
+                    </Link>
+                    <Link
+                      href="/post-ad"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-zinc-900 text-white shadow-xs flex items-center justify-center gap-1.5"
+                    >
+                      <span>💼</span>
+                      <span>+ Post Listing</span>
+                    </Link>
+                  </div>
                 </div>
               )}
-
-              <div className="pt-2 border-t border-zinc-100 grid grid-cols-2 gap-2">
-                {!user && (
-                  <Link
-                    href="/join"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="px-3 py-2 text-center text-xs font-semibold rounded-lg bg-zinc-100 text-zinc-800 border border-zinc-200"
-                  >
-                    Create Profile
-                  </Link>
-                )}
-                <Link
-                  href="/post-ad"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`px-3 py-2 text-center text-xs font-semibold rounded-lg bg-zinc-900 text-white ${user ? "col-span-2" : ""}`}
-                >
-                  + Post Ad
-                </Link>
-              </div>
             </div>
           )}
         </div>
