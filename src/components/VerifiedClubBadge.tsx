@@ -27,13 +27,13 @@ export function VerifiedClubBadge({
 
   return (
     <span
-      className={`inline-flex items-center font-bold rounded-full bg-blue-50 text-blue-800 border border-blue-200/90 shadow-2xs select-none ${
+      className={`inline-flex items-center font-semibold rounded-full bg-sky-50 text-sky-700 border border-sky-200 shadow-2xs select-none ${
         textSizes[size]
       } ${className}`}
       title="Verifierad förening (Officiell klubbrepresentant)"
     >
       <svg
-        className={`${iconSizes[size]} text-blue-600 shrink-0`}
+        className={`${iconSizes[size]} text-sky-600 shrink-0`}
         viewBox="0 0 20 20"
         fill="currentColor"
         aria-hidden="true"

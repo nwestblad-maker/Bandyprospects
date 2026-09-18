@@ -461,36 +461,36 @@ function MarketContent() {
                       return (
                         <div
                           key={ad.id}
-                          className="flex flex-col justify-between bg-white border border-zinc-200 hover:border-zinc-400 rounded-xl p-5 sm:p-6 transition-all shadow-xs group"
+                          className="flex flex-col justify-between bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow rounded-xl p-5 sm:p-6 group"
                         >
                           <div>
                             {/* Top Line: Flag, City, Urgent & Category & Badge */}
-                            <div className="flex items-start justify-between gap-2 text-xs text-zinc-500 mb-3 flex-wrap">
-                              <div className="flex items-center gap-1.5 font-medium text-zinc-700">
+                            <div className="flex items-start justify-between gap-2 text-sm text-slate-500 mb-3 flex-wrap">
+                              <div className="flex items-center gap-1.5 font-medium text-slate-700">
                                 <span className="text-base">{ad.countryFlag}</span>
-                                <span className="font-semibold text-zinc-900">
+                                <span className="font-semibold text-slate-900">
                                   {ad.city}, {ad.countryCode}
                                 </span>
                               </div>
                               <div className="flex items-center gap-1.5 flex-wrap justify-end">
                                 {isNationalTeam && (
-                                  <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1">
+                                  <span className="px-2.5 py-0.5 text-xs font-semibold rounded bg-slate-100 text-slate-800 border border-slate-200 flex items-center gap-1">
                                     <span>🌍</span>
                                     <span>National Team</span>
                                   </span>
                                 )}
                                 {ad.urgent && (
-                                  <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase rounded bg-rose-50 text-rose-700 border border-rose-200">
+                                  <span className="px-2 py-0.5 text-xs font-bold uppercase rounded bg-rose-50 text-rose-700 border border-rose-200">
                                     {t.marketPage.urgentTag}
                                   </span>
                                 )}
                                 {ad.teamCategory && ad.teamCategory !== "men" && (
-                                  <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-zinc-100 text-zinc-800 border border-zinc-200">
+                                  <span className="px-2.5 py-0.5 text-xs font-bold rounded bg-slate-100 text-slate-800 border border-slate-200">
                                     {teamCategoryLabels[ad.teamCategory]}
                                   </span>
                                 )}
                                 {!isNationalTeam && (
-                                  <span className="px-2 py-0.5 text-[11px] font-semibold rounded bg-zinc-100 text-zinc-800 border border-zinc-200">
+                                  <span className="px-2.5 py-0.5 text-xs font-semibold rounded bg-sky-50 text-sky-700 border border-sky-200">
                                     {ad.divisionName[lang]}
                                   </span>
                                 )}
@@ -499,11 +499,11 @@ function MarketContent() {
 
                             {/* Club / National Team Title */}
                             <div className="mb-2">
-                              <h3 className="text-lg font-bold text-zinc-950 group-hover:text-zinc-800 transition-colors">
+                              <h3 className="text-lg font-bold text-slate-950 group-hover:text-slate-800 transition-colors">
                                 {ad.club}
                               </h3>
                               {isNationalTeam && ad.tournament && (
-                                <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-700 mt-1">
+                                <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 mt-1">
                                   <span>🏆</span>
                                   <span>{ad.tournament}</span>
                                 </div>
@@ -512,14 +512,14 @@ function MarketContent() {
 
                             {/* Multi-Positions Badges */}
                             <div className="mb-3 mt-2">
-                              <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
                                 {t.marketPage.soughtPositionsLabel}:
                               </div>
                               <div className="flex flex-wrap gap-1.5">
                                 {positionsToRender.map((pos) => (
                                   <span
                                     key={pos}
-                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-zinc-900 text-white text-xs font-semibold shadow-2xs"
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-900 text-white text-xs font-semibold shadow-2xs"
                                   >
                                     <span>{pos === "goalkeeper" ? "🧤" : pos === "defender" ? "🛡️" : pos === "halv" ? "⚡" : pos === "midfielder" ? "🎯" : "🏒"}</span>
                                     <span>{positionLabels[pos] || pos}</span>
@@ -530,15 +530,15 @@ function MarketContent() {
 
                             {/* FIB Eligibility Requirements Tags */}
                             {isNationalTeam && ad.eligibilityRequirements && ad.eligibilityRequirements.length > 0 && (
-                              <div className="mb-3 p-2.5 rounded-lg bg-zinc-50 border border-zinc-200 text-xs">
-                                <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                              <div className="mb-3 p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs">
+                                <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
                                   {lang === "sv" ? "Behörighetskrav (Eligibility)" : "Eligibility Requirements"}:
                                 </div>
                                 <div className="flex flex-wrap gap-1.5">
                                   {ad.eligibilityRequirements.map((req, i) => (
                                     <span
                                       key={i}
-                                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white text-zinc-800 font-medium text-[11px] border border-zinc-200"
+                                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white text-slate-800 font-medium text-xs border border-slate-200"
                                     >
                                       <span>{req.includes("Passport") ? "🛂" : req.includes("Heritage") ? "🧬" : "🌐"}</span>
                                       <span>{req}</span>
@@ -550,27 +550,27 @@ function MarketContent() {
 
                             {/* Optional Roles Description */}
                             {ad.rolesDescription && ad.rolesDescription[lang] && (
-                              <div className="mb-3 text-xs font-medium text-zinc-700 bg-zinc-50/80 p-2.5 rounded-lg border border-zinc-200/70 italic break-words">
+                              <div className="mb-3 text-sm font-medium text-slate-700 bg-slate-50/80 p-3 rounded-lg border border-slate-200/70 italic break-words">
                                 &ldquo;{ad.rolesDescription[lang]}&rdquo;
                               </div>
                             )}
 
                             {/* Main Description */}
-                            <p className="text-xs text-zinc-600 leading-relaxed mb-4 break-words">
+                            <p className="text-base text-slate-600 leading-relaxed mb-4 break-words">
                               {ad.description[lang]}
                             </p>
 
                             {/* Spoken Languages in Team */}
                             {ad.spokenLanguages && ad.spokenLanguages.length > 0 && (
-                              <div className="mb-4 flex items-center gap-2 flex-wrap text-xs text-zinc-500">
-                                <span className="font-semibold text-zinc-700">
+                              <div className="mb-4 flex items-center gap-2 flex-wrap text-sm text-slate-500">
+                                <span className="font-semibold text-slate-700">
                                   {t.marketPage.teamLanguagesLabel}:
                                 </span>
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   {ad.spokenLanguages.map((code) => (
                                     <span
                                       key={code}
-                                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-zinc-100 text-zinc-800 text-[11px] font-medium border border-zinc-200"
+                                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 text-slate-800 text-xs font-medium border border-slate-200"
                                     >
                                       <span>{getLanguageFlag(code)}</span>
                                       <span>{getLanguageName(code, lang)}</span>
@@ -581,15 +581,15 @@ function MarketContent() {
                             )}
 
                             {/* Benefits / Offer Tags */}
-                            <div className="border-t border-zinc-100 pt-3 mb-4">
-                              <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-2">
+                            <div className="border-t border-slate-100 pt-3 mb-4">
+                              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
                                 {t.marketPage.offeredPackageTitle}
                               </div>
                               <div className="flex flex-wrap gap-1.5">
                                 {ad.perks[lang].map((perk, i) => (
                                   <span
                                     key={i}
-                                    className="px-2 py-0.5 rounded bg-zinc-50 border border-zinc-200 text-zinc-700 text-[11px] font-medium"
+                                    className="px-2.5 py-1 rounded bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium"
                                   >
                                     ✓ {perk}
                                   </span>
@@ -599,12 +599,12 @@ function MarketContent() {
                           </div>
 
                           {/* Card Footer: Contact details and Apply button */}
-                          <div className="border-t border-zinc-100 pt-4 mt-2 flex items-center justify-between gap-3">
-                            <div className="text-xs min-w-0 flex-1">
-                              <span className="text-zinc-400 block text-[10px]">
+                          <div className="border-t border-slate-100 pt-4 mt-2 flex items-center justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <span className="text-slate-500 block text-xs font-medium">
                                 {t.marketPage.contactPersonLabel}
                               </span>
-                              <span className="font-semibold text-zinc-900 block truncate">
+                              <span className="font-semibold text-slate-900 block truncate text-sm">
                                 {ad.contactPerson}
                               </span>
                             </div>
@@ -620,7 +620,7 @@ function MarketContent() {
                                   type: "club",
                                 })
                               }
-                              className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer shrink-0"
+                              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded-xl transition-colors cursor-pointer shrink-0 shadow-xs"
                             >
                               {t.marketPage.applyBtn} →
                             </button>

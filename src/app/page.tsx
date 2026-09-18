@@ -94,22 +94,34 @@ export default function HomePage() {
       <Header onOpenContact={openContact} />
 
       <main className="flex-1">
-        {/* 1. HERO SECTION */}
-        <section className="pt-12 pb-14 sm:pt-16 sm:pb-20 border-b border-zinc-200 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* 1. HERO SECTION WITH ATMOSPHERIC BANDY BACKDROP */}
+        <section className="relative overflow-hidden border-b border-slate-800 bg-slate-950 text-white py-20 sm:py-28 lg:py-32">
+          {/* High-quality winter ice arena / floodlights background */}
+          <div className="absolute inset-0 z-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://images.unsplash.com/photo-1515703407324-5f753afd8be8?q=80&w=2000&auto=format&fit=crop"
+              alt="Bandy Winter Ice Arena with Stadium Floodlights"
+              className="w-full h-full object-cover object-center opacity-45 scale-105"
+            />
+            {/* Elegant dark overlay (bg-slate-900/60 + gradient for optimal text contrast) */}
+            <div className="absolute inset-0 bg-slate-950/70 bg-gradient-to-t from-slate-950 via-slate-950/65 to-slate-900/50 backdrop-blur-[0.5px]" />
+          </div>
+
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl">
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-700 text-xs font-semibold uppercase tracking-wider mb-5">
-                <span className="w-1.5 h-1.5 rounded-full bg-zinc-900" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-sky-300 text-xs font-semibold uppercase tracking-wider mb-6 backdrop-blur-sm shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
                 <span>Global Bandy Network</span>
               </div>
 
-              {/* Minimalist Heading */}
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-zinc-950 tracking-tight leading-[1.15]">
+              {/* High Contrast Heading */}
+              <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tight leading-[1.12] drop-shadow-sm">
                 {lang === "en" && (
                   <>
                     The global marketplace & database for{" "}
-                    <span className="text-zinc-600 underline decoration-zinc-300 underline-offset-4">
+                    <span className="text-sky-300 underline decoration-sky-400/50 underline-offset-8">
                       bandy transfers
                     </span>
                     .
@@ -118,7 +130,7 @@ export default function HomePage() {
                 {lang === "sv" && (
                   <>
                     Den globala marknadsplatsen & databasen för{" "}
-                    <span className="text-zinc-600 underline decoration-zinc-300 underline-offset-4">
+                    <span className="text-sky-300 underline decoration-sky-400/50 underline-offset-8">
                       bandyövergångar
                     </span>
                     .
@@ -127,7 +139,7 @@ export default function HomePage() {
                 {lang === "fi" && (
                   <>
                     Jääpallon maailmanlaajuinen markkinapaikka ja{" "}
-                    <span className="text-zinc-600 underline decoration-zinc-300 underline-offset-4">
+                    <span className="text-sky-300 underline decoration-sky-400/50 underline-offset-8">
                       siirtotietokanta
                     </span>
                     .
@@ -136,7 +148,7 @@ export default function HomePage() {
                 {lang === "no" && (
                   <>
                     Den globale markedsplassen og databasen for{" "}
-                    <span className="text-zinc-600 underline decoration-zinc-300 underline-offset-4">
+                    <span className="text-sky-300 underline decoration-sky-400/50 underline-offset-8">
                       bandyoverganger
                     </span>
                     .
@@ -145,7 +157,7 @@ export default function HomePage() {
               </h1>
 
               {/* Ingress / Subtitle */}
-              <p className="mt-4 text-base sm:text-lg text-zinc-600 leading-relaxed max-w-2xl">
+              <p className="mt-6 text-base sm:text-xl text-slate-200 leading-relaxed max-w-2xl font-normal drop-shadow-xs">
                 {lang === "en" &&
                   "Connect verified bandy players, coaches, and clubs internationally. Discover open roster spots, contract offers, and dual-career solutions with housing and civil employment."}
                 {lang === "sv" &&
@@ -157,40 +169,40 @@ export default function HomePage() {
               </p>
 
               {/* Action Buttons */}
-              <div className="mt-7 flex flex-wrap items-center gap-3">
+              <div className="mt-8 flex flex-wrap items-center gap-4">
                 <Link
                   href="/players"
-                  className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-zinc-950 hover:bg-zinc-800 text-white text-sm font-semibold transition-colors shadow-sm cursor-pointer"
+                  className="inline-flex items-center justify-center px-6 py-3.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-base font-semibold transition-all shadow-md hover:shadow-lg cursor-pointer"
                 >
-                  {t.nav.players} {totalPlayersCount > 0 && `(${totalPlayersCount})`} →
+                  Explore Prospects {totalPlayersCount > 0 && `(${totalPlayersCount})`} →
                 </Link>
                 <Link
-                  href="/market"
-                  className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-900 text-sm font-semibold transition-colors cursor-pointer"
+                  href="/post-ad"
+                  className="inline-flex items-center justify-center px-6 py-3.5 rounded-xl bg-white hover:bg-slate-100 text-slate-900 text-base font-semibold border border-white/80 transition-all shadow-sm cursor-pointer"
                 >
-                  {t.nav.market} {totalClubsCount > 0 && `(${totalClubsCount})`}
+                  💼 Post Club Listing
                 </Link>
                 <Link
                   href="/join"
-                  className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-sm font-semibold transition-colors cursor-pointer"
+                  className="inline-flex items-center justify-center px-5 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/25 backdrop-blur-xs text-sm sm:text-base font-medium transition-all cursor-pointer"
                 >
-                  + {t.nav.join}
+                  ⛸️ Create Player Profile
                 </Link>
               </div>
 
               {/* Live Status Indicator */}
-              <div className="mt-8 flex items-center gap-4 text-xs text-zinc-600">
-                <div className="flex items-center gap-1.5 font-medium">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>Season 2026/27 Live Registration</span>
+              <div className="mt-10 flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-slate-300 font-medium">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Season 2026/27 Live Window</span>
                 </div>
-                <span>•</span>
+                <span className="text-slate-500">•</span>
                 <div>
-                  <span className="font-bold text-zinc-900">{totalPlayersCount}</span> {lang === "sv" ? "spelare" : "players"}
+                  <span className="font-bold text-white">{totalPlayersCount}</span> {lang === "sv" ? "registrerade spelare" : "registered prospects"}
                 </div>
-                <span>•</span>
+                <span className="text-slate-500">•</span>
                 <div>
-                  <span className="font-bold text-zinc-900">{totalClubsCount}</span> {lang === "sv" ? "öppna klubbannonser" : "club openings"}
+                  <span className="font-bold text-white">{totalClubsCount}</span> {lang === "sv" ? "öppna klubbannonser" : "active club listings"}
                 </div>
               </div>
             </div>
@@ -225,8 +237,8 @@ export default function HomePage() {
 
             {/* Club Cards Grid / Empty State */}
             {loading ? (
-              <div className="bg-white border border-zinc-200 rounded-xl p-12 text-center text-xs text-zinc-500">
-                <div className="w-6 h-6 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <div className="bg-white border border-slate-200 rounded-xl p-12 text-center text-sm text-slate-500">
+                <div className="w-6 h-6 border-2 border-slate-900 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
                 <span>Laddar klubbannonser...</span>
               </div>
             ) : featuredClubs.length > 0 ? (
@@ -234,24 +246,24 @@ export default function HomePage() {
                 {featuredClubs.map((ad) => (
                   <div
                     key={ad.id}
-                    className="flex flex-col justify-between bg-white border border-zinc-200 rounded-xl p-6 hover:border-zinc-400 transition-colors shadow-xs"
+                    className="flex flex-col justify-between bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow rounded-xl p-5 sm:p-6"
                   >
                     <div>
                       {/* Top Row: Country & Division */}
-                      <div className="flex items-center justify-between text-xs text-zinc-500 mb-3">
-                        <div className="flex items-center gap-1.5 font-medium text-zinc-700">
+                      <div className="flex items-center justify-between text-sm text-slate-500 mb-3">
+                        <div className="flex items-center gap-1.5 font-medium text-slate-700">
                           <span>{ad.countryFlag}</span>
                           <span>
                             {ad.city}, {ad.countryCode}
                           </span>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5">
                           {ad.urgent && (
-                            <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase rounded bg-rose-50 text-rose-700 border border-rose-200">
+                            <span className="px-2 py-0.5 text-xs font-bold uppercase rounded-md bg-rose-50 text-rose-700 border border-rose-200">
                               {t.marketPage.urgentTag}
                             </span>
                           )}
-                          <span className="px-2 py-0.5 text-[11px] font-semibold rounded bg-zinc-100 text-zinc-800 border border-zinc-200">
+                          <span className="px-2 py-0.5 text-xs font-semibold rounded-md bg-sky-50 text-sky-700 border border-sky-200">
                             {ad.divisionName[lang]}
                           </span>
                         </div>
@@ -259,20 +271,20 @@ export default function HomePage() {
 
                       {/* Club Name & Target Position */}
                       <div className="mb-3">
-                        <h3 className="text-lg font-bold text-zinc-950">{ad.club}</h3>
-                        <div className="text-sm font-semibold text-zinc-800 mt-0.5">
+                        <h3 className="text-xl font-bold text-slate-950">{ad.club}</h3>
+                        <div className="text-sm font-semibold text-slate-800 mt-1">
                           {ad.positions && ad.positions.length > 0
                             ? ad.positions.map((p) => t.positions[p] || p).join(", ")
                             : ad.positionName[lang]}
                         </div>
                       </div>
 
-                      {/* Description */}
-                      <p className="text-xs text-zinc-600 leading-relaxed mb-4">{ad.description[lang]}</p>
+                      {/* Description with upgraded text-base */}
+                      <p className="text-base text-slate-600 leading-relaxed mb-4">{ad.description[lang]}</p>
 
                       {/* Contract Details */}
-                      <div className="mb-4 text-xs font-medium text-zinc-800 bg-zinc-50 p-2.5 rounded-lg border border-zinc-200">
-                        <span className="text-zinc-400 block text-[10px] uppercase font-bold tracking-wider mb-0.5">
+                      <div className="mb-4 text-sm font-medium text-slate-800 bg-slate-50 p-3 rounded-lg border border-slate-200/80">
+                        <span className="text-slate-500 block text-xs uppercase font-medium tracking-wider mb-0.5">
                           Contract Terms
                         </span>
                         {ad.contractType[lang]}
@@ -281,13 +293,13 @@ export default function HomePage() {
                       {/* Perks List */}
                       {ad.perks[lang] && ad.perks[lang].length > 0 && (
                         <div className="space-y-1.5 mb-6">
-                          <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+                          <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
                             {t.marketPage.offeredPackageTitle}
                           </div>
-                          <ul className="space-y-1">
+                          <ul className="space-y-1.5">
                             {ad.perks[lang].map((perk, i) => (
-                              <li key={i} className="text-xs text-zinc-700 flex items-start gap-2">
-                                <span className="text-emerald-600 font-bold text-xs mt-0.5">✓</span>
+                              <li key={i} className="text-sm text-slate-700 flex items-start gap-2">
+                                <span className="text-emerald-600 font-bold text-sm mt-0.5">✓</span>
                                 <span>{perk}</span>
                               </li>
                             ))}
@@ -297,8 +309,8 @@ export default function HomePage() {
                     </div>
 
                     {/* Card Footer */}
-                    <div className="pt-4 border-t border-zinc-100 flex flex-col gap-3">
-                      <div className="flex items-center justify-between text-[11px] text-zinc-400">
+                    <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
+                      <div className="flex items-center justify-between text-xs text-slate-400">
                         <span>
                           {t.marketPage.postedLabel}: {ad.postedDate[lang]}
                         </span>
@@ -306,7 +318,7 @@ export default function HomePage() {
 
                       <button
                         onClick={() => openContact(ad.club, "club", ad.contactEmail, ad.id)}
-                        className="w-full py-2 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs transition-colors text-center cursor-pointer"
+                        className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm transition-colors text-center cursor-pointer shadow-xs"
                       >
                         {t.marketPage.applyBtn}
                       </button>
@@ -371,13 +383,13 @@ export default function HomePage() {
                 {featuredPlayers.map((player) => (
                   <div
                     key={player.id}
-                    className="flex flex-col justify-between bg-zinc-50 border border-zinc-200 rounded-xl p-6 hover:border-zinc-400 transition-colors shadow-xs"
+                    className="flex flex-col justify-between bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow rounded-xl p-5 sm:p-6"
                   >
                     <div>
                       {/* Header: Initials, Name & Status */}
                       <div className="flex items-start justify-between gap-3 mb-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-zinc-900 text-white font-bold text-sm flex items-center justify-center overflow-hidden shrink-0 border border-zinc-200 relative">
+                          <div className="w-12 h-12 rounded-xl bg-slate-900 text-white font-bold text-sm flex items-center justify-center overflow-hidden shrink-0 border border-slate-200 relative shadow-2xs">
                             {player.photoUrl ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img src={player.photoUrl} alt={player.name} className="w-full h-full object-cover" />
@@ -389,13 +401,13 @@ export default function HomePage() {
                             <div className="flex items-center gap-1.5">
                               <Link
                                 href={`/players/${player.id}`}
-                                className="text-base font-bold text-zinc-950 hover:underline"
+                                className="text-lg font-bold text-slate-950 hover:underline"
                               >
                                 {player.name}
                               </Link>
                               {player.verified && (
-                                <span title={t.playersPage.verifiedBadge} className="text-zinc-900">
-                                  <svg className="w-3.5 h-3.5 inline" viewBox="0 0 20 20" fill="currentColor">
+                                <span title={t.playersPage.verifiedBadge} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200 text-xs font-semibold">
+                                  <svg className="w-3 h-3 text-sky-600 inline" viewBox="0 0 20 20" fill="currentColor">
                                     <path
                                       fillRule="evenodd"
                                       d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -405,7 +417,7 @@ export default function HomePage() {
                                 </span>
                               )}
                             </div>
-                            <div className="text-xs text-zinc-500 flex items-center gap-1.5 mt-0.5">
+                            <div className="text-sm font-medium text-slate-500 flex items-center gap-1.5 mt-0.5">
                               <span>{player.countryFlag}</span>
                               <span>
                                 {player.countryName[lang]} • {player.age} {t.playersPage.ageLabel}
@@ -414,12 +426,13 @@ export default function HomePage() {
                           </div>
                         </div>
 
-                        <div className="flex flex-col items-end gap-1">
-                          <span className="px-2 py-0.5 text-[10px] font-semibold rounded bg-zinc-200 text-zinc-800">
+                        <div className="flex flex-col items-end gap-1.5">
+                          {/* Warm accent tag for status */}
+                          <span className="px-2.5 py-0.5 text-xs font-semibold rounded-md bg-amber-50 text-amber-700 border border-amber-200 shadow-2xs">
                             {player.statusLabel[lang]}
                           </span>
                           {(player.packagePreference || player.packagePreferenceLabel) && (
-                            <span className="px-2 py-0.5 text-[10px] font-semibold rounded bg-sky-50 text-sky-800 border border-sky-200">
+                            <span className="px-2 py-0.5 text-[11px] font-semibold rounded bg-sky-50 text-sky-700 border border-sky-200">
                               {formatWish(player.packagePreference) || player.packagePreferenceLabel?.[lang]}
                             </span>
                           )}
@@ -427,22 +440,22 @@ export default function HomePage() {
                       </div>
 
                       {/* Position Strip */}
-                      <div className="mb-3 p-2 bg-white rounded-lg border border-zinc-200 text-xs flex items-center justify-between">
-                        <span className="font-bold text-zinc-900">{player.positionName[lang]}</span>
-                        <span className="text-zinc-500">{player.previousClub}</span>
+                      <div className="mb-3 p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-sm flex items-center justify-between">
+                        <span className="font-bold text-slate-900">{player.positionName[lang]}</span>
+                        <span className="text-sm font-medium text-slate-500">{player.previousClub}</span>
                       </div>
 
-                      {/* Bio */}
-                      <p className="text-xs text-zinc-600 leading-relaxed mb-4 line-clamp-2">
+                      {/* Bio with upgraded text-base */}
+                      <p className="text-base text-slate-600 leading-relaxed mb-4 line-clamp-2">
                         {player.bio[lang]}
                       </p>
 
                       {/* Skills Badges */}
-                      <div className="flex flex-wrap gap-1 mb-2">
+                      <div className="flex flex-wrap gap-1.5 mb-3">
                         {player.skills[lang].slice(0, 3).map((skill, idx) => (
                           <span
                             key={idx}
-                            className="px-2 py-0.5 text-[10px] font-medium rounded bg-white text-zinc-700 border border-zinc-200"
+                            className="px-2.5 py-1 text-xs font-medium rounded-md bg-slate-50 text-slate-700 border border-slate-200"
                           >
                             {skill}
                           </span>
@@ -458,16 +471,16 @@ export default function HomePage() {
                     </div>
 
                     {/* Card Footer */}
-                    <div className="pt-4 border-t border-zinc-200 flex items-center gap-2">
+                    <div className="pt-4 border-t border-slate-100 flex items-center gap-2">
                       <Link
                         href={`/players/${player.id}`}
-                        className="flex-1 py-2 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs transition-colors text-center cursor-pointer"
+                        className="flex-1 py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm transition-colors text-center cursor-pointer shadow-xs"
                       >
                         {t.playersPage.viewProfileBtn}
                       </Link>
                       <button
                         onClick={() => openContact(player.name, "player", player.email, player.id)}
-                        className="py-2 px-3 rounded-lg bg-white hover:bg-zinc-100 text-zinc-800 font-semibold text-xs transition-colors text-center border border-zinc-200 cursor-pointer"
+                        className="py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm transition-colors text-center border border-slate-200 cursor-pointer shadow-2xs"
                       >
                         {t.playersPage.contactBtn}
                       </button>
